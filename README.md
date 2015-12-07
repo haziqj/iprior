@@ -29,7 +29,7 @@ summary(cats)
 
 An I-prior model is fitted as follows
 ```r
-mod.iprior <- iprior(Hwt~Bwt, data=cats)
+mod.iprior <- iprior(Hwt ~ Bwt, data=cats)
 mod.iprior
 ```
 
@@ -45,15 +45,14 @@ The list `mod.iprior` contains a bunch of useful things which we can extract.
 ls(mod.iprior)
 ```
 
-Of interest might be the fitted values (or even predicted values for new data sets)
+Of interest might be the fitted values (or even predicted values for new data sets using `predict(mod.iprior, newdata)`)
 ```r
 fit.iprior <- fitted(mod.iprior)
-fitnew.iprior <- predict(mod.iprior, newdata)
 ```
 
 We can also compare the I-prior fit to a normal OLS fit.
 ```r
-mod.lm <- lm(Hwt~Bwt, data=cats)
+mod.lm <- lm(Hwt ~ Bwt, data=cats)
 fit.lm <- fitted(mod.lm)
 plot(fit.lm, fit.iprior, type="n", xlab="Classical regression model estimates", ylab="I-prior estimates", main="Comparison between I-prior and classical regression predicted values")
 text(fit.lm, fit.iprior, pch=as.character(1:length(fit.lm)), col=1:length(fit.lm), cex=0.7)
@@ -66,3 +65,5 @@ sigma.iprior <-  1/sqrt(mod.iprior$psi)
 sigma.lm <- summary(mod.lm)$sigma
 sigma.iprior; sigma.lm
 ```
+
+You can fit more than one variable of course, as long as they are all continuous. They will be treated as though they are measured on the same scale, i.e. only a single lambda is used. Future updates will extend this to multiple scale parameters.
