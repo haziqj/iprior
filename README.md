@@ -1,6 +1,6 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.0.0 (one-lambda)](https://github.com/haziqjamil/iprior/releases/tag/v1.0.0) Only centred canonical kernel and a single scale parameter able to be used**
+>**[v1.0.0 (one-lambda)](https://github.com/haziqjamil/iprior/releases/tag/1.0.0) Only centred canonical kernel and a single scale parameter able to be used**
 
 Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, and so on.
 
