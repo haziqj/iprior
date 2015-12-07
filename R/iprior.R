@@ -1,8 +1,8 @@
 ### Library packages
-library(Matrix, quietly=T)			#to create diagonal matrices
-library(MASS, quietly=T)			#to sample from MVN dist.
-library(mvtnorm, quietly=T)
-library(numDeriv, quietly=T)
+require(Matrix, quietly=T)			#to create diagonal matrices
+require(MASS, quietly=T)			#to sample from MVN dist.
+require(mvtnorm, quietly=T)
+require(numDeriv, quietly=T)
 
 ## classic Fisher cats data from package MASS
 data(cats, package="MASS")
