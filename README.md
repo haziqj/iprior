@@ -66,4 +66,4 @@ sigma.lm <- summary(mod.lm)$sigma
 sigma.iprior; sigma.lm
 ```
 
-You can fit more than one variable of course, as long as they are all continuous. They will be treated as though they are measured on the same scale, i.e. only a single lambda is used. Future updates will extend this to multiple scale parameters.
+You can fit more than one variable of course, as long as they are all continuous. They will be treated as though they are measured on the same scale, i.e. only a single lambda is used. Future updates will extend functionality to multiple scale parameters.
