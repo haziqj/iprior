@@ -61,7 +61,7 @@ abline(a=0, b=1)
 
 A comparison of the value of `psi = 1/sigma^2`
 ```r
-sigma.iprior <-  1/sqrt(mod.iprior$psi)
+sigma.iprior <- 1/sqrt(mod.iprior$psi)
 sigma.lm <- summary(mod.lm)$sigma
 sigma.iprior; sigma.lm
 ```
