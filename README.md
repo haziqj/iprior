@@ -24,7 +24,7 @@ We will be analysing the classic Fisher cats data, to predict heart weight from 
 
 ```r
 data(cats, package="MASS")
-summary(cats
+summary(cats)
 ```
 
 An I-prior model is fitted as follows
