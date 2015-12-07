@@ -1,4 +1,8 @@
-
+### Library packages
+library(Matrix, quietly=T)			#to create diagonal matrices
+library(MASS, quietly=T)			#to sample from MVN dist.
+library(mvtnorm, quietly=T)
+library(numDeriv, quietly=T)
 
 ## classic Fisher cats data from package MASS
 data(cats, package="MASS")
@@ -25,12 +29,6 @@ fn.H2a <- function(x, y=NA){ #takes in vector of covariates
 ###
 
 ipriorEM <- function(x, y, maxit=50000, delt=0.00001, report.int=1000, silent=F){
-	### Library packages
-	require(Matrix)			#to create diagonal matrices
-	require(MASS)			#to sample from MVN dist.
-	require(mvtnorm)
-	require(numDeriv)
-	
 	X <- x
 	Y <- y
 	N <- length(Y)
