@@ -1,9 +1,9 @@
 ### Library packages
-require(Matrix)			#to create diagonal matrices
-require(MASS)			#to sample from MVN dist.
-require(mvtnorm)
-require(Brobdingnag)
-require(numDeriv)
+library(Matrix)			#to create diagonal matrices
+library(MASS)			#to sample from MVN dist.
+library(mvtnorm)
+library(Brobdingnag)
+library(numDeriv)
 
 ## classic Fisher cats data from package MASS
 data(cats, package="MASS")
