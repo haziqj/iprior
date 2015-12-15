@@ -35,8 +35,8 @@ ipriorEM2 <- function(x, y, maxit=50000, delt=0.001, report.int=100, silent=F){
 	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
 	H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 	Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
-	Var.Y.inv <- chol2inv(chol(Var.Y))
-	#Var.Y.inv <- solve(Var.Y)
+	#Var.Y.inv <- chol2inv(chol(Var.Y))
+	Var.Y.inv <- solve(Var.Y)
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	if(!silent) cat("START iter", 0, log.lik0, "\n")
 	log.lik1 <- log.lik0 + 2*delt
@@ -61,7 +61,8 @@ ipriorEM2 <- function(x, y, maxit=50000, delt=0.001, report.int=100, silent=F){
 			H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
 			H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 			Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
-			Var.Y.inv <- chol2inv(chol(Var.Y))
+			#Var.Y.inv <- chol2inv(chol(Var.Y))
+			Var.Y.inv <- solve(Var.Y)	
 		}	
 	
 		### Estimating psi using EM	
