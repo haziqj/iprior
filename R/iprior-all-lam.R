@@ -90,11 +90,3 @@ ipriorEM2 <- function(x, y, maxit=50000, delt=0.001, report.int=100, silent=F){
 	
 	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq)
 }
-
-## Test data
-p <- 4; n <- 100
-X <- matrix(rnorm(n*p), nc=p)
-Y <- 10 + X %*% matrix(1:p, nc=1) + rnorm(n, sd=2)
-Y <- as.vector(Y)
-summary(lm(Y~X))
-run1 <- iprior(X,Y)
