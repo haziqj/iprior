@@ -14,7 +14,7 @@ ipriorEM2 <- function(x, y, maxit=50000, delt=0.001, report.int=100, silent=F){
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(1))
+	lambda <- abs(rnorm(p))
 	alpha <- rnorm(1)
 	psi <- abs(rnorm(1))
 	
