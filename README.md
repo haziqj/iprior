@@ -1,10 +1,12 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.1.0 (mult-lambda)](https://github.com/haziqjamil/iprior/releases/tag/v1.1.0) Only centred canonical kernel supported**
+>**[v1.2.0-beta1 (pearson-kern)](https://github.com/haziqjamil/iprior/releases/tag/v1.2.0-beta1) Unfinished testing. Do not use with large sample size (n > 500) - Pearson kernel generation is currently very slow.**
 
 Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, and so on.
 
 Currently, either one single scale parameter or individual scale parameters for each covariate is supported. This is done by calling the `iprior` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor.
+
+`iprior` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators).
 
 ## Installation
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
@@ -21,7 +23,7 @@ install_github("haziqjamil/iprior")
 library(iprior)
 ```
 
-## Example use
+## Example use 1
 We will be analysing Brownlee's stack loss plant data, which is available in R built-in. For more information and a description of the dataset, consult the help section `?stackloss`.
 
 ```r
@@ -70,4 +72,24 @@ A comparison of the value of `psi = 1/sigma^2`
 sigma.iprior <- 1/sqrt(mod.iprior$psi)
 sigma.lm <- summary(mod.lm)$sigma
 sigma.iprior; sigma.lm
+```
+
+## Example use 2
+Here is an example of the Pearson kernel in action. The data set is the classic anatomical data of domestic cats. We would like to predict heart weight from body weight and sex. The dataframe `cats` contains the variable `Sex` which in this instance is categorical. In R, this is recognised as being a factor.
+
+```r
+data(cats, package="MASS")
+summary(cats)
+is.factor(cats$Sex)
+```
+
+The `iprior` function recognises categorical variables automatically and applies a Pearson kernel accordingly.
+```r
+mod.iprior <- iprior(Hwt ~ Bwt + Sex, data=cats)
+mod.iprior
+```
+
+The summary now gives more information regarding the I-prior model, including which RKHS were used, the final log-likelihood value, whether or not the EM converged and how many iterations were performed.
+```r
+summary(mod.iprior)
 ```
