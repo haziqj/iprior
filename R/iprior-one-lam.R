@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM1 <- function(x, y, maxit=50000, delt=0.00001, report.int=1000, silent=F){
+ipriorEM1 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.00001, report.int=1000, silent=F){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -17,6 +17,7 @@ ipriorEM1 <- function(x, y, maxit=50000, delt=0.00001, report.int=1000, silent=F
 	lambda <- abs(rnorm(1))
 	alpha <- rnorm(1)
 	psi <- abs(rnorm(1))
+	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
 	H.mat <- 0
@@ -70,8 +71,10 @@ ipriorEM1 <- function(x, y, maxit=50000, delt=0.00001, report.int=1000, silent=F
 	
 	}
 
-	if(!silent) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
+	converged <- !(abs(log.lik0 - log.lik1) > delt)
+	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
+	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
 	if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
 	
-	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq)
+	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, kernel=whichkernel, converged=converged, delt=delt)
 }

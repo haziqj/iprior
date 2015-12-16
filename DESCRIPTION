@@ -5,6 +5,14 @@ Version: 1.0.0
 Date: 2015-12-07
 Author: Haziq Jamil
 Maintainer: Haziq Jamil <h.jamil@lse.ac.uk>
-Description: This is a package which allows the user to perform linear regression using I-priors.
-Imports: Matrix, MASS, mvtnorm, numDeriv
+Description: This is a package which allows the user to perform linear
+    regression using I-priors.
+Imports:
+    Matrix,
+    MASS,
+    mvtnorm,
+    numDeriv
 License: GPL-2
+Suggests:
+    testthat
+RoxygenNote: 5.0.1
