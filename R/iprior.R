@@ -7,12 +7,13 @@ iprior <- function(x, y, ...) UseMethod("iprior")
 
 ## The default method
 iprior.default <- function(x, y, one.lam=F, maxit=50000, delt=0.001, report.int=100, silent=F, ...){
-	x <- as.matrix(x)
+	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
+	x <- as.data.frame(x)
 	y <- as.numeric(y)
 	n <- length(y)
 	
 	if(!one.lam){
-		est <- ipriorEM2(x, y, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+		est <- ipriorEM2(x, y, whichkernel=Whichkernel, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 		param <- c(est$alpha, est$lambda, est$psi)
 		names(param) <- c("alpha", paste0("lambda", 1:length(est$lambda)), "psi")
 		H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
@@ -35,6 +36,7 @@ iprior.default <- function(x, y, one.lam=F, maxit=50000, delt=0.001, report.int=
 	est$call <- match.call()
 	est$coefficients <- param
 	est$fitted.values <- Y.hat
+	est$residuals <- y-Y.hat
 	est$w.hat <- w.hat
 	est$yval <- y
 	est$xval <- x
@@ -47,6 +49,15 @@ iprior.default <- function(x, y, one.lam=F, maxit=50000, delt=0.001, report.int=
 print.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
+	kerneltypes <- c("Canonical", "Pearson", "Canonical & Pearson")
+	if(all(x$kernel)) cat("\nRKHS used:", kerneltypes[2])
+	else{
+		if(!all(x$kernel) && !any(x$kernel)) cat("\nRKHS used:", kerneltypes[1])
+		else cat("\nRKHS used:", kerneltypes[3])
+	} 
+	#if(x$one.lam) cat(", with single scale parameter.\n")
+	#else cat(", with multiple scale parameter.\n")
+	cat("\n")
 	cat("\nParameter estimates:\n")
 	print(x$coefficients)
 	cat("\n")
@@ -78,31 +89,58 @@ summary.iprior <- function(object, ...){
 					S.E.=se,
 					z=zval,
 					"P[|Z>z|]"=2*pnorm(-abs(zval)) )
-					
-	res <- list(call=object$call, coefficients=tab)
-	
+	if(!object$one.lam){ #only rename rows when using multiple lambdas
+		lamnames <- paste0("lam", 1:(length(coef(object))-2))
+		lamnames <- c("alpha", paste(lamnames, names(object$x), sep="."), "psi")
+		rownames(tab) <- lamnames
+	}
+
+	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, delt=object$delt, one.lam=object$one.lam)
 	class(res) <- "summary.iprior"
 	res
 }
 
 print.summary.iprior <- function(x, ...){
-	cat("Call:\n")
+	cat("\nCall:\n")
 	print(x$call)
+	xPearson <- names(x$kern)[x$kern]
+	xCanonical <- names(x$kern)[!x$kern]
+	printPearson <-	paste0("Pearson (", paste(xPearson, collapse=", "), ")")
+	printCanonical <- paste0("Canonical (", paste(xCanonical, collapse=", "), ")")
+	cat("\n")
+	cat("RKHS used:\n")
+	if(x$one.lam) cat("Canonical (all variables)\n")
+	else{
+		if(!(length(xCanonical) == 0)) cat(printCanonical, "\n")
+		if(!(length(xPearson) == 0)) cat(printPearson, "\n")
+	}
+	cat("\n")
+	cat("Residuals:\n")
+	print(summary(x$resid)[-4])
 	cat("\n")
 	printCoefmat(x$coefficients, P.value=T, has.Pvalue=T)
+	cat("\n")
+	if(x$converged) cat("EM converged to within", x$delt, "tolerance.")
+	else cat("EM failed to converge.")
+	cat(" No. of iterations:", x$no.iter)
+	cat("\nLog-likelihood value:", x$log.lik, "\n")
+	cat("\n")
 }
 
 ## Formulas
 iprior.formula <- function(formula, data=list(), ...){
 	mf <- model.frame(formula=formula, data=data)
-	attr(attr(mf, "terms"), "intercept") <- 0
-	x <- model.matrix(attr(mf, "terms"), data=mf)
+	tt <- terms(mf)
+	Terms <- delete.response(tt)
+	#attr(attr(mf, "terms"), "intercept") <- 0
+	x <- model.frame(Terms, mf)
 	y <- model.response(mf)
 	
 	est <- iprior(x, y, ...)
 	est$call <- match.call()
 	est$formula <- formula
 	names(est$fitted.values) <- row.names(mf)
+	names(est$residuals) <- row.names(mf)
 	est$terms <- attr(mf, "terms")
 	est
 }
@@ -129,12 +167,15 @@ predict.iprior <- function(object, newdata=NULL, ...){
 		}
 		
 		## Define new kernel matrix
-		if(!object$one.lam){
+		if(!object$one.lam){ #for multiple lambdas
 			H.mat <- NULL
-			for(j in 1:p) H.mat[[j]] <- fn.H2a(X[,j], xstar[,j]) 
+			for(j in 1:p){
+				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j]) 
+				else H.mat[[j]] <- fn.H2a(X[,j]) 			
+			}
 			H.mat.lam <- Reduce('+', mapply('*', H.mat, object$lambda, SIMPLIFY=F))
 		}
-		if(object$one.lam){
+		if(object$one.lam){ #for single lambdas
 			H.mat <- 0
 			for(j in 1:p) H.mat <- H.mat + fn.H2a(X[,j], xstar[,j]) 
 			H.mat.lam <- object$lambda * H.mat
