@@ -1,6 +1,8 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.2.0-beta1 (pearson-kern)](https://github.com/haziqjamil/iprior/releases/tag/v1.2.0-beta1) Unfinished testing. Do not use with large sample size (n > 500) - Pearson kernel generation is currently very slow.**
+>**[v1.2.0-beta2 (pearson-kern)](https://github.com/haziqjamil/iprior/releases/tag/v1.2.0-beta2) WARNING: Pearson kernel generation may still be slow for very large datasets (n > 10,000), but it has been markedly improved from beta1. See my comment on this, [here](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
+).**
+
 
 Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, and so on.
 
