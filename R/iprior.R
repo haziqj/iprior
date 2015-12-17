@@ -154,8 +154,8 @@ predict.iprior <- function(object, newdata=NULL, ...){
 			## model has been fitted using formula interface
 			tt <- terms(object)
 			Terms <- delete.response(tt)
-			m <- model.frame(Terms, newdata)
-			xstar <- model.matrix(Terms, m)
+			xstar <- model.frame(Terms, newdata) #previously m
+			# xstar <- model.matrix(Terms, m)
 			# xstar <- model.matrix(object$formula, newdata)
 			xcolnames <- colnames(xstar); xrownames <- rownames(xstar)
 			# wheres.int <- (colnames(xstar) == "(Intercept)")
@@ -170,8 +170,8 @@ predict.iprior <- function(object, newdata=NULL, ...){
 		if(!object$one.lam){ #for multiple lambdas
 			H.mat <- NULL
 			for(j in 1:p){
-				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j]) 
-				else H.mat[[j]] <- fn.H2a(X[,j]) 			
+				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j], xstar[,j]) 
+				else H.mat[[j]] <- fn.H2a(X[,j], xstar[,j]) 			
 			}
 			H.mat.lam <- Reduce('+', mapply('*', H.mat, object$lambda, SIMPLIFY=F))
 		}
