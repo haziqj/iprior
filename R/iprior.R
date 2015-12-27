@@ -6,20 +6,20 @@
 iprior <- function(x, y, ...) UseMethod("iprior")
 
 ## The default method
-iprior.default <- function(x, y, one.lam=F, maxit=50000, delt=0.001, report.int=100, silent=F, ...){
+iprior.default <- function(x, y, interactions=NULL, one.lam=F, maxit=50000, delt=0.001, report.int=100, silent=F, ...){
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
 	y <- as.numeric(y)
 	n <- length(y)
 	
 	if(!one.lam){
-		est <- ipriorEM2(x, y, whichkernel=Whichkernel, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+		est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 		param <- c(est$alpha, est$lambda, est$psi)
 		names(param) <- c("alpha", paste0("lambda", 1:length(est$lambda)), "psi")
 		H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
 	}
 	if(one.lam){
-		est <- ipriorEM1(x, y, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+		est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 		param <- c(est$alpha, est$lambda, est$psi)
 		names(param) <- c("alpha", "lambda", "psi")		
 		H.mat.lam <- est$lambda * est$H.mat
@@ -91,7 +91,7 @@ summary.iprior <- function(object, ...){
 					"P[|Z>z|]"=2*pnorm(-abs(zval)) )
 	if(!object$one.lam){ #only rename rows when using multiple lambdas
 		lamnames <- paste0("lam", 1:(length(coef(object))-2))
-		lamnames <- c("alpha", paste(lamnames, names(object$x), sep="."), "psi")
+		lamnames <- c("alpha", paste(lamnames, attr(object$terms, "term.labels"), sep="."), "psi")
 		rownames(tab) <- lamnames
 	}
 
@@ -109,11 +109,8 @@ print.summary.iprior <- function(x, ...){
 	printCanonical <- paste0("Canonical (", paste(xCanonical, collapse=", "), ")")
 	cat("\n")
 	cat("RKHS used:\n")
-	if(x$one.lam) cat("Canonical (all variables)\n")
-	else{
-		if(!(length(xCanonical) == 0)) cat(printCanonical, "\n")
-		if(!(length(xPearson) == 0)) cat(printPearson, "\n")
-	}
+	if(!(length(xCanonical) == 0)) cat(printCanonical, "\n")
+	if(!(length(xPearson) == 0)) cat(printPearson, "\n")
 	cat("\n")
 	cat("Residuals:\n")
 	print(summary(x$resid)[-4])
@@ -136,12 +133,22 @@ iprior.formula <- function(formula, data=list(), ...){
 	x <- model.frame(Terms, mf)
 	y <- model.response(mf)
 	
-	est <- iprior(x, y, ...)
+	## for interactions
+	tmpo <- attr(tt, "order")
+	tmpf <- attr(tt, "factors")
+	tmpf2 <- as.matrix(tmpf[-1, tmpo==2])	#this obtains 2nd order interactions
+	int2 <- apply(tmpf2, 2, function(x) which(x == 1))
+	interactions <- list(tmpo=tmpo, tmpf=int2)
+	
+	ifelse(max(tmpo) > 1, 
+		est <- iprior(x, y, interactions=interactions, ...),
+		est <- iprior(x, y, ...)
+	)
 	est$call <- match.call()
 	est$formula <- formula
 	names(est$fitted.values) <- row.names(mf)
 	names(est$residuals) <- row.names(mf)
-	est$terms <- attr(mf, "terms")
+	est$terms <- tt
 	est
 }
 
@@ -219,3 +226,9 @@ predict.iprior <- function(object, newdata=NULL, ...){
 # Y <- X %*% beta.true + rnorm(n, mean=0, sd=2); Y <- as.vector(Y)
 # mod.iprior <- iprior(Y~X)
 # mod.lm <- lm(Y~1+X)
+
+#for interactions
+	tmpo <- attr(terms(model.frame(stack.loss~.^2, data=stackloss)), "order")
+	tmp <- attr(terms(model.frame(stack.loss~.^2, data=stackloss)), "factors")
+	tmp <- as.matrix(tmp[-1,tmpo==2])	#this obtains 2nd order interactions
+	intr <- apply(tmp, 2, function(x) which(x == 1))
