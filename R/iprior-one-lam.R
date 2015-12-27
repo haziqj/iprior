@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM1 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.00001, report.int=1000, silent=F){
+ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){	
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -20,15 +20,27 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.00001, report.
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
-	H.mat <- 0
+	H.mat <- NULL
 	for(j in 1:p){
-		H.mat <- H.mat + fn.H2a(X[,j]) 
+		if(whichkernel[j])  H.mat[[j]] <- fn.H1(X[,j]) 
+		else H.mat[[j]] <- fn.H2a(X[,j]) 
 	}
+	## interactions
+	if(!is.null(interactions)){
+		Tmpo <- interactions[[1]]
+		Tmpf <- interactions[[2]]
+		no.int <- sum(Tmpo==2)
+		p <- p + no.int
+		for(j in (p-no.int+1):p){
+			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
+		}
+	}
+	H.mat <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))	
 	H.matsq <- H.mat %*% H.mat
 
 	Var.Y <- lambda * lambda * psi * H.matsq + (1/psi) * diag(N)
-	Var.Y.inv <- chol2inv(chol(Var.Y))
-	#Var.Y.inv <- solve(Var.Y)
+	#Var.Y.inv <- chol2inv(chol(Var.Y))
+	Var.Y.inv <- solve(Var.Y)
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	if(!silent) cat("START iter", 0, log.lik0, "\n")
 	log.lik1 <- log.lik0 + 2*delt
@@ -52,7 +64,8 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.00001, report.
 		
 		### Estimating psi using EM	
 		Var.Y <- lambda * lambda * psi * H.matsq + (1/psi) * diag(N)
-		Var.Y.inv <- chol2inv(chol(Var.Y))
+		#Var.Y.inv <- chol2inv(chol(Var.Y))
+		Var.Y.inv <- solve(Var.Y)
 		w.hat <- psi * lambda * H.mat %*% (Var.Y.inv %*% matrix(Y - alpha, nc=1))
 		Var.w.hat <- Var.Y.inv + w.hat %*% t(w.hat)
 		T3 <- crossprod(Y-alpha) + lambda^2 * sum(H.matsq * Var.w.hat) - 2*lambda * crossprod(Y-alpha, crossprod(H.mat, w.hat))
