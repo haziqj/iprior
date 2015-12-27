@@ -14,7 +14,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(p))
+	lambda <- abs(rnorm(p, sd=0.01))
 	alpha <- rnorm(1)
 	psi <- abs(rnorm(1))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
