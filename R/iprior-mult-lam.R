@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM2 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){
+ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -20,7 +20,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.001, report.in
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
-	H.mat <- NULL; H.matsq <- NULL; J.mat <- NULL
+	H.mat <- NULL; H.matsq <- NULL
 	for(j in 1:p){
 		if(whichkernel[j])  H.mat[[j]] <- fn.H1(X[,j]) 
 		else H.mat[[j]] <- fn.H2a(X[,j]) 
@@ -32,6 +32,19 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, maxit=50000, delt=0.001, report.in
 			tmp <- tmp + lambda[i] * (H.mat[[i]] %*% H.mat[[k]] + H.mat[[k]] %*% H.mat[[i]])
 		}
 		tmp
+	}
+	
+	## interactions (not parsimonious)
+	## this should be a list of 2: vector or "orders" and matrix of "factors"
+	if(!is.null(interactions)){
+		Tmpo <- interactions[[1]]
+		Tmpf <- interactions[[2]]
+		no.int <- sum(Tmpo==2)
+		p <- p + no.int; lambda <- abs(rnorm(p))
+		for(j in (p-no.int+1):p){
+			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
+			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
+		}
 	}
 	
 	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
