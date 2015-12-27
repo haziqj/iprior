@@ -15,3 +15,71 @@ iprior(Hwt ~ .^2, data=cats)
 These are all equivalent calls to the same model. The formula call `^2` models all two-way interactions between the terms. It is useful to use `.^2` as a shorthand, or when it is not known how many variables the dataset contains. The parsimonious interactions method is called by default, but if one wishes to do the second non-parsimonious method, one simply needs to add the option `parsm=F`.
 
 ## Example 1
+A multi-level dataset (j=20 groups, 10 observations per group, thus n=200) was simulated from the following random effects model:
+
+<img src="images/re_model.png" width="350">
+
+with `beta0=5`, `beta1=-2`, `phi0=2`, `phi1=0.75` and `phi01=1.2`. The error standard deviation was `sigma=0.5`. This dataset is available in the R/iprior package, and it is called `simdat`. 
+```r
+data(simdat, package="iprior")
+summary(simdat)
+```
+
+We can fit an I-prior model to this data set as follows:
+```r
+mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat)
+yhat <- fitted(mod.iprior)
+```
+
+Calling `summary(mod.iprior)` reveals the following output:
+```r
+> summary(mod.iprior)
+
+Call:
+iprior.formula(formula = y ~ x + grp + x:grp, data = simdat)
+
+RKHS used:
+Canonical (x) 
+Pearson (grp) 
+
+Residuals:
+    Min.  1st Qu.   Median  3rd Qu.     Max. 
+-1.09900 -0.31700 -0.01073  0.29810  1.07000 
+
+          Estimate      S.E.       z  P[|Z>z|]    
+alpha    1.9262201 0.0361258 53.3198 < 2.2e-16 ***
+lam1.x   0.4265622 0.1015988  4.1985 2.687e-05 ***
+lam2.grp 0.0236324 0.0045317  5.2149 1.839e-07 ***
+psi      4.2235926 0.4753044  8.8861 < 2.2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+EM converged to within 0.001 tolerance. No. of iterations: 396
+Log-likelihood value: -243.9855 
+
+```
+
+The following code plots the fitted I-prior lines to the dataset.
+```r
+attach(simdat)
+grp <- as.numeric(grp)
+plot(x, y, type="n", main="I-prior fitted lines")
+for(i in unique(grp)){
+	text(x[grp==i], y[grp==i], i, col=i)
+	lines(x[grp==i], yhat[grp==i], col=i, lwd=1.5)
+}
+detach(simdat)
+```
+
+![Rplot5](images/Rplot5.jpg)
+
+We can also look at how the I-prior fitted values compare against the fitted values from a random effects model. The random effects model was fitted in R using the package `lme4`, although many other packages offer multi-level modelling.
+```r
+mod.re <- lmer(y ~ 1 + x + (1 + x | grp), data=simdat)
+yhat.re <- fitted(mod.re)
+plot(yhat.re, yhat, type="n", xlab="Random effects model predicted values", ylab="I-prior fitted values", main="Comparison between I-prior and random effects model predicted values")
+text(yhat.re, yhat, grp, col=colour[grp], cex=1)
+abline(a=0, b=1)
+```
+
+![Rplot6](images/Rplot6.jpg)
