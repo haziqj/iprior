@@ -48,7 +48,6 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	#Var.Y.inv <- chol2inv(chol(Var.Y))
 	Var.Y.inv <- solve(Var.Y)
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
-	if(is.infinite(log.lik0)) log.lik0 <- sign(log.lik0)*1000000
 	if(!silent) cat("START iter", 0, log.lik0, "\n")
 	log.lik1 <- log.lik0 + 2*delt
 	i <- 0
