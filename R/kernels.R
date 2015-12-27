@@ -36,7 +36,7 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 	tmpx <- unique(lapply(sort(x), function(k) which(x == k)))	
 	indexx <- lapply(1:length(unique(x)), fn.index, tmp=tmpx)
 	nx <- length(unique(x))
-	prop[names(prop) > nx] <- Inf
+	prop[as.numeric(names(prop)) > nx] <- Inf
 	indexx[[nx+1]] <- cbind(row=1:length(x), col=1:length(x))
 	if(is.null(ytmp)) indexy <- indexx
 	else{
