@@ -2,7 +2,9 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){
+## This is used mainly for parsimonious interactions
+
+ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -20,34 +22,27 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
-	H.mat <- NULL; H.matsq <- NULL
+	H.mat <- NULL#; H.matsq <- NULL
 	for(j in 1:p){
 		if(whichkernel[j])  H.mat[[j]] <- fn.H1(X[,j]) 
 		else H.mat[[j]] <- fn.H2a(X[,j]) 
-		H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
-	}
-	J.mat <- function(k){
-		tmp <- 0
-		for(i in (1:p)[-k]){
-			tmp <- tmp + lambda[i] * (H.mat[[i]] %*% H.mat[[k]] + H.mat[[k]] %*% H.mat[[i]])
-		}
-		tmp
 	}
 	
-	## interactions (not parsimonious)
+	## interactions (parsimonious way)
 	## this should be a list of 2: vector or "orders" and matrix of "factors"
 	if(!is.null(interactions)){
 		Tmpo <- interactions[[1]]
 		Tmpf <- interactions[[2]]
 		no.int <- sum(Tmpo==2)
-		p <- p + no.int; lambda <- abs(rnorm(p))
-		for(j in (p-no.int+1):p){
-			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
-			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
+		p1 <- p + no.int; lambda.int <- lambda
+		for(j in (p1-no.int+1):p1){
+			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p1+no.int] ]] * H.mat[[ Tmpf[2, j-p1+no.int] ]]
+			lambda.int <- c(lambda.int, lambda[Tmpf[1, j-p1+no.int]]*lambda[Tmpf[2, j-p1+no.int]])
 		}
 	}
+	else lambda.int <- lambda
 	
-	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
+	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda.int, SIMPLIFY=F))
 	H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 	Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
 	#Var.Y.inv <- chol2inv(chol(Var.Y))
@@ -56,6 +51,19 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	if(!silent) cat("START iter", 0, log.lik0, "\n")
 	log.lik1 <- log.lik0 + 2*delt
 	i <- 0
+	
+	## This is the E-step for lambda which needs to be maximised
+	Q.lam <- function(lam){
+		lambda.int <- lam		
+		if(!is.null(interactions)){
+			for(j in (p1-no.int+1):p1) lambda.int <- c(lambda.int, lam[Tmpf[1, j-p1+no.int]]*lam[Tmpf[2, j-p1+no.int]])
+		} 
+		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda.int, SIMPLIFY=F))
+		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
+		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
+		res <- psi/2 * crossprod(Y - alpha) - psi * crossprod(Y - alpha, crossprod(H.mat.lam, w.hat)) + 1/2 * sum(Var.Y * W.hat)
+		res
+	}
 	
 	while((i != maxit) && (abs(log.lik0 - log.lik1) > delt)){
 	
@@ -67,19 +75,18 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		alpha <- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
 		
 		### Estimating lambda using EM
-		for(j in 1:p){
-			w.hat <- psi*H.mat.lam %*% (Var.Y.inv %*% matrix(Y - alpha, nc=1))
-			W.hat <- Var.Y.inv + tcrossprod(w.hat)
-			T1 <- sum(H.matsq[[j]] * W.hat)
-			T2 <- 2*crossprod(Y-alpha, crossprod(H.mat[[j]], w.hat)) - sum(J.mat(j) * W.hat)
-			lambda[j] <- as.vector(T2/(2*T1))
-			H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
-			H.mat.lamsq <- H.mat.lam %*% H.mat.lam
-			Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
-			#Var.Y.inv <- chol2inv(chol(Var.Y))
-			Var.Y.inv <- solve(Var.Y)	
-		}	
-	
+		w.hat <- psi*H.mat.lam %*% (Var.Y.inv %*% matrix(Y - alpha, nc=1))
+		W.hat <- Var.Y.inv + tcrossprod(w.hat)
+		lambda <- optim(lambda, fn=Q.lam, method="Nelder-Mead")$par
+		lambda.int <- lambda
+		if(!is.null(interactions)){
+			for(j in (p1-no.int+1):p1) lambda.int <- c(lambda.int, lambda[Tmpf[1, j-p1+no.int]]*lambda[Tmpf[2, j-p1+no.int]])
+		} 
+		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda.int, SIMPLIFY=F))		
+		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
+		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
+		Var.Y.inv <- solve(Var.Y)	
+		
 		### Estimating psi using EM	
 		w.hat <- psi*H.mat.lam %*% (Var.Y.inv %*% matrix(Y - alpha, nc=1))
 		W.hat <- Var.Y.inv + tcrossprod(w.hat)
@@ -87,7 +94,11 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		psi <- as.vector(N/T3)
 	
 		### New value of log-likelihood
-		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
+		lambda.int <- lambda
+		if(!is.null(interactions)){
+			for(j in (p1-no.int+1):p1) lambda.int <- c(lambda.int, lambda[Tmpf[1, j-p1+no.int]]*lambda[Tmpf[2, j-p1+no.int]])
+		} 
+		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda.int, SIMPLIFY=F))	
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
 		log.lik1 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
@@ -106,5 +117,5 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
 	if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
 	
-	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, kernel=whichkernel, converged=converged, delt=delt)
+	list(alpha=alpha, lambda=lambda, lambda.int=lambda.int, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, kernel=whichkernel, converged=converged, delt=delt)
 }
