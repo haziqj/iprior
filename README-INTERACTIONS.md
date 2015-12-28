@@ -94,7 +94,7 @@ This dataset contains the variables `mathach`, a measure of mathematics achievem
 
 Begin by loading the dataset and viewing a summary.
 ```r
-data(hsb.small, package="iprior")
+data(hsbsmall, package="iprior")
 summary(hsb.small)
 summary(hsb.small$schoolid)
 ```
