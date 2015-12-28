@@ -1,4 +1,4 @@
-# Example usage for I-prior modelling with interactions
+# I-prior modelling with interactions
 
 >**WARNING: `iprior()` function may appear slow or frozen with large datasets. The following examples have been tested and found to be working, for `n=600` roughly.**
 
@@ -14,7 +14,7 @@ iprior(Hwt ~ .^2, data=cats)
 ```
 These are all equivalent calls to the same model. The formula call `^2` models all two-way interactions between the terms. It is useful to use `.^2` as a shorthand, or when it is not known how many variables the dataset contains. The parsimonious interactions method is called by default, but if one wishes to do the second non-parsimonious method, one simply needs to add the option `parsm=F`.
 
-## Example 1
+## Example 1 (non-parsimonious method)
 A multi-level dataset (j=20 groups, 10 observations per group, thus n=200) was simulated from the following random effects model:
 
 <img src="images/re_model.png" width="350">
@@ -27,7 +27,7 @@ summary(simdat)
 
 We can fit an I-prior model to this data set as follows:
 ```r
-mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat)
+mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat, parsm=F)
 yhat <- fitted(mod.iprior)
 ```
 
@@ -36,7 +36,7 @@ Calling `summary(mod.iprior)` reveals the following output:
 > summary(mod.iprior)
 
 Call:
-iprior.formula(formula = y ~ x + grp + x:grp, data = simdat)
+iprior.formula(formula = y ~ x + grp + x:grp, data = simdat, parsm = F)
 
 RKHS used:
 Canonical (x) 
@@ -44,20 +44,22 @@ Pearson (grp)
 
 Residuals:
     Min.  1st Qu.   Median  3rd Qu.     Max. 
--1.09900 -0.31700 -0.01073  0.29810  1.07000 
+-1.10100 -0.31670 -0.01378  0.29590  1.07000 
 
-          Estimate      S.E.       z  P[|Z>z|]    
-alpha    1.9262201 0.0361258 53.3198 < 2.2e-16 ***
-lam1.x   0.4265622 0.1015988  4.1985 2.687e-05 ***
-lam2.grp 0.0236324 0.0045317  5.2149 1.839e-07 ***
-psi      4.2235926 0.4753044  8.8861 < 2.2e-16 ***
+            Estimate      S.E.       z  P[|Z>z|]    
+alpha      1.9264306 0.0361251 53.3266 < 2.2e-16 ***
+lam1.x     0.0744947        NA      NA        NA    
+lam2.grp   0.0220941 0.0040996  5.3893 7.072e-08 ***
+lam3.x:grp 0.0107189 0.0018804  5.7003 1.196e-08 ***
+psi        4.2242287 0.4754694  8.8843 < 2.2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-EM converged to within 0.001 tolerance. No. of iterations: 396
-Log-likelihood value: -243.9855 
+EM converged to within 0.001 tolerance. No. of iterations: 1461
+Log-likelihood value: -241.927 
 
 ```
+*Note: NAs were produced because the the inverse Fisher Information for `x` was negative. Could be because the EM has not converged. Will look into this*
 
 The following code plots the fitted I-prior lines to the dataset.
 ```r
@@ -83,3 +85,5 @@ abline(a=0, b=1)
 ```
 
 ![Rplot6](images/Rplot6.jpg)
+
+Of note, we did also try using the parsimonious method. In this simple example, there is virtually no difference between the two methods. The second example uses the parsimonious method on a real-world dataset.
