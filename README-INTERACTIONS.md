@@ -1,6 +1,6 @@
 # I-prior modelling with interactions
 
->**WARNING: `iprior()` function may appear slow or frozen with large datasets. The following examples have been tested and found to be working, for `n=600` roughly.**
+>**WARNING: `iprior()` function may appear slow or frozen with large datasets. The following examples have been tested and found to be working, for a maximum of `n=600` roughly.**
 
 There are two ways we can model interactions using I-priors. The first, is the parsimonious method. Here, the scale parameter for the interaction term between `x1` and `x2` is the product between the two scale parameters, i.e. `lambda1*lambda2`. For variables `x1, ..., xp` with every two-way interactions possible, the number of scale parameters is still `p`.
 
@@ -8,9 +8,9 @@ The second method is to assign another scale parameter to for the interaction te
 
 The `iprior()` function can now handle both of these methods. The formula call is exactly the same as for `lm()`:
 ```r
-iprior(Hwt ~ Bwt + Sex + Bwt:Sex, data=cats)  #This model includes the interaction between Bwt and Sex
-iprior(Hwt ~ (Bwt + Sex)^2, data=cats)        
-iprior(Hwt ~ .^2, data=cats)  
+iprior(Hwt ~ Bwt + Sex + Bwt:Sex, data=cats)    #This model includes the 
+iprior(Hwt ~ (Bwt + Sex)^2, data=cats)          #interaction between Bwt 
+iprior(Hwt ~ .^2, data=cats)                    #and Sex
 ```
 These are all equivalent calls to the same model. The formula call `^2` models all two-way interactions between the terms. It is useful to use `.^2` as a shorthand, or when it is not known how many variables the dataset contains. The parsimonious interactions method is called by default, but if one wishes to do the second non-parsimonious method, one simply needs to add the option `parsm=F`.
 
@@ -59,7 +59,7 @@ EM converged to within 0.001 tolerance. No. of iterations: 1461
 Log-likelihood value: -241.927 
 
 ```
-*Note: NAs were produced because the the inverse Fisher Information for `x` was negative. Could be because the EM has not converged. Will look into this*
+*Note: NAs were produced because the the inverse Fisher Information for `x` was negative. Could be because the EM has not converged. Will look into this.*
 
 The following code plots the fitted I-prior lines to the dataset.
 ```r
