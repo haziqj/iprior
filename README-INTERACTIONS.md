@@ -47,7 +47,7 @@ Residuals:
 
             Estimate      S.E.       z  P[|Z>z|]    
 alpha      1.9264306 0.0361251 53.3266 < 2.2e-16 ***
-lam1.x     0.0744947        NA      NA        NA    
+lam1.x     0.0371234 0.0236975  1.5665    0.1172    
 lam2.grp   0.0220941 0.0040996  5.3893 7.072e-08 ***
 lam3.x:grp 0.0107189 0.0018804  5.7003 1.196e-08 ***
 psi        4.2242287 0.4754694  8.8843 < 2.2e-16 ***
@@ -58,7 +58,6 @@ EM converged to within 0.001 tolerance. No. of iterations: 1461
 Log-likelihood value: -241.927 
 
 ```
-*Note: NAs were produced because the the inverse Fisher Information for `x` was negative. Could be because the EM has not converged. Will look into this.*
 
 The following code plots the fitted I-prior lines to the dataset.
 ```r
