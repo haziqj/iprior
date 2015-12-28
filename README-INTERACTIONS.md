@@ -28,7 +28,6 @@ summary(simdat)
 We can fit an I-prior model to this data set as follows:
 ```r
 mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat, parsm=F)
-yhat <- fitted(mod.iprior)
 ```
 
 Calling `summary(mod.iprior)` reveals the following output:
@@ -64,6 +63,7 @@ Log-likelihood value: -241.927
 The following code plots the fitted I-prior lines to the dataset.
 ```r
 attach(simdat)
+yhat <- fitted(mod.iprior)
 grp <- as.numeric(grp)
 plot(x, y, type="n", main="I-prior fitted lines")
 for(i in unique(grp)){
@@ -87,3 +87,77 @@ abline(a=0, b=1)
 ![Rplot6](images/Rplot6.jpg)
 
 Of note, we did also try using the parsimonious method. In this simple example, there is virtually no difference between the two methods. The second example uses the parsimonious method on a real-world dataset.
+
+## Example 2 (parsimonious method)
+The High School and Beyond is a national longitudinal survey of of students from public and private high schools in the United States, with information such as students' cognitive and non-cognitive skills, high school experiences, work experiences and future plans collected. Papers such as Raudenbush and Bryk (2002) and Raudenbush et. al. (2004) had analyzed this particular dataset, as mentioned in Rabe-Hesketh and Skrondal (2008). 
+
+This dataset contains the variables `mathach`, a measure of mathematics achievement; `ses`, the socioeconomic status of the students based on parental education, occupation and income; and `schoolid`, the school identifier for the students. The original dataset contains 160 groups with varying number of observations per group (n=7185 in total). However, this smaller set contains only 16 randomly selected schools, such that the total sample size is n=661. This was mainly done for computational reasons to illustrate this example.
+
+Begin by loading the dataset and viewing a summary.
+```r
+data(hsb.small, package="iprior")
+summary(hsb.small)
+summary(hsb.small$schoolid)
+```
+
+We can then fit an I-prior model, with the aim of predicting mathematics achievement `mathach` from the `ses` variable, with the assumption that students' `ses` varied from school to school. In other words, there is an interaction effect between `ses` and `schoolid`.
+```r
+mod.iprior <- iprior(mathach ~ ses + schoolid + ses:schoolid, data=hsb.small) #parsimonious method by default
+```
+
+The summary screen shows us the following:
+```r
+> summary(mod.iprior)
+
+Call:
+iprior.formula(formula = mathach ~ ses + schoolid + ses:schoolid, 
+    data = hsb.small)
+
+RKHS used:
+Canonical (ses) 
+Pearson (schoolid) 
+
+Residuals:
+    Min.  1st Qu.   Median  3rd Qu.     Max. 
+-17.3000  -4.2220   0.2067   4.4270  15.5500 
+
+                Estimate       S.E.       z  P[|Z>z|]    
+alpha         13.7360926  0.2381870 57.6694 < 2.2e-16 ***
+lam1.ses       0.4086441  0.1558775  2.6216  0.008753 ** 
+lam2.schoolid  0.1319906  0.0268698  4.9122 9.004e-07 ***
+psi            0.0280178  0.0015617 17.9406 < 2.2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+EM converged to within 0.001 tolerance. No. of iterations: 27
+Log-likelihood value: -2137.776 
+
+```
+
+We can produce a plot of fitted lines using the following code, which clearly shows different regression lines for each school:
+```r
+attach(hsb.small)
+yhat <- fitted(mod.iprior)
+grp <- as.numeric(schoolid)
+plot(ses, mathach, type="n", main="I-prior fitted lines")
+for(i in unique(grp)){
+	text(ses[grp==i], mathach[grp==i], unique(schoolid)[i], col=i, cex=0.55)
+	lines(ses[grp==i], yhat[grp==i], col=i, lwd=2.5)
+}
+detach(hsb.small)
+```
+
+![Rplot3](images/Rplot3.jpg)
+
+Traditionally, one could also model this dataset using a random effects (random intercept and random slope) model. Let's compare the fitted values of the I-prior model against the random effects model.
+```r
+mod.re <- lmer(mathach ~ 1 + ses + (1 + ses | schoolid), data=hsb.small)
+yhat.re <- fitted(mod.re)
+plot(yhat.re, yhat, type="n", xlab="Random effects model predicted values", ylab="I-prior fitted values", main="Comparison between I-prior and random effects model predicted values")
+text(yhat.re, yhat, as.character(hsb.small$schoolid), col=colour[grp], cex=0.55)
+abline(a=0, b=1)
+```
+
+![Rplot4](images/Rplot4.jpg)
+
+This plot indicates a good agreement between the two models, except perhaps at two particular schools: `schoolid=1433` and `schoolid=7688` indicated by the skewed points at the top right of the plot. The root mean squared error (RMSE) for I-prior is slightly higher than that of the random effects model, 151.7 versus 151.5, respectively.
