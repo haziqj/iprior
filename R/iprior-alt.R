@@ -4,7 +4,7 @@
 
 ## This is used mainly for parsimonious interactions
 
-ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=1000, silent=F){
+ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=100, silent=F){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
