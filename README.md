@@ -9,7 +9,7 @@ Based on manuscript entitled "Regression modelling with I-priors" by Wicher Berg
 
 Currently, either one single scale parameter or individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor.
 
-`iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). The current version also supports modelling *interaction effects*. For a tutorial on this, have a look at [this page](README-INTERACTIONS.md).
+`iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). The current version also supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](README-INTERACTIONS.md).
 
 ## Installation
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
