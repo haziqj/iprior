@@ -42,9 +42,12 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	#Var.Y.inv <- chol2inv(chol(Var.Y))
 	Var.Y.inv <- solve(Var.Y)
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
-	if(!silent) cat("START iter", 0, log.lik0, "\n")
+	
+	## initialise
+	if(!silent) cat("START iter", 0, log.lik0, "\t")
 	log.lik1 <- log.lik0 + 2*delt
 	i <- 0
+	pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
 	
 	while((i != maxit) && (abs(log.lik0 - log.lik1) > delt)){
 	
@@ -74,16 +77,21 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		### New value of log-likelihood
 		Var.Y <- lambda * lambda * psi * H.matsq + (1/psi) * diag(N)
 		log.lik1 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
+		
+		### Report
 		check <- i %% report.int
 		if(log.lik1 < log.lik0){
-			cat("DECREASE iter", i, log.lik1, "\n")
+			cat("\nDECREASE iter", i, log.lik1, "\t")
 		}
 		else{
-			if( !is.na(check) && check==0 && !silent ) cat("INCREASE iter", i, log.lik1, "\n") 
+			if( !is.na(check) && check==0 && !silent ) cat("\nINCREASE iter", i, log.lik1, "\t") 
 		} 
-	
+		setTxtProgressBar(pb, i)
+		if(i %% report.int*10 == 0) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
+			#reset progress bar	
 	}
 
+	close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > delt)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
