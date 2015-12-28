@@ -1,9 +1,9 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.3.0 (interactions)](https://github.com/haziqjamil/iprior/releases/tag/v1.3.0) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see my comment on this, [here](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
-).**
+>**[v1.3.1 (interactions)](https://github.com/haziqjamil/iprior/releases/tag/v1.3.1) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see this [comment](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
+). This version also adds progress feddback to the EM algorithm.**
 
-> *For installation instructions and basic functionality tutorial, keep reading. For a specific tutorial on modelling interactions (new with v1.3.0), click [here](README-INTERACTIONS.md).*
+> *For installation instructions and basic functionality tutorial, read on below. For a specific tutorial on modelling interactions (v1.3.0 and later), click [here](README-INTERACTIONS.md).*
 
 Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, and so on.
 
