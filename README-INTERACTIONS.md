@@ -1,7 +1,5 @@
 # I-prior modelling with interactions
 
->**WARNING: `iprior()` function may appear slow or frozen with large datasets. The following examples have been tested and found to be working, for a maximum of `n=600` roughly.**
-
 There are two ways we can model interactions using I-priors. The first, is the parsimonious method. Here, the scale parameter for the interaction term between `x1` and `x2` is the product between the two scale parameters, i.e. `lambda1*lambda2`. For variables `x1, ..., xp` with every two-way interactions possible, the number of scale parameters is still `p`.
 
 The second method is to assign another scale parameter to for the interaction terms. Thus, the scale for `x1:x2` is given by `lambda12`, say. The maximum number of parameters is then `p + p(p-1)/2`. There are more parameters to be estimated in this method, which can be disadvantageous.
@@ -27,7 +25,7 @@ summary(simdat)
 
 We can fit an I-prior model to this data set as follows:
 ```r
-mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat, parsm=F)
+mod.iprior <- iprior(y ~ x + grp + x:grp, data=simdat, parsm=F, report.int=500)
 ```
 
 Calling `summary(mod.iprior)` reveals the following output:
