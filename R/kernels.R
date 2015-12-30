@@ -11,8 +11,7 @@ fn.H2a <- function(x, y=NULL){ #takes in vector of covariates
 	x <- as.numeric(x)
 	if(is.null(y)) y <- x
 	else y <- as.numeric(y)
-	z <- c(x,y)
-	xbar <- mean(z)
+	xbar <- mean(x)
 	tmp <- tcrossprod(y-xbar, x-xbar)
 	tmp
 }
@@ -29,15 +28,16 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 	
 	ytmp <- y
 	if(is.null(ytmp)) y <- x
-	z <- unlist(list(x,y)); z <- as.numeric(z)
+	z <- unlist(list(x,y)); z <- as.numeric(z)				#simply doing c(x,y) messes with the factors
 	x <- z[1:length(x)]; y <- z[(length(x)+1):length(z)]
-	prop <- table(z)/length(z)
+	if(any(is.na(match(y,x)))) stop("The vector y contains elements not belonging to x.")
+	prop <- table(x)/length(x)
 	
 	tmpx <- unique(lapply(sort(x), function(k) which(x == k)))	
 	indexx <- lapply(1:length(unique(x)), fn.index, tmp=tmpx)
 	nx <- length(unique(x))
-	prop[as.numeric(names(prop)) > nx] <- Inf
-	indexx[[nx+1]] <- cbind(row=1:length(x), col=1:length(x))
+	#prop[as.numeric(names(prop)) > nx] <- Inf
+	#indexx[[nx+1]] <- cbind(row=1:length(x), col=1:length(x))
 	if(is.null(ytmp)) indexy <- indexx
 	else{
 		tmpy <- unique(lapply(sort(y), function(k) which(y == k)))
@@ -47,8 +47,8 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 
 	tmp.mat <- matrix(-1, nr=length(y), nc=length(x))
 	for(i in 1:length(unqy)){
-		rowind <- indexy[[i]][,1]
-		colind <- indexx[[ min(unqy[i], nx+1) ]][,2]
+		rowind <- indexy[[i]][,1]			#grabs row index from y
+		colind <- indexx[[ unqy[i] ]][,2]	#and corresponding col index from x
 		tmp.mat[rowind, colind] <- 1 / prop[ unqy[i] ] - 1
 	}
 	tmp.mat
