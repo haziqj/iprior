@@ -16,18 +16,18 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50
 		if(!is.null(interactions) && parsm){
 			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("alpha", paste0("lambda", 1:length(est$lambda)), "psi")
+			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda.int, SIMPLIFY=F))
 		}
 		else{
 			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("alpha", paste0("lambda", 1:length(est$lambda)), "psi")
+			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
 		} }, {
 			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("alpha", "lambda", "psi")		
+			names(param) <- c("(Intercept)", "lambda", "psi")		
 			H.mat.lam <- est$lambda * est$H.mat			
 		}		
 	)
@@ -110,7 +110,7 @@ summary.iprior <- function(object, ...){
 					"P[|Z>z|]"=2*pnorm(-abs(zval)) )
 	if(!object$one.lam){ #only rename rows when using multiple lambdas
 		lamnames <- paste0("lam", 1:(length(coef(object))-2))
-		lamnames <- c("alpha", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
+		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
 		rownames(tab) <- lamnames
 	}	
 
