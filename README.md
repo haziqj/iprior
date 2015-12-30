@@ -1,7 +1,7 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.3.1 (interactions)](https://github.com/haziqjamil/iprior/releases/tag/v1.3.1) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see this [comment](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
-). This version also adds progress feddback to the EM algorithm.**
+>**[v1.3.2 (interactions)](https://github.com/haziqjamil/iprior/releases/tag/v1.3.2) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see this [comment](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
+). This version fixes an error in the `predict()` functionality.**
 
 > *For installation instructions and basic functionality tutorial, read on below. For a specific tutorial on modelling interactions (v1.3.0 and later), click [here](README-INTERACTIONS.md).*
 
