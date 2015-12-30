@@ -157,4 +157,4 @@ abline(a=0, b=1)
 
 ![Rplot4](images/Rplot4.jpg)
 
-This plot indicates a good agreement between the two models, except perhaps at two particular schools: `schoolid=1433` and `schoolid=7688`, as evidence by the skewed points at the top right of the plot. The root mean squared error (RMSE) for the I-prior model is slightly higher than that of the random effects model, 151.7 versus 151.5, respectively.
+This plot indicates a good agreement between the two models, except perhaps at two particular schools: `schoolid=1433` and `schoolid=7688`, as evidenced by the skewed points at the top right of the plot. The root mean squared error (RMSE) for the I-prior model is slightly higher than that of the random effects model, 151.7 versus 151.5, respectively.
