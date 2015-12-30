@@ -1,8 +1,8 @@
 # I-prior modelling with interactions
 
-There are two ways we can model interactions using I-priors. The first, is the parsimonious method. Here, the scale parameter for the interaction term between `x1` and `x2` is the product between the two scale parameters, i.e. `lambda1*lambda2`. For variables `x1, ..., xp` with every two-way interactions possible, the number of scale parameters is still `p`.
+There are two ways we can model interactions using I-priors. The first, is the non-parsimonious method, whereby additional scale parameters are added for the interaction terms. For instance, the scale for `x1:x2` is given by `lambda12`, say. Thus, the maximum number of scale parameters is `p + p(p-1)/2`. 
 
-The second method is to assign another scale parameter to for the interaction terms. Thus, the scale for `x1:x2` is given by `lambda12`, say. The maximum number of parameters is then `p + p(p-1)/2`. There are more parameters to be estimated in this method, which can be disadvantageous.
+The second method is the parsimonious method. Here, the scale parameter for the interaction term between `xi` and `xj` is the product between the two scale parameters, i.e. `lambdai*lambdaj`. Therefore, a model with variables `x1, ..., xp` with every two-way interactions possible included has at most `p` scale parameters. There are potentially a much smaller number of parameters to estimate as compared to the first method.
 
 The `iprior()` function can now handle both of these methods. The formula call is exactly the same as for `lm()`:
 ```r
