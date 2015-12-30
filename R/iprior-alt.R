@@ -18,11 +18,11 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	x0 <- rep(1, N)
 	lambda <- abs(rnorm(p, sd=0.01))
 	alpha <- rnorm(1)
-	psi <- abs(rnorm(1))
+	psi <- abs(rnorm(1, sd=0.01))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
-	H.mat <- NULL#; H.matsq <- NULL
+	H.mat <- NULL
 	for(j in 1:p){
 		if(whichkernel[j])  H.mat[[j]] <- fn.H1(X[,j]) 
 		else H.mat[[j]] <- fn.H2a(X[,j]) 
@@ -89,7 +89,8 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
 		Var.Y.inv <- solve(Var.Y)	
-		
+		#Var.Y.inv <- chol2inv(chol(Var.Y))
+
 		### Estimating psi using EM	
 		w.hat <- psi*H.mat.lam %*% (Var.Y.inv %*% matrix(Y - alpha, nc=1))
 		W.hat <- Var.Y.inv + tcrossprod(w.hat)
