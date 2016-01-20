@@ -77,7 +77,7 @@ We can also look at how the I-prior fitted values compare against the fitted val
 mod.re <- lmer(y ~ 1 + x + (1 + x | grp), data=simdat)
 yhat.re <- fitted(mod.re)
 plot(yhat.re, yhat, type="n", xlab="Random effects model predicted values", ylab="I-prior fitted values", main="Comparison between I-prior and random effects model predicted values")
-text(yhat.re, yhat, grp, col=colour[grp], cex=1)
+text(yhat.re, yhat, grp, col=grp, cex=1)
 abline(a=0, b=1)
 ```
 
