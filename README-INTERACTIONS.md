@@ -151,7 +151,7 @@ Traditionally, one could also model this dataset using a random effects (random 
 mod.re <- lmer(mathach ~ 1 + ses + (1 + ses | schoolid), data=hsb.small)
 yhat.re <- fitted(mod.re)
 plot(yhat.re, yhat, type="n", xlab="Random effects model predicted values", ylab="I-prior fitted values", main="Comparison between I-prior and random effects model predicted values")
-text(yhat.re, yhat, as.character(hsb.small$schoolid), col=colour[grp], cex=0.55)
+text(yhat.re, yhat, as.character(hsb.small$schoolid), col=grp, cex=0.55)
 abline(a=0, b=1)
 ```
 
