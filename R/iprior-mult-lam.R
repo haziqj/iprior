@@ -16,6 +16,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	x0 <- rep(1, N)
 	lambda <- abs(rnorm(p, sd=0.1))
 	alpha <- rnorm(1)
+	psi <- 10 #abs(rnorm(1, sd=0.1))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
@@ -39,7 +40,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		Tmpo <- interactions[[1]]
 		Tmpf <- interactions[[2]]
 		no.int <- sum(Tmpo==2)
-		p <- p + no.int; lambda <- abs(rnorm(p))
+		p <- p + no.int; lambda <- abs(rnorm(p, sd=0.1))
 		for(j in (p-no.int+1):p){
 			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
 			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
