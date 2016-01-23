@@ -14,9 +14,9 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(1, sd=0.01))
+	lambda <- abs(rnorm(1, sd=0.1))
 	alpha <- rnorm(1)
-	psi <- abs(rnorm(1, sd=0.01))
+	psi <- 10 #abs(rnorm(1, sd=0.1))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
@@ -76,7 +76,7 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	
 		### New value of log-likelihood
 		Var.Y <- lambda * lambda * psi * H.matsq + (1/psi) * diag(N)
-		log.lik1 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
+		log.lik1 <- dmvnorm(Y, mean=rep(alpha,N), sigma=Var.Y, log=T)
 		
 		### Report
 		check <- i %% report.int
