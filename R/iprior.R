@@ -51,6 +51,7 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50
 	est$parsm <- parsm
 	est$interactions <- interactions
 	est$sigma <- 1/sqrt(est$psi)
+	est$T2 <- as.numeric(crossprod(est$w.hat) / est$psi)
 	
 	class(est) <- "iprior"
 	est
@@ -116,7 +117,7 @@ summary.iprior <- function(object, ...){
 	}
 	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, delt=object$delt, one.lam=object$one.lam)
+	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, delt=object$delt, one.lam=object$one.lam, T2=object$T2)
 	class(res) <- "summary.iprior"
 	res
 }
@@ -147,6 +148,7 @@ print.summary.iprior <- function(x, ...){
 	else cat("EM failed to converge.")
 	cat(" No. of iterations:", x$no.iter)
 	cat("\nStandard deviation of errors:", signif(sigma, digits=4), "with S.E.:", round(sesigma, digits=4))
+	cat("\nT2 statistic:", signif(x$T2, digits=4), "on ??? degrees of freedom.")
 	cat("\nLog-likelihood value:", x$log.lik, "\n")
 	cat("\n")
 }
