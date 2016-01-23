@@ -16,9 +16,9 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(p, sd=0.01))
+	lambda <- abs(rnorm(p, sd=0.1))
 	alpha <- rnorm(1)
-	psi <- abs(rnorm(1, sd=0.01))
+	psi <- 10 #abs(rnorm(1, sd=0.1))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
@@ -105,7 +105,8 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda.int, SIMPLIFY=F))	
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
-		log.lik1 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
+		Var.Y.inv <- solve(Var.Y)			
+		log.lik1 <- dmvnorm(Y, mean=rep(alpha,N), sigma=Var.Y, log=T)
 		
 		### Report
 		check <- i %% report.int
