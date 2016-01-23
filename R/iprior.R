@@ -6,7 +6,7 @@
 iprior <- function(x, y, ...) UseMethod("iprior")
 
 ## The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50000, delt=0.001, report.int=100, silent=F, ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50000, stop.crit=0.001, report.int=100, silent=F, ...){
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
 	y <- as.numeric(y)
@@ -14,18 +14,18 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50
 	
 	ifelse(!one.lam, { 
 		if(!is.null(interactions) && parsm){
-			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda.int, SIMPLIFY=F))
 		}
 		else{
-			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
 		} }, {
-			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, delt=delt, report.int=report.int, silent=silent)
+			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", "lambda", "psi")		
 			H.mat.lam <- est$lambda * est$H.mat			
@@ -117,7 +117,7 @@ summary.iprior <- function(object, ...){
 	}
 	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, delt=object$delt, one.lam=object$one.lam, T2=object$T2)
+	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2)
 	class(res) <- "summary.iprior"
 	res
 }
@@ -144,7 +144,7 @@ print.summary.iprior <- function(x, ...){
 	tab <- tab[-length(rownames(tab)),]
 	printCoefmat(tab, P.value=T, has.Pvalue=T)
 	cat("\n")
-	if(x$converged) cat("EM converged to within", x$delt, "tolerance.")
+	if(x$converged) cat("EM converged to within", x$stop.crit, "tolerance.")
 	else cat("EM failed to converge.")
 	cat(" No. of iterations:", x$no.iter)
 	cat("\nStandard deviation of errors:", signif(sigma, digits=4), "with S.E.:", round(sesigma, digits=4))
