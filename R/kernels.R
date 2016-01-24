@@ -18,7 +18,7 @@ fn.H2a <- function(x, y=NULL){ #takes in vector of covariates
 
 ## Pearson kernel
 fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
-	
+		
 	fn.index <- function(k, tmp){
   		w <- tmp[[k]]
  		cbind(
@@ -28,10 +28,14 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 	
 	ytmp <- y
 	if(is.null(ytmp)) y <- x
+	## check if the inputs are non-factors, suggest not to use Pearson kernel
+	if(any(!is.factor(x), !is.factor(y))) warning("Non-factor type vector used with Pearson kernel.", call.=F)
+	
 	z <- unlist(list(x,y)); z <- as.numeric(z)				#simply doing c(x,y) messes with the factors
 	x <- z[1:length(x)]; y <- z[(length(x)+1):length(z)]
 	if(any(is.na(match(y,x)))) stop("The vector y contains elements not belonging to x.")
 	prop <- table(x)/length(x)
+
 	
 	tmpx <- unique(lapply(sort(x), function(k) which(x == k)))	
 	indexx <- lapply(1:length(unique(x)), fn.index, tmp=tmpx)
