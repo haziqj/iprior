@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, delt=0.001, report.int=1000, silent=F){
+ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=1000, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -14,10 +14,8 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(p, sd=0.01))
-	alpha <- rnorm(1)
-	psi <- abs(rnorm(1, sd=0.01))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
+	if(report.int == 0)	report.int <- maxit
 	
 	### Define the kernel matrix
 	H.mat <- NULL; H.matsq <- NULL
@@ -40,13 +38,26 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		Tmpo <- interactions[[1]]
 		Tmpf <- interactions[[2]]
 		no.int <- sum(Tmpo==2)
-		p <- p + no.int; lambda <- abs(rnorm(p))
+		p <- p + no.int
+		if(is.null(lambda.init)) lambda <- abs(rnorm(p, sd=0.1))
+		else{
+			if(length(lambda.init) != p) stop(paste("Incorrect dimension of lambda initial values. vector of length", p, "required."), call.=F)
+			else lambda <- lambda.init
+		}
 		for(j in (p-no.int+1):p){
 			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
 			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
 		}
 	}
 	
+	## initialise parameters
+	alpha <- alpha.init
+	if(is.null(lambda.init)) lambda <- abs(rnorm(p, sd=0.1))
+	else{
+		if(length(lambda.init) != p) stop(paste("Incorrect dimension of lambda initial values. vector of length", p, "required."), call.=F)
+		else lambda <- lambda.init
+	}
+	psi <- psi.init	
 	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
 	H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 	Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
@@ -55,12 +66,12 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	
 	## initialise
-	if(!silent) cat("START iter", 0, log.lik0, "\t")
-	log.lik1 <- log.lik0 + 2*delt
+	if(!silent && report.int != maxit) cat("Iteration 0:\t Log-likelihood =", round(log.lik0, 4), " ")
+	log.lik1 <- log.lik0 + 2*stop.crit
 	i <- 0
-	pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
+	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
 	
-	while((i != maxit) && (abs(log.lik0 - log.lik1) > delt)){
+	while((i != maxit) && (abs(log.lik0 - log.lik1) > stop.crit)){
 	
 		i <- i + 1
 		log.lik0 <- log.lik1
@@ -93,26 +104,23 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, de
 		H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
-		log.lik1 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
+		Var.Y.inv <- solve(Var.Y)
+		log.lik1 <- dmvnorm(Y, mean=rep(alpha,N), sigma=Var.Y, log=T)
 		
 		### Report
 		check <- i %% report.int
-		if(log.lik1 < log.lik0){
-			cat("\nDECREASE iter", i, log.lik1, "\t")
-		}
-		else{
-			if( !is.na(check) && check==0 && !silent ) cat("\nINCREASE iter", i, log.lik1, "\t") 
-		} 
-		setTxtProgressBar(pb, i)
-		if(i %% report.int*10 == 0) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
+		if(log.lik1 < log.lik0) warning(paste("Log-likelihood decreased at iteration", i), call.=F)
+		if(!is.na(check) && check==0 && !silent) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", round(log.lik1, 4), " ")  
+		if(!silent && report.int != maxit) setTxtProgressBar(pb, i)		
+		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
 			#reset progress bar
 	}
 	
-	close(pb)
-	converged <- !(abs(log.lik0 - log.lik1) > delt)
+	if(!silent && report.int != maxit) close(pb)
+	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
 	if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
 	
-	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, kernel=whichkernel, converged=converged, delt=delt)
+	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, kernel=whichkernel, converged=converged, stop.crit=stop.crit)
 }
