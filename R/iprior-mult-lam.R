@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=1000, silent=F){
+ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=1000, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -14,9 +14,6 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(p, sd=0.1))
-	alpha <- rnorm(1)
-	psi <- 10 #abs(rnorm(1, sd=0.1))
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
 	
 	### Define the kernel matrix
@@ -40,7 +37,6 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		Tmpo <- interactions[[1]]
 		Tmpf <- interactions[[2]]
 		no.int <- sum(Tmpo==2)
-		p <- p + no.int; lambda <- abs(rnorm(p, sd=0.1))
 		for(j in (p-no.int+1):p){
 			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
 			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
@@ -55,7 +51,6 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	
 	## initialise
-	if(!silent) cat("START iter", 0, log.lik0, "\t")
 	log.lik1 <- log.lik0 + 2*stop.crit
 	i <- 0
 	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
@@ -109,7 +104,6 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 			#reset progress bar
 	}
 	
-	if(!silent) close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")

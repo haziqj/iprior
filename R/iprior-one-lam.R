@@ -2,7 +2,7 @@
 ### EM ALGORITHM
 ###
 
-ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=1000, silent=F){	
+ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=1000, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10){	
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -14,10 +14,15 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(1, sd=0.1))
-	alpha <- rnorm(1)
-	psi <- 10 #abs(rnorm(1, sd=0.1))
+	alpha <- alpha.init
+	if(is.null(lambda.init)) lambda <- abs(rnorm(1, sd=0.1))
+	else{
+		if(length(lambda.init) > 1) stop(paste("Specify a single initial value for lambda. Otherwise, use option one.lam=F."), call.=F)
+		else lambda <- lambda.init
+	}
+	psi <- psi.init
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
+	if(report.int == 0)	report.int <- maxit
 	
 	### Define the kernel matrix
 	H.mat <- NULL
@@ -44,10 +49,10 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	
 	## initialise
-	if(!silent) cat("START iter", 0, log.lik0, "\t")
+	if(!silent && report.int != maxit) cat("Iteration 0:\t Log-likelihood =", round(log.lik0, 4), " ")
 	log.lik1 <- log.lik0 + 2*stop.crit
 	i <- 0
-	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
+	if(!silent && report.int != maxit) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
 	
 	while((i != maxit) && (abs(log.lik0 - log.lik1) > stop.crit)){
 	
@@ -76,22 +81,19 @@ ipriorEM1 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	
 		### New value of log-likelihood
 		Var.Y <- lambda * lambda * psi * H.matsq + (1/psi) * diag(N)
+		Var.Y.inv <- solve(Var.Y)
 		log.lik1 <- dmvnorm(Y, mean=rep(alpha,N), sigma=Var.Y, log=T)
 		
 		### Report
 		check <- i %% report.int
-		if(log.lik1 < log.lik0 && !silent){
-			cat("\nDECREASE iter", i, log.lik1, "\t")
-		}
-		else{
-			if(!is.na(check) && check==0 && !silent) cat("\nINCREASE iter", i, log.lik1, "\t") 
-		} 
-		if(!silent) setTxtProgressBar(pb, i)
+		if(log.lik1 < log.lik0) warning(paste("Log-likelihood decreased at iteration", i), call.=F)
+		if(!is.na(check) && check==0 && !silent) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", round(log.lik1, 4), " ")  
+		if(!silent && report.int != maxit) setTxtProgressBar(pb, i)
 		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
 			#reset progress bar	
 	}
 
-	if(!silent) close(pb)
+	if(!silent && report.int != maxit) close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
