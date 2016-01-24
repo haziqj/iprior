@@ -15,6 +15,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	p <- ncol(X)
 	x0 <- rep(1, N)
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
+	if(report.int == 0)	report.int <- maxit
 	
 	### Define the kernel matrix
 	H.mat <- NULL; H.matsq <- NULL
@@ -37,12 +38,26 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		Tmpo <- interactions[[1]]
 		Tmpf <- interactions[[2]]
 		no.int <- sum(Tmpo==2)
+		p <- p + no.int
+		if(is.null(lambda.init)) lambda <- abs(rnorm(p, sd=0.1))
+		else{
+			if(length(lambda.init) != p) stop(paste("Incorrect dimension of lambda initial values. vector of length", p, "required."), call.=F)
+			else lambda <- lambda.init
+		}
 		for(j in (p-no.int+1):p){
 			H.mat[[j]] <- H.mat[[ Tmpf[1, j-p+no.int] ]] * H.mat[[ Tmpf[2, j-p+no.int] ]]
 			H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
 		}
 	}
 	
+	## initialise parameters
+	alpha <- alpha.init
+	if(is.null(lambda.init)) lambda <- abs(rnorm(p, sd=0.1))
+	else{
+		if(length(lambda.init) != p) stop(paste("Incorrect dimension of lambda initial values. vector of length", p, "required."), call.=F)
+		else lambda <- lambda.init
+	}
+	psi <- psi.init	
 	H.mat.lam <- Reduce('+', mapply('*', H.mat, lambda, SIMPLIFY=F))
 	H.mat.lamsq <- H.mat.lam %*% H.mat.lam
 	Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
@@ -51,6 +66,7 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	log.lik0 <- dmvnorm(Y-alpha, rep(0,N), Var.Y, log=T)
 	
 	## initialise
+	if(!silent && report.int != maxit) cat("Iteration 0:\t Log-likelihood =", round(log.lik0, 4), " ")
 	log.lik1 <- log.lik0 + 2*stop.crit
 	i <- 0
 	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
@@ -93,17 +109,14 @@ ipriorEM2 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		
 		### Report
 		check <- i %% report.int
-		if(log.lik1 < log.lik0 && !silent){
-			cat("\nDECREASE iter", i, log.lik1, "\t")
-		}
-		else{
-			if(!is.na(check) && check==0 && !silent) cat("\nINCREASE iter", i, log.lik1, "\t") 
-		} 
-		if(!silent) setTxtProgressBar(pb, i)
+		if(log.lik1 < log.lik0) warning(paste("Log-likelihood decreased at iteration", i), call.=F)
+		if(!is.na(check) && check==0 && !silent) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", round(log.lik1, 4), " ")  
+		if(!silent && report.int != maxit) setTxtProgressBar(pb, i)		
 		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
 			#reset progress bar
 	}
 	
+	if(!silent && report.int != maxit) close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
