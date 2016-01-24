@@ -4,7 +4,7 @@
 
 ## This is used mainly for parsimonious interactions
 
-ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=100, silent=F){
+ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, stop.crit=0.001, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -16,10 +16,15 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	N <- length(Y)
 	p <- ncol(X)
 	x0 <- rep(1, N)
-	lambda <- abs(rnorm(p, sd=0.1))
-	alpha <- rnorm(1)
-	psi <- 10 #abs(rnorm(1, sd=0.1))
+	alpha <- alpha.init
+	if(is.null(lambda.init)) lambda <- abs(rnorm(p, sd=0.1))
+	else{
+		if(length(lambda.init) != p) stop(paste("Incorrect dimension of lambda initial values. vector of length", p, "required."), call.=F)
+		else lambda <- lambda.init
+	}
+	psi <- psi.init
 	if(is.null(whichkernel)) whichkernel <- rep(F, p)
+	if(report.int == 0)	report.int <- maxit
 	
 	### Define the kernel matrix
 	H.mat <- NULL
@@ -63,7 +68,7 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 	}
 	
 	## initialise
-	if(!silent) cat("START iter", 0, log.lik0, "\t")
+	if(!silent && report.int != maxit) cat("Iteration 0:\t Log-likelihood =", round(log.lik0, 4), " ")
 	log.lik1 <- log.lik0 + 2*stop.crit
 	i <- 0
 	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
@@ -110,18 +115,14 @@ ipriorEM3 <- function(x, y, whichkernel=NULL, interactions=NULL, maxit=50000, st
 		
 		### Report
 		check <- i %% report.int
-		if(log.lik1 < log.lik0 && !silent){
-			cat("\nDECREASE iter", i, log.lik1, "\t")
-		}
-		else{
-			if(!is.na(check) && check==0 && !silent) cat("\nINCREASE iter", i, log.lik1, "\t") 
-		} 
-		if(!silent) setTxtProgressBar(pb, i)
+		if(log.lik1 < log.lik0) warning(paste("Log-likelihood decreased at iteration", i), call.=F)
+		if(!is.na(check) && check==0 && !silent) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", round(log.lik1, 4), " ")  
+		if(!silent && report.int != maxit) setTxtProgressBar(pb, i)		
 		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
 			#reset progress bar
 	}
 	
-	if(!silent) close(pb)
+	if(!silent && report.int != maxit) close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
 	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
 	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")

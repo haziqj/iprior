@@ -6,7 +6,7 @@
 iprior <- function(x, y, ...) UseMethod("iprior")
 
 ## The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50000, stop.crit=0.001, report.int=100, silent=F, ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50000, stop.crit=0.001, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, ...){
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
 	y <- as.numeric(y)
@@ -14,18 +14,18 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50
 	
 	ifelse(!one.lam, { 
 		if(!is.null(interactions) && parsm){
-			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
+			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda.int, SIMPLIFY=F))
 		}
 		else{
-			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
+			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
 		} }, {
-			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent)
+			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
 			param <- c(est$alpha, est$lambda, est$psi)
 			names(param) <- c("(Intercept)", "lambda", "psi")		
 			H.mat.lam <- est$lambda * est$H.mat			
@@ -66,8 +66,8 @@ print.iprior <- function(x, ...){
 		if(!all(x$kernel) && !any(x$kernel)) cat("\nRKHS used:", kerneltypes[1])
 		else cat("\nRKHS used:", kerneltypes[3])
 	} 
-	#if(x$one.lam) cat(", with single scale parameter.\n")
-	#else cat(", with multiple scale parameter.\n")
+	if(x$one.lam) cat(", with a single scale parameter.\n")
+	else cat(", with multiple scale parameters.\n")
 	cat("\n")
 	cat("\nParameter estimates:\n")
 	print(x$coefficients)
@@ -133,6 +133,8 @@ print.summary.iprior <- function(x, ...){
 	cat("RKHS used:\n")
 	if(!(length(xCanonical) == 0)) cat(printCanonical, "\n")
 	if(!(length(xPearson) == 0)) cat(printPearson, "\n")
+	if(x$one.lam) cat("with a single scale parameter.\n")
+	else cat("with multiple scale parameters.\n")
 	cat("\n")
 	cat("Residuals:\n")
 	print(summary(x$resid)[-4])
@@ -231,3 +233,6 @@ predict.iprior <- function(object, newdata=NULL, ...){
 	}
 	ystar
 }
+
+### New feature soon
+#update.iprior <- function(x, ...){ cat("hello") }
