@@ -1,13 +1,13 @@
 # R/iprior: An R package for I-prior regression
 
->**[v1.3.2 (interactions)](https://github.com/haziqjamil/iprior/releases/tag/v1.3.2) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see this [comment](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
-). This version fixes an error in the `predict()` functionality.**
+>**[v1.3.3](https://github.com/haziqjamil/iprior/releases/tag/v1.3.3) WARNING: `iprior()` (mainly the Pearson kernel generation) may be slow for very large datasets (n > 10,000) - see this [comment](https://github.com/haziqjamil/iprior/commit/87f72554a0a35f6ad5a07ab108ff367f1599d251#commitcomment-15054556
+). This version brings about several [fixes](https://github.com/haziqjamil/iprior/releases/tag/v1.3.3).**
 
-> *For installation instructions and basic functionality tutorial, read on below. For a specific tutorial on modelling interactions (v1.3.0 and later), click [here](README-INTERACTIONS.md).*
+> *For installation instructions and basic functionality tutorial, read on below. For a specific tutorial on modelling interactions (v1.3.0 and later), see the [wiki](https://github.com/haziqjamil/iprior/wiki).*
 
 Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, and so on.
 
-Currently, either one single scale parameter or individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor.
+Currently, either one single scale parameter or individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor. A full list of options can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki).
 
 `iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). The current version also supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](README-INTERACTIONS.md).
 
