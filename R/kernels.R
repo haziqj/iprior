@@ -58,32 +58,13 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 	tmp.mat
 }
 
-### PEARSON KERNEL TEST
-### n=100,1000,2000,...,10000
-### with roughly 10% different factors. i.e. n=2000 has 200 unique factors
-# N <- c(seq(100, 900, 100), seq(1000, 10000, 1000))
-# res <- NULL
-# for(n in N){
-	# x <- sample(1:(n/10), n, T)
-	# t1 <- system.time(fn.H1(x))[3]
-	# t2 <- system.time(fn.H1a(x))[3]
-	# res <- rbind(res, c(t1,t2))
-# }
-# res <- cbind(N, res)
-# colnames(res) <- c("N", "old", "new")
-# res
-# save.image("kernel")
+## FBM kernel (to be developed)
+fn.H3 <- function(x, y=NULL){ #takes in vector of covariates
+	x <- as.numeric(x)
+	if(is.null(y)) y <- x
+	else y <- as.numeric(y)
+	diag(nrow=length(y), ncol=length(x))
+}
 
-# # first plot
-# plot(N[1:10], res[1:10,2], type="b", ylab="time (seconds)", xlab="sample size n", col=4, main="Timing comparison of old and new Pearson kernel functions")
-# points(N[1:10], res[1:10,3], type="b", col=2)
-# text(1000, 0.3, labels="new", col=2)
-# text(965, 9.2, labels="old", col=4)
-
-# # second plot
-# plot(N[10:19], res[10:19,2], type="b", ylab="time (seconds)", xlab="sample size n", col=4, main="Timing comparison of old and new Pearson kernel functions")
-# points(N[10:19], res[10:19,3], type="b", col=2)
-# text(10000, 100, labels="new", col=2)
-# text(9650, 3500, labels="old", col=4)
 
 
