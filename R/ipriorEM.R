@@ -29,8 +29,9 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 		q <- p
 	} 			
 	if(one.lam){			#one lambda
+		if(q == 1) message("Option one.lam=T used with a single covariate anyway.")
 		q <- 1
-		if(parsm) message("Parsimonious interactions ignored because one.lam=T", call.=F)
+		#if(parsm) message("Parsimonious interactions ignored because one.lam=T.")
 	} 		
 
 	### Initialise parameters
@@ -58,25 +59,29 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 			H.matsq[[p+j]] <- H.mat[[p+j]] %*% H.mat[[p+j]]
 		}
 	}
-	if(q == 1){	#just to save some time, if q=1 then no need to loop
+	
+	if(q == 1){	#just to save some time, if q=1 then no need to loop and define H2 and J.mat
 		H.matsq <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))
 		H.matsq <- list(H.matsq %*% H.matsq)
+		H.mat2 <- list(matrix(0, nr=N, nc=N))
+		J.mat <- function(k) matrix(0, nr=N, nc=N)
+		ind1 <- 1; ind2 <- 1
 	}
-	##these are the two-way terms in the H^2 matrix
-	w <- 1:(p+no.int)
-	ind1 <- rep(w, times=(length(w)-1):0)
-	ind2 <- unlist(lapply(2:length(w), function(x) c(NA,w)[-(0:x)]))
-	H.mat2 <- NULL
-	for(j in 1:length(ind1)){
-		H.mat2[[j]] <- H.mat[[ ind1[j] ]] %*% H.mat[[ ind2[j] ]] + H.mat[[ ind2[j] ]] %*% H.mat[[ ind1[j] ]]
+	else{
+		w <- 1:(p+no.int)
+		ind1 <- rep(w, times=(length(w)-1):0)
+		ind2 <- unlist(lapply(2:length(w), function(x) c(NA,w)[-(0:x)]))
+		H.mat2 <- NULL
+		for(j in 1:length(ind1)){
+			H.mat2[[j]] <- H.mat[[ ind1[j] ]] %*% H.mat[[ ind2[j] ]] + H.mat[[ ind2[j] ]] %*% H.mat[[ ind1[j] ]]
+		}
+		J.mat <- function(k){	#always for non-parsimonious method q = p + no.int
+			ind <- which(ind1==k | ind2==k)
+			tmp <- Reduce('+', mapply('*', H.mat2[ind], lambda[-k], SIMPLIFY=F))
+			tmp
+		}
 	}
-	##this function is required to calculate the sufficient statistics
-	J.mat <- function(k){	#always for non-parsimonious method q = p + no.int
-		ind <- which(ind1==k | ind2==k)
-		tmp <- Reduce('+', mapply('*', H.mat2[ind], lambda[-k], SIMPLIFY=F))
-		tmp
-	}
-	
+
 	### Initialise the EM
 	if(!is.null(interactions) && parsm){
 		for(j in 1:no.int) lambda <- c(lambda, lambda[Tmpf[1,j]]*lambda[Tmpf[2,j]])
