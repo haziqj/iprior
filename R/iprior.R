@@ -3,7 +3,7 @@
 ### only a call to UseMethod
 ###
 
-iprior <- function(x, y, ...) UseMethod("iprior")
+iprior <- function(formula, data, one.lam, parsm, ...) UseMethod("iprior")
 
 ### The default method
 iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), ...){
@@ -16,15 +16,22 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	
 	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod)
 	param <- c(est$alpha, est$lambda, est$psi)
-	names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")	
+	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
+	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 	
 	### Calculate fitted values
 	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
 	est$fitted.values <- Y.hat
 	est$residuals <- y-Y.hat
 	
-	### Other things to return
-	est$call <- match.call()
+	### Changing the call to simply iprior
+	cl <- match.call()
+    cl[[1L]] <- as.name("iprior")
+    m <- match(c("x", "y", "one.lam", "parsm"), names(cl), 0L)
+    cl <- cl[c(1L, m)]
+	est$call <- cl
+	
+	### Other things to return	
 	est$coefficients <- param
 	est$yval <- y
 	est$xval <- x
@@ -89,7 +96,12 @@ summary.iprior <- function(object, ...){
 					S.E.=round(se, digits=4),
 					z=round(zval, digits=3),
 					"P[|Z>z|]"=round(2*pnorm(-abs(zval)), digits=3) )
-	if(!object$one.lam){ #only rename rows when using multiple lambdas
+	if(object$q == 1){ #only rename rows when using multiple lambdas
+		lamnames <- "lam"
+		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
+		rownames(tab) <- lamnames
+	}
+	else{
 		lamnames <- paste0("lam", 1:(length(coef(object))-2))
 		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
 		rownames(tab) <- lamnames
@@ -155,7 +167,13 @@ iprior.formula <- function(formula, data=list(), ...){
 		est <- iprior(x, y, interactions=interactions, ...),
 		est <- iprior(x, y, ...)
 	)
-	est$call <- match.call()
+	
+	## changing the call to simply iprior
+	cl <- match.call()
+    cl[[1L]] <- as.name("iprior")
+    m <- match(c("formula", "data", "one.lam", "parsm"), names(cl), 0L)
+    cl <- cl[c(1L, m)]
+	est$call <- cl
 	est$formula <- formula
 	names(est$fitted.values) <- row.names(mf)
 	names(est$residuals) <- row.names(mf)
