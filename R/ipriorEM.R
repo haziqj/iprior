@@ -6,8 +6,9 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
-	require(mvtnorm, quietly=T)
+	#require(mvtnorm, quietly=T)
 	require(numDeriv, quietly=T)
+	require(mvnfast, quietly=T)
 	
 	X <- x
 	Y <- y
@@ -100,7 +101,7 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	lambda <- lambda[1:q]
 	Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)
 	ifelse(invmethod == "eigen", Var.Y.inv <- solve(Var.Y), Var.Y.inv <- chol2inv(chol(Var.Y)) )
-	log.lik0 <- dmvnorm(Y, rep(alpha,N), Var.Y, log=T)
+	log.lik0 <- dmvn(Y, rep(alpha,N), Var.Y, log=T)
 	
 	if(!silent && report.int != maxit) cat("Iteration 0:\t Log-likelihood =", round(log.lik0, 4), " ")
 	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
@@ -151,7 +152,7 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 		### New value of log-likelihood
 		Var.Y <- psi*H.mat.lamsq + (1/psi)*diag(N)	
 		ifelse(invmethod == "eigen", Var.Y.inv <- solve(Var.Y), Var.Y.inv <- chol2inv(chol(Var.Y)) )
-		log.lik1 <- dmvnorm(Y, mean=rep(alpha,N), sigma=Var.Y, log=T)
+		log.lik1 <- dmvn(Y, rep(alpha,N), Var.Y, log=T)
 		
 		### Report
 		check <- i %% report.int
