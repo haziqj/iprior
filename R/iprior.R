@@ -81,7 +81,7 @@ summary.iprior <- function(object, ...){
 		if(object$one.lam) H.mat.lam <- lambda * object$H.mat
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam	
 		Var.Y <- psi*H.mat.lamsq + (1/psi) * diag(n)
-		loglik <- dmvnorm(y-alpha, rep(0,n), Var.Y, log=T)
+		loglik <- dmvn(y-alpha, rep(0,n), Var.Y, log=T)
 		loglik
 	}
 	FisherInformation <- -hessian(ipriorloglik, coef(object))
