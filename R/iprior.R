@@ -6,7 +6,7 @@
 iprior <- function(formula, data, one.lam, parsm, ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), clean=T, ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
@@ -14,10 +14,11 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod)
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod, clean=clean)
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
+	colnames(est$res.param) <- names(param)
 	
 	### Calculate fitted values
 	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
