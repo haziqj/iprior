@@ -3,18 +3,23 @@
 ### only a call to UseMethod
 ###
 
-iprior <- function(formula, data, one.lam, parsm, ...) UseMethod("iprior")
+iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), clean=T, ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
+	progress <- match.arg(progress)
+	if(progress == "lite"){ clean <- T; silent <- F; paramprogress <- F }
+	if(progress == "none"){ clean <- T; silent <- T; paramprogress <- F }
+	if(progress == "full"){ clean <- F; silent <- F; paramprogress <- T }
+	if(progress == "predloglik"){ clean <- F; silent <- F; paramprogress <- F }
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod, clean=clean)
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
@@ -170,7 +175,7 @@ iprior.formula <- function(formula, data=list(), ...){
 	)
 	
 	## changing the call to simply iprior
-	cl <- match.call()
+	cl <- match.call(); est$fullcall <- cl
     cl[[1L]] <- as.name("iprior")
     m <- match(c("formula", "data", "one.lam", "parsm"), names(cl), 0L)
     cl <- cl[c(1L, m)]
@@ -234,4 +239,80 @@ predict.iprior <- function(object, newdata=NULL, ...){
 }
 
 ### New feature soon
-#update.iprior <- function(x, ...){ cat("hello") }
+update.iprior <- function(mod, ...){
+	newcall <- match.call()
+	cl <- mod$fullcall
+	
+	if(is.null(mod$formula)){	#model fitted with x and y
+		newarg <- list(x=mod$xval, y=mod$yval)
+	}
+	else{
+		mdata <- match(c("data"), names(cl), 0L)
+		mformula <- match(c("formula"), names(cl), 0L)
+		newarg <- list(formula=mod$formula, data=cl[[mdata]])
+		cl <- cl[-c(mdata, mformula)]
+	}
+
+	#set up the new argument for iprior
+	k <- length(newarg)
+	for(i in 2:length(cl)){
+		newarg[[k+i-1]] <- cl[[i]]
+		names(newarg)[k+i-1] <- names(cl)[i]
+	}
+	
+	#put in the parameters
+	newarg$alpha <- mod$alpha
+	newarg$lambda <- mod$lambda
+	newarg$psi <- mod$psi
+	newarg$progress <- "lite"
+
+	#specifically update the formula here
+	mformula2 <- match("formula", names(newcall), 0L)
+	if(sum(mformula2) > 0){	#only do ifthere is update to formula
+		newformula <- update.formula(mod$formula, newcall[[mformula2]])
+		newarg$formula <- newformula
+		newcall <- newcall[-mformula2]
+		#if there was a new update to formula, then makes sense to specify new starting values?
+		# newarg$alpha <- rnorm(1)
+		# newarg$lambda <- NULL
+		# newarg$psi <- 10
+	}
+
+	#here we match the user's input and update the arguments if any	
+	mcommon <- match(names(newcall), names(newarg), 0L)
+	mcommon[1:2] <- -1
+	ind1 <- which(mcommon > 0)
+	ind2 <- which(mcommon == 0)
+	if(sum(ind1) > 0){	#only do if there are things to match
+		newcall <- newcall[c(1, ind1, ind2)]
+		mcommon <- mcommon[mcommon>0]
+		for(i in 1:length(mcommon)) newarg[[ mcommon[i] ]] <- newcall[[i+1]]
+	}
+
+	#following that, what remains is any other arguments the user has specified
+	k <- length(newarg)
+	if(sum(ind2) > 0){	#only do if there are other new user arguments
+		for(i in 1:length(ind2)){
+			newarg[[k+i]] <- newcall[[1+length(ind1)+i]]
+			names(newarg)[k+i] <- names(newcall)[1+length(ind1)+i]
+		}
+	}
+	
+	#check if parsimonious option was touched
+	if(match("parsm", names(newarg)) > 0){
+		if(newarg$parsm == "F") tmp.log <- F 
+		else tmp.log <- T
+		if(mod$parsm != tmp.log){
+			newarg$lambda <- NULL
+			message("Lambda was reset because parsimonious option changed.")
+		} 
+	}
+	
+	#just for aesthetics, remove progress option from call
+	mprogress <- match("progress", names(newarg)); print(mprogress)
+
+	cat("Updating", deparse(substitute(mod)), "with the following call:", "\n\n")
+	print(as.call(c(as.name("iprior"), newarg[-mprogress])))
+	cat("\n")
+	do.call("iprior", newarg)
+}

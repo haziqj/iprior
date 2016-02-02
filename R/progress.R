@@ -4,6 +4,7 @@
 
 progress <- function(x, interval=c("auto", "all", "input any number")){
 	if(class(x) != "iprior") stop("Input iprior class models only.", call.=F)
+	if(!x$converged) warning("The EM has not yet converged.", call.=F)
 	
 	#Log-likelihood
 	rn <- rownames(x$res.loglik)

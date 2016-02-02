@@ -2,7 +2,7 @@
 ### The iprior EM
 ###
 
-ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, maxit, stop.crit, report.int, silent, alpha.init, lambda.init, psi.init, invmethod, clean){
+ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, maxit, stop.crit, report.int, silent, alpha.init, lambda.init, psi.init, invmethod, clean, paramprogress){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -45,10 +45,9 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	psi <- psi.init
 	
 	### Store results
-	res.loglik <- as.data.frame(matrix(NA, nr=maxit+1, nc=3))	#loglik, predloglik, delta
-	res.param <- as.data.frame(matrix(NA, nr=maxit+1, nc=2+q))
-	res.loglik[min(100,maxit+1),] <- rnorm(3); res.param[min(100,maxit+1),] <- rnorm(2+q) #this is a cheat to correct the formatting of digits in table
-	rownames(res.loglik) <- paste0("Iteration ", 0:maxit, ":"); colnames(res.loglik) <- c("Log-likelihood", "Pred.log-lik.", "Delta(i,i-1)")
+	res.loglik <- matrix(NA, nr=maxit+1, nc=3)	#loglik, predloglik, delta
+	res.param <- matrix(NA, nr=maxit+1, nc=2+q)
+	rownames(res.loglik) <- paste0("Iteration ", 0:maxit, ":"); colnames(res.loglik) <- c("Log-lik.", "Pred.log-l.", "Delta_i,i-1")
 	rownames(res.param) <- paste0("Iteration ", 0:maxit, ":")
 	if(q == 1) colnames(res.param) <- c("(Intercept)", "lambda", "psi")	
 	else colnames(res.param) <- c("(Intercept)", paste0("lambda", 1:q), "psi")
@@ -113,14 +112,17 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	log.lik0 <- dmvn(Y, rep(alpha,N), Var.Y, log=T)
 
 	log.lik1 <- log.lik0 + 2*stop.crit
-	res.loglik[1,1] <- log.lik1#; res.loglik[min(100,maxit+1),] <- rep(log.lik1,3)
+	res.loglik[1,1] <- log.lik1
 	res.param[1,] <- c(alpha, lambda, psi)
 	if(!silent){
-		if(clean) cat("Iteration 0:\t Log-likelihood =", log.lik0, " ")
+		if(clean) cat(format(paste0("Iteration " , 0, ":"), width=16, just="left"), "Log-likelihood = ", ipriorEMprettyLoglik(log.lik0), " ", sep="" )
 		else{
-			tab.tmp <- cbind(res.loglik, res.param[,-1])[c(1,min(100,maxit+1)),]
-			cat(capture.output(tab.tmp)[1])
-			cat("\n", capture.output(tab.tmp)[2], " ", sep="")
+			head.tab <- format(" ", width=16, just="right")
+			if(paramprogress) head.tab <- c(head.tab, format(c(colnames(res.loglik), colnames(res.param)[-1]), width=11, just="right"))
+			else head.tab <- c(head.tab, format(c(colnames(res.loglik)), width=11, just="right"))
+			cat(head.tab, "\n")		#prints the table headers
+			if(paramprogress) ipriorEMprettyIter(c(res.loglik[1,], res.param[1,-1]), 0)
+			else ipriorEMprettyIter(res.loglik[1,], 0)
 		}
 	}
 	if(!silent) pb <- txtProgressBar(min=0, max=report.int*10, style=1, char=".") #progress bar
@@ -184,8 +186,12 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 		check <- i %% report.int
 		if(log.lik1 < log.lik0) warning(paste("Log-likelihood decreased at iteration", i), call.=F)
 		if(!is.na(check) && check==0 && !silent){
-			if(clean) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", log.lik1, " ")
-			else cat("\n", capture.output( cbind(res.loglik, res.param[,-1])[i:(i+1),])[3], " ", sep="")
+			if(clean) cat("\n", format(paste0("Iteration " , i, ":"), width=16, just="left"), "Log-likelihood = ", ipriorEMprettyLoglik(log.lik1), " ", sep="")
+			else{
+				cat("\n")
+				if(paramprogress) ipriorEMprettyIter(c(res.loglik[i+1,], res.param[i+1,-1]), i)
+				else ipriorEMprettyIter(res.loglik[i+1,], i) 
+			}
 		}
 		if(!silent) setTxtProgressBar(pb, i)		
 		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
@@ -194,17 +200,21 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	
 	### Final report
 	if(!silent && check!=0){
-		if(clean) cat("\nIteration", paste0(i, ":"), "\t Log-likelihood =", log.lik1, " ")
-		else cat("\n", capture.output( cbind(res.loglik, res.param[,-1])[i:(i+1),])[3], " ", sep="")
+		if(clean) cat("\n", format(paste0("Iteration " , i, ":"), width=16, just="left"), "Log-likelihood = ", ipriorEMprettyLoglik(log.lik1), " ", sep="")
+		else{
+			cat("\n")
+			if(paramprogress) ipriorEMprettyIter(c(res.loglik[i+1,], res.param[i+1,-1]), i)
+			else ipriorEMprettyIter(res.loglik[i+1,], i) 
+		}
 	}
 	
 	res.loglik <- res.loglik[1:(i+1),]; res.param <- res.param[1:(i+1),]
 	
 	if(!silent) close(pb)
 	converged <- !(abs(log.lik0 - log.lik1) > stop.crit)
-	if(!silent && converged) cat("EM complete.\n", "\nNumber of iterations =", i, "\n")
-	else if(!silent) cat("EM NOT CONVERGED!\n", "\nNumber of iterations =", i, "\n")
-	if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
+	if(!silent && converged) cat("EM complete.\n")#, "\nNumber of iterations =", i, "\n")
+	else if(!silent) cat("EM NOT CONVERGED!\n")#, "\nNumber of iterations =", i, "\n")
+	#if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
 	
 	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, H.mat.lam=H.mat.lam, VarY=Var.Y, w.hat=w.hat, kernel=kernel, whichPearson=whichkernel, converged=converged, stop.crit=stop.crit, one.lam=one.lam, parsm=parsm, interactions=interactions, q=q, res.loglik=res.loglik, res.param=res.param)
 }
