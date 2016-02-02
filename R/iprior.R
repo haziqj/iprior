@@ -6,7 +6,7 @@
 iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	progress <- match.arg(progress)
@@ -19,7 +19,7 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
@@ -31,7 +31,7 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	est$residuals <- y-Y.hat
 	
 	### Changing the call to simply iprior
-	cl <- match.call()
+	cl <- match.call(); est$fullcall <- cl
     cl[[1L]] <- as.name("iprior")
     m <- match(c("x", "y", "one.lam", "parsm"), names(cl), 0L)
     cl <- cl[c(1L, m)]

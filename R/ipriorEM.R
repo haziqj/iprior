@@ -112,7 +112,7 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	log.lik0 <- dmvn(Y, rep(alpha,N), Var.Y, log=T)
 
 	log.lik1 <- log.lik0 + 2*stop.crit
-	res.loglik[1,1] <- log.lik1
+	res.loglik[1,1] <- log.lik0
 	res.param[1,] <- c(alpha, lambda, psi)
 	if(!silent){
 		if(clean) cat(format(paste0("Iteration " , 0, ":"), width=16, just="left"), "Log-likelihood = ", ipriorEMprettyLoglik(log.lik0), " ", sep="" )
@@ -196,6 +196,8 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 		if(!silent) setTxtProgressBar(pb, i)		
 		if(i %% report.int*10 == 0 && !silent) pb <- txtProgressBar(min=i, max=report.int*10+i, style=1, char=".") 
 			#reset progress bar
+			
+		
 	}
 	
 	### Final report

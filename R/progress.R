@@ -24,7 +24,7 @@ progress <- function(x, interval=c("auto", "all", "input any number")){
 	#Trim the table
 	no.iter <- x$no.iter
 	if(!is.numeric(interval)) interval <- match.arg(interval)
-	if(interval == "auto") interval <- no.iter %/% 8
+	if(interval == "auto") interval <- max(no.iter %/% 8, 1)
 	if(interval == "all") interval <- 1
 	if(interval == "input any number") stop("No, what I meant was that interval should be numeric! Try interval=10.", call.=F)
 	trim <- no.iter %/% interval
