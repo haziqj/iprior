@@ -3,53 +3,44 @@
 ### only a call to UseMethod
 ###
 
-iprior <- function(x, y, ...) UseMethod("iprior")
+iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
-## The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50000, stop.crit=0.001, report.int=100, silent=F, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, ...){
+### The default method
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+	kernel <- match.arg(kernel)
+	invmethod <- match.arg(invmethod)
+	progress <- match.arg(progress)
+	if(progress == "lite"){ clean <- T; silent <- F; paramprogress <- F }
+	if(progress == "none"){ clean <- T; silent <- T; paramprogress <- F }
+	if(progress == "full"){ clean <- F; silent <- F; paramprogress <- T }
+	if(progress == "predloglik"){ clean <- F; silent <- F; paramprogress <- F }
 	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	ifelse(!one.lam, { 
-		if(!is.null(interactions) && parsm){
-			est <- ipriorEM3(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
-			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
-			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda.int, SIMPLIFY=F))
-		}
-		else{
-			est <- ipriorEM2(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
-			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
-			H.mat.lam <- Reduce('+', mapply('*', est$H.mat, est$lambda, SIMPLIFY=F))
-		} }, {
-			est <- ipriorEM1(x, y, whichkernel=Whichkernel, interactions=interactions, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha.init, lambda.init=lambda.init, psi.init=psi.init)
-			param <- c(est$alpha, est$lambda, est$psi)
-			names(param) <- c("(Intercept)", "lambda", "psi")		
-			H.mat.lam <- est$lambda * est$H.mat			
-		}		
-	)
-
-	##calculate fitted values
-	H.mat.lamsq <- H.mat.lam %*% H.mat.lam	
-	Var.Y <- est$psi*H.mat.lamsq + (1/est$psi) * diag(n)
-	Var.Y.inv <- solve(Var.Y)	
-	w.hat <- est$psi*H.mat.lam %*% (Var.Y.inv %*% matrix(y - est$alpha, nc=1))
-	W.hat <- Var.Y.inv + tcrossprod(w.hat)
-	Y.hat <- est$alpha + as.vector(crossprod(H.mat.lam, w.hat))
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
+	param <- c(est$alpha, est$lambda, est$psi)
+	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
+	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
+	colnames(est$res.param) <- names(param)
 	
-	est$call <- match.call()
-	est$coefficients <- param
+	### Calculate fitted values
+	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
 	est$fitted.values <- Y.hat
 	est$residuals <- y-Y.hat
-	est$w.hat <- w.hat
+	
+	### Changing the call to simply iprior
+	cl <- match.call(); est$fullcall <- cl
+    cl[[1L]] <- as.name("iprior")
+    m <- match(c("x", "y", "one.lam", "parsm"), names(cl), 0L)
+    cl <- cl[c(1L, m)]
+	est$call <- cl
+	
+	### Other things to return	
+	est$coefficients <- param
 	est$yval <- y
 	est$xval <- x
-	est$one.lam <- one.lam
-	est$parsm <- parsm
-	est$interactions <- interactions
 	est$sigma <- 1/sqrt(est$psi)
 	est$T2 <- as.numeric(crossprod(est$w.hat) / est$psi)
 	
@@ -60,13 +51,14 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, maxit=50
 print.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	kerneltypes <- c("Canonical", "Pearson", "Canonical & Pearson")
-	if(all(x$kernel)) cat("\nRKHS used:", kerneltypes[2])
+	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- "Fractional Brownian Motion"
+	kerneltypes <- c(CanOrFBM, "Pearson", paste(CanOrFBM, "& Pearson"))
+	if(all(x$whichPearson)) cat("\nRKHS used:", kerneltypes[2])
 	else{
-		if(!all(x$kernel) && !any(x$kernel)) cat("\nRKHS used:", kerneltypes[1])
+		if(!all(x$whichPearson) && !any(x$whichPearson)) cat("\nRKHS used:", kerneltypes[1])
 		else cat("\nRKHS used:", kerneltypes[3])
 	} 
-	if(x$one.lam) cat(", with a single scale parameter.\n")
+	if(x$q == 1) cat(", with a single scale parameter.\n")
 	else cat(", with multiple scale parameters.\n")
 	cat("\n")
 	cat("\nParameter estimates:\n")
@@ -95,7 +87,7 @@ summary.iprior <- function(object, ...){
 		if(object$one.lam) H.mat.lam <- lambda * object$H.mat
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam	
 		Var.Y <- psi*H.mat.lamsq + (1/psi) * diag(n)
-		loglik <- dmvnorm(y-alpha, rep(0,n), Var.Y, log=T)
+		loglik <- dmvn(y-alpha, rep(0,n), Var.Y, log=T)
 		loglik
 	}
 	FisherInformation <- -hessian(ipriorloglik, coef(object))
@@ -110,14 +102,19 @@ summary.iprior <- function(object, ...){
 					S.E.=round(se, digits=4),
 					z=round(zval, digits=3),
 					"P[|Z>z|]"=round(2*pnorm(-abs(zval)), digits=3) )
-	if(!object$one.lam){ #only rename rows when using multiple lambdas
+	if(object$q == 1){ #only rename rows when using multiple lambdas
+		lamnames <- "lam"
+		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
+		rownames(tab) <- lamnames
+	}
+	else{
 		lamnames <- paste0("lam", 1:(length(coef(object))-2))
 		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
 		rownames(tab) <- lamnames
 	}
 	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2)
+	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q)
 	class(res) <- "summary.iprior"
 	res
 }
@@ -125,15 +122,16 @@ summary.iprior <- function(object, ...){
 print.summary.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	xPearson <- names(x$kern)[x$kern]
-	xCanonical <- names(x$kern)[!x$kern]
+	xPearson <- names(x$whichPearson)[x$whichPearson]
+	xCanOrFBM <- names(x$whichPearson)[!x$whichPearson]
+	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- "Fractional Brownian Motion"
 	printPearson <-	paste0("Pearson (", paste(xPearson, collapse=", "), ")")
-	printCanonical <- paste0("Canonical (", paste(xCanonical, collapse=", "), ")")
+	printCanOrFBM <- paste0(CanOrFBM, " (", paste(xCanOrFBM, collapse=", "), ")")
 	cat("\n")
 	cat("RKHS used:\n")
-	if(!(length(xCanonical) == 0)) cat(printCanonical, "\n")
+	if(!(length(xCanOrFBM) == 0)) cat(printCanOrFBM, "\n")
 	if(!(length(xPearson) == 0)) cat(printPearson, "\n")
-	if(x$one.lam) cat("with a single scale parameter.\n")
+	if(x$q == 1) cat("with a single scale parameter.\n")
 	else cat("with multiple scale parameters.\n")
 	cat("\n")
 	cat("Residuals:\n")
@@ -175,7 +173,13 @@ iprior.formula <- function(formula, data=list(), ...){
 		est <- iprior(x, y, interactions=interactions, ...),
 		est <- iprior(x, y, ...)
 	)
-	est$call <- match.call()
+	
+	## changing the call to simply iprior
+	cl <- match.call(); est$fullcall <- cl
+    cl[[1L]] <- as.name("iprior")
+    m <- match(c("formula", "data", "one.lam", "parsm"), names(cl), 0L)
+    cl <- cl[c(1L, m)]
+	est$call <- cl
 	est$formula <- formula
 	names(est$fitted.values) <- row.names(mf)
 	names(est$residuals) <- row.names(mf)
@@ -235,4 +239,4 @@ predict.iprior <- function(object, newdata=NULL, ...){
 }
 
 ### New feature soon
-#update.iprior <- function(x, ...){ cat("hello") }
+#merge.iprior <- function(x, ...) cat("hello")
