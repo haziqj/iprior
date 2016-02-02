@@ -8,6 +8,9 @@ update.iprior <- function(mod, ...){
 	
 	if(is.null(mod$formula)){	#model fitted with x and y
 		newarg <- list(x=mod$xval, y=mod$yval)
+		mx <- charmatch(c("x"), names(cl), 0L)
+		my <- charmatch(c("y"), names(cl), 0L)
+		cl <- cl[-c(mx, my)]
 	}
 	else{
 		mdata <- charmatch(c("data"), names(cl), 0L)
@@ -15,54 +18,45 @@ update.iprior <- function(mod, ...){
 		newarg <- list(formula=mod$formula, data=cl[[mdata]])
 		cl <- cl[-c(mdata, mformula)]
 	}
-
+	
 	#set up the new argument for iprior
 	k <- length(newarg)
-	for(i in 2:length(cl)){
-		newarg[[k+i-1]] <- cl[[i]]
-		names(newarg)[k+i-1] <- names(cl)[i]
+	if(length(cl) > 1){
+		for(i in 2:length(cl)){
+			newarg[[k+i-1]] <- cl[[i]]
+			names(newarg)[k+i-1] <- names(cl)[i]
+		}		
 	}
-	
+
 	#put in the parameters
 	newarg$alpha <- mod$alpha
 	newarg$lambda <- mod$lambda
 	newarg$psi <- mod$psi
 	newarg$progress <- "lite"
 
-	#specifically update the formula here
-	mformula2 <- charmatch("formula", names(newcall), 0L)
-	if(sum(mformula2) > 0){	#only do ifthere is update to formula
-		newformula <- update.formula(mod$formula, newcall[[mformula2]])
-		newarg$formula <- newformula
-		newcall <- newcall[-mformula2]
-		#if there was a new update to formula, then makes sense to specify new starting values?
-		# newarg$alpha <- rnorm(1)
-		# newarg$lambda <- NULL
-		# newarg$psi <- 10
-	}
-
 	#here we match the user's input and update the arguments if any	
-	mcommon <- charmatch(names(newcall), names(newarg), 0L)
-	mcommon[1:2] <- -1
-	ind1 <- which(mcommon > 0)
-	ind2 <- which(mcommon == 0)
-	if(sum(ind1) > 0){	#only do if there are things to match
-		newcall <- newcall[c(1, ind1, ind2)]
-		mcommon <- mcommon[mcommon>0]
-		for(i in 1:length(mcommon)) newarg[[ mcommon[i] ]] <- newcall[[i+1]]
+	ind.newarg <- charmatch(names(newcall), names(newarg), 0L); ind.newarg[1:2] <- -1 #picks out arguments in newarg that needs updating
+	ind.newcall1 <- which(ind.newarg > 0)		#picks out aditional arguments
+	ind.newcall2 <- which(ind.newarg == 0)	
+	ind.newarg <- ind.newarg[ind.newarg > 0]	
+	if(sum(ind.newarg) > 0){	#only do if there are things to match
+		for(i in 1:length(ind.newarg)) newarg[[ind.newarg[i]]] <- newcall[[ind.newcall1[i]]]
 	}
 
 	#following that, what remains is any other arguments the user has specified
-	k <- length(newarg)
-	if(sum(ind2) > 0){	#only do if there are other new user arguments
-		for(i in 1:length(ind2)){
-			newarg[[k+i]] <- newcall[[1+length(ind1)+i]]
-			names(newarg)[k+i] <- names(newcall)[1+length(ind1)+i]
+	k <- length(newarg); 
+	if(sum(ind.newcall2) > 0){	#only do if there are other new user arguments
+		for(i in 1:length(ind.newcall2)){
+			newarg[[k+i]] <- newcall[[ind.newcall2[i]]]
+			names(newarg)[k+i] <- names(newcall)[ind.newcall2[i]]
 		}
 	}
-	
+
+
 	#check if parsimonious option was touched
-	if(charmatch("parsm", names(newarg)) > 0){
+	parsm.ind <- which(!is.na(charmatch(names(newarg), "parsm")))
+	if(!all(is.na(parsm.ind))){
+		names(newarg)[parsm.ind] <- "parsm"
 		if(newarg$parsm == "F") tmp.log <- F 
 		else tmp.log <- T
 		if(mod$parsm != tmp.log){
@@ -71,11 +65,36 @@ update.iprior <- function(mod, ...){
 		} 
 	}
 	
-	#just for aesthetics, remove progress option from call
-	mprogress <- charmatch("progress", names(newarg)); print(mprogress)
-
+	#remove progress option from call for aestheticness
+	mprogress <- charmatch("progress", names(newarg))
+	
+	#aesthetic newarg
+	newarg.aesth <- newarg
+	newarg.aesth <- newarg.aesth[-mprogress]	
+	
+	#specifically update the formula here
+	if(!is.null(mod$formula)){
+		if(as.formula(mod$formula) != as.formula(newarg$formula)){	#only do if formula was updated by user
+			newformula <- update.formula(mod$formula, newarg$formula, data=cl[[mdata]])
+			newarg$formula <- newformula	
+			#if there was a new update to formula, then makes sense to specify new starting values?
+			# newarg$alpha <- rnorm(1)
+			# newarg$lambda <- NULL
+			# newarg$psi <- 10
+		}	
+	}
+	else{
+		checkx <- all(dim(mod$xval) == dim(newarg$x))	#first check dimensions the same
+		if(checkx) checkx <- all(mod$xval != newarg$x)	#if yes, then check individual elements
+		checky <- all(dim(mod$yval) == dim(newarg$y))	#first check dimensions the same
+		if(checky) checky <- all(mod$yval != newarg$y)	#if yes, then check individual elements
+		if(checkx) newarg.aesth$x <- as.name("new.x") else newarg.aesth$x <- as.name("x")
+		if(checky) newarg.aesth$y <- as.name("new.y") else newarg.aesth$y <- as.name("y")
+	}
+	
 	cat("Updating", deparse(substitute(mod)), "with the following call:", "\n\n")
-	print(as.call(c(as.name("iprior"), newarg[-mprogress])))
+	print(as.call(c(as.name("iprior"), newarg.aesth)))
 	cat("\n")
-	do.call("iprior", newarg)
+	tmp <- do.call("iprior", newarg)
+	assign(deparse(substitute(mod)), tmp, envir = .GlobalEnv)
 }
