@@ -1,6 +1,8 @@
 # R/iprior: An R package for I-prior regression
 
->**[v0.4.5](https://github.com/haziqjamil/iprior/releases/tag/v1.4.5) NEW: Predicted log-likelihood feature and other fixes.**
+>**[v0.4.5](https://github.com/haziqjamil/iprior/releases/tag/v1.4.5) NEW: Predicted log-likelihood feature and other fixes**
+
+>**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
 
 > *For installation instructions and a basic functionality tutorial, read on below. Have a look at the [wiki](https://github.com/haziqjamil/iprior/wiki/) for further guidance on topics such as the full list of modelling options, modelling interaction effects, using the predicted log-likelihood feature, and the `update()` function.*
 
