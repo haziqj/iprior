@@ -23,7 +23,7 @@ library(devtools)
 Then install R/iprior
 
 ```r
-install_github("haziqjamil/iprior", auth_token="16293ce378d914fd9bdf3313d49769c3f1a9b2a1")
+install_github("haziqjamil/iprior")
 library(iprior)
 ```
 
