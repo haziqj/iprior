@@ -97,3 +97,33 @@ The summary now gives more information regarding the I-prior model, including wh
 ```r
 summary(mod.iprior)
 ```
+
+## Example use 3
+We can also use the Fractional Brownian Motion (FBM) kernel to perform 1-dimensional smoothing. The package contains a simulated dataset of points called `datfbm` which were generated from a mixed Gaussian distribution function `fx <- function(x) 65*dnorm(x, mean=2)+ 35*dnorm(x,mean=7,sd=1.5)`.
+
+```r
+data(datfbm)
+attach(datfbm)
+plot(x, y, cex=0.5)
+lines(x, fx(x), type="l", col=3, lty=2)
+```
+
+To use the FBM kernel, we include it in the call options:
+
+```r
+mod.iprior <- iprior(y~x, datfbm, kernel="FBM")
+summary(mod.iprior)
+```
+
+Currently, the Hurst coefficient is not estimated in the EM procedure (it is treated as fixed). We can change the value of the Hurst coefficient by including `gam=<Hurst.value>` in the call option, where `Hurst.value` is between 0 and 1, e.g. `gam=0.5`. By default, if no Hurst coefficient is specified, `gam=0.5` is used.
+
+Here's a plot of the fitted values:
+
+```r
+yhat <- fitted(mod.iprior)
+lines(x, yhat, type="l", col=2)
+detach(datfbm)
+```
+
+![FBMplot](/images/Rplot7.jpg)
+
