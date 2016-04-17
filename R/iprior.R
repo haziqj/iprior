@@ -6,7 +6,7 @@
 iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	progress <- match.arg(progress)
@@ -19,11 +19,12 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, gamfbm=gamfbm, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
 	colnames(est$res.param) <- names(param)
+	if(is.null(gamfbm)) gamma <- 0.5 else gamma <- gamfbm
 	
 	### Calculate fitted values
 	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
@@ -38,6 +39,7 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	est$call <- cl
 	
 	### Other things to return	
+	est$gamma <- gamma
 	est$coefficients <- param
 	est$yval <- y
 	est$xval <- x
@@ -51,7 +53,7 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 print.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- "Fractional Brownian Motion"
+	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$gamma)
 	kerneltypes <- c(CanOrFBM, "Pearson", paste(CanOrFBM, "& Pearson"))
 	if(all(x$whichPearson)) cat("\nRKHS used:", kerneltypes[2])
 	else{
@@ -114,7 +116,7 @@ summary.iprior <- function(object, ...){
 	}
 	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q)
+	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, gamma=object$gamma)
 	class(res) <- "summary.iprior"
 	res
 }
@@ -124,7 +126,7 @@ print.summary.iprior <- function(x, ...){
 	print(x$call)
 	xPearson <- names(x$whichPearson)[x$whichPearson]
 	xCanOrFBM <- names(x$whichPearson)[!x$whichPearson]
-	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- "Fractional Brownian Motion"
+	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$gamma)
 	printPearson <-	paste0("Pearson (", paste(xPearson, collapse=", "), ")")
 	printCanOrFBM <- paste0(CanOrFBM, " (", paste(xCanOrFBM, collapse=", "), ")")
 	cat("\n")

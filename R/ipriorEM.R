@@ -2,7 +2,7 @@
 ### The iprior EM
 ###
 
-ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, maxit, stop.crit, report.int, silent, alpha.init, lambda.init, psi.init, invmethod, clean, paramprogress){
+ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, gamfbm, maxit, stop.crit, report.int, silent, alpha.init, lambda.init, psi.init, invmethod, clean, paramprogress){
 	### Library packages
 	require(Matrix, quietly=T)			#to create diagonal matrices
 	require(MASS, quietly=T)			#to sample from MVN dist.
@@ -57,7 +57,7 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ma
 	for(j in 1:p){
 		if(whichkernel[j]) H.mat[[j]] <- fn.H1(X[,j])		#Pearson
 		else{
-			if(kernel=="FBM") H.mat[[j]] <- fn.H3(X[,j])	#FBM
+			if(kernel=="FBM") H.mat[[j]] <- fn.H3(X[,j], gamma=gamfbm)	#FBM
 			else H.mat[[j]] <- fn.H2a(X[,j])				#Canonical
 		}
 		if(q > 1)  H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]

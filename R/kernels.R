@@ -1,7 +1,6 @@
 ## Canonical kernel function
 fn.H2 <- function(x, y=NULL){ #takes in vector of covariates
 	if(is.null(y)) y <- x
-	z <- c(x,y)
 	tmp <- tcrossprod(y, x)
 	tmp
 }
@@ -59,12 +58,31 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 }
 
 ## FBM kernel (to be developed)
-fn.H3 <- function(x, y=NULL){ #takes in vector of covariates
+fn.H3 <- function(x, y=NULL, gamma=NULL){ #takes in vector of covariates
+	if(is.null(gamma)) gamma <- 0.5
 	x <- as.numeric(x)
-	if(is.null(y)) y <- x
-	else y <- as.numeric(y)
-	diag(nrow=length(y), ncol=length(x))
+	n <- length(x)
+	
+	if(is.null(y)){
+		w <- 1:n
+		index <- cbind( row = rep(w, times=(length(w)-1):0 ) ,
+						col = unlist(lapply(1:(length(w)-1), function(x) w[-(1:x)])) )
+		index <- index[order(index[,2]),]				
+		tmp2 <- abs(x[index[,1]])^(2*gamma) + abs(x[index[,2]])^(2*gamma) - abs(x[index[,1]]-x[index[,2]])^(2*gamma)
+		mat0 <- diag(0,n)
+		mat0[upper.tri(mat0)] <- tmp2
+		tmp <- diag(2*abs(x)^(2*gamma) - abs(x - x)^(2*gamma)) + mat0 + t(mat0)
+	}
+	else{
+		y <- as.numeric(y); m <- length(y)
+		tmp <- matrix(NA, nc=n, nr=m)
+		for(i in 1:m){
+			for(j in 1:n){
+				tmp[i,j] <- abs(y[i])^(2*gamma) + abs(x[j])^(2*gamma) - abs(y[i] - x[j])^(2*gamma)
+			}
+		}
+	}
+	
+	tmp
 }
-
-
 
