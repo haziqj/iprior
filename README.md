@@ -1,6 +1,6 @@
 # R/iprior: An R package for I-prior regression
 
->**[v0.4.5](https://github.com/haziqjamil/iprior/releases/tag/v1.4.5) NEW: Predicted log-likelihood feature and other fixes**
+>**[v0.4.6](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) NEW: Fractional Brownian Motion kernel**
 
 >**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
 
@@ -10,7 +10,9 @@ Based on manuscript entitled "Regression modelling with I-priors" by Wicher Berg
 
 Currently, either a single scale parameter or several individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor. A full list of options can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options).
 
-`iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). As of [v0.4](https://github.com/haziqjamil/iprior/releases/tag/v0.4), the programme supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](https://github.com/haziqjamil/iprior/wiki/Modelling-interactions).
+`iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). As of [v0.4](https://github.com/haziqjamil/iprior/releases/tag/v0.4), the programme supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](https://github.com/haziqjamil/iprior/wiki/Modelling-interactions). 
+
+By default, the Canonical kernel (straight lines) is used for continuous variables, but this can be changed to the [FBM kernel](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) for smoothing (see below, or the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options)).
 
 ## Installation
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
