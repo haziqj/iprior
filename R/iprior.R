@@ -86,7 +86,7 @@ summary.iprior <- function(object, ...){
 			} 
 			else H.mat.lam <- Reduce('+', mapply('*', object$H.mat, lambda.int, SIMPLIFY=F))
 		} 
-		if(object$one.lam) H.mat.lam <- lambda * object$H.mat
+		if(object$one.lam) H.mat.lam <- Reduce('+', mapply('*', object$H.mat, lambda, SIMPLIFY=F))
 		H.mat.lamsq <- H.mat.lam %*% H.mat.lam	
 		Var.Y <- psi*H.mat.lamsq + (1/psi) * diag(n)
 		loglik <- dmvn(y-alpha, rep(0,n), Var.Y, log=T)
