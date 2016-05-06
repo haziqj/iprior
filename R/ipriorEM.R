@@ -55,12 +55,12 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ga
 	### Define the kernel matrix
 	H.mat <- NULL; H.matsq <- NULL
 	for(j in 1:p){
-		if(whichkernel[j]) H.mat[[j]] <- fn.H1(X[,j])		#Pearson
+		if(whichkernel[j]) H.mat[[j]] <- fn.H1(X[,j])					#Pearson
 		else{
 			if(kernel=="FBM") H.mat[[j]] <- fn.H3(X[,j], gamma=gamfbm)	#FBM
-			else H.mat[[j]] <- fn.H2a(X[,j])				#Canonical
+			else H.mat[[j]] <- fn.H2a(X[,j])							#Canonical
 		}
-		if(q > 1)  H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
+		if(q > 1) H.matsq[[j]] <- H.mat[[j]] %*% H.mat[[j]]
 	}
 	if(!is.null(interactions)){
 		for(j in 1:no.int){
@@ -70,8 +70,9 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ga
 	}
 	
 	if(q == 1){	#just to save some time, if q=1 then no need to loop and define H2 and J.mat
-		H.matsq <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))
-		H.matsq <- list(H.matsq %*% H.matsq)
+		H.mat <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))
+		H.matsq <- list(H.mat %*% H.mat)
+		H.mat <- list(H.mat)
 		H.mat2 <- list(matrix(0, nr=N, nc=N))
 		J.mat <- function(k) matrix(0, nr=N, nc=N)
 		ind1 <- 1; ind2 <- 1
@@ -218,5 +219,5 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ga
 	else if(!silent) cat("EM NOT CONVERGED!\n")#, "\nNumber of iterations =", i, "\n")
 	#if(!silent) cat("Log-likelihood = ", log.lik1, "\n")
 	
-	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, H.mat.lam=H.mat.lam, VarY=Var.Y, w.hat=w.hat, kernel=kernel, whichPearson=whichkernel, converged=converged, stop.crit=stop.crit, one.lam=one.lam, parsm=parsm, interactions=interactions, q=q, res.loglik=res.loglik, res.param=res.param)
+	list(alpha=alpha, lambda=lambda, psi=psi, log.lik=log.lik1, no.iter=i, H.mat=H.mat, H.matsq=H.matsq, H.mat.lam=H.mat.lam, VarY=Var.Y, w.hat=w.hat, kernel=kernel, whichPearson=whichkernel, converged=converged, stop.crit=stop.crit, one.lam=one.lam, parsm=parsm, interactions=interactions, q=q, p=p, res.loglik=res.loglik, res.param=res.param)
 }

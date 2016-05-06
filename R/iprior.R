@@ -6,7 +6,7 @@
 iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	progress <- match.arg(progress)
@@ -105,8 +105,7 @@ summary.iprior <- function(object, ...){
 					z=round(zval, digits=3),
 					"P[|Z>z|]"=round(2*pnorm(-abs(zval)), digits=3) )
 	if(object$q == 1){ #only rename rows when using multiple lambdas
-		lamnames <- "lam"
-		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
+		lamnames <- c("(Intercept)", "lambda", "psi")
 		rownames(tab) <- lamnames
 	}
 	else{
