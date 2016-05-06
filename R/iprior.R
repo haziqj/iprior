@@ -6,7 +6,7 @@
 iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha.init=rnorm(1), lambda.init=NULL, psi.init=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	progress <- match.arg(progress)
