@@ -1,6 +1,6 @@
 # R/iprior: An R package for I-prior regression
 
->**[v0.4.6](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) NEW: Fractional Brownian Motion kernel**
+>**[v0.4.7](https://github.com/haziqjamil/iprior/releases/tag/v0.4.7) NEW: Fractional Brownian Motion kernel**
 
 >**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
 
@@ -12,7 +12,7 @@ Currently, either a single scale parameter or several individual scale parameter
 
 `iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). As of [v0.4](https://github.com/haziqjamil/iprior/releases/tag/v0.4), the programme supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](https://github.com/haziqjamil/iprior/wiki/Modelling-interactions). 
 
-By default, the Canonical kernel (straight lines) is used for continuous variables, but this can be changed to the [FBM kernel](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) for smoothing (see below, or the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options)).
+By default, the Canonical kernel (straight lines) is used for continuous variables, but this can be changed to the [FBM kernel](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) for smoothing (see below, or the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options)). Also, a [small writeup](https://github.com/haziqjamil/iprior/wiki/Using-FBM-kernel-for-regression-with-functional-covariates) on using the FBM kernel for the Tecator dataset.
 
 ## Installation
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
