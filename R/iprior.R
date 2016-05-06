@@ -200,7 +200,6 @@ predict.iprior <- function(object, newdata=NULL, ...){
 			xstar <- model.frame(Terms, newdata) #previously m
 			# xstar <- model.matrix(Terms, m)
 			# xstar <- model.matrix(object$formula, newdata)
-			xcolnames <- colnames(xstar); xrownames <- rownames(xstar)
 			# wheres.int <- (colnames(xstar) == "(Intercept)")
 			# xstar <- matrix(xstar[,!wheres.int], nc=p)
 			# colnames(xstar) <- xcolnames[!wheres.int]
@@ -208,13 +207,17 @@ predict.iprior <- function(object, newdata=NULL, ...){
 		else{
 			xstar <- as.matrix(newdata)
 		}
+		xcolnames <- colnames(xstar); xrownames <- rownames(xstar)
 		
 		## Define new kernel matrix
 		if(!object$one.lam){ #for multiple lambdas
 			H.mat <- NULL
 			for(j in 1:p){
-				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j], xstar[,j]) 
-				else H.mat[[j]] <- fn.H2a(X[,j], xstar[,j]) 			
+				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j], xstar[,j])								#Pearson
+				else{
+					if(object$kernel=="FBM") H.mat[[j]] <- fn.H3(X[,j], xstar[,j], gamma=object$gam)	#FBM
+					else H.mat[[j]] <- fn.H2a(X[,j], xstar[,j])											#Canonical
+				} 			
 			}
 			if(!is.null(object$interactions) && object$parsm){ #for non-parsimonious interactions
 				Tmpo <- object$interactions[[1]]
@@ -230,8 +233,14 @@ predict.iprior <- function(object, newdata=NULL, ...){
 		}
 		if(object$one.lam){ #for single lambdas
 			H.mat <- 0
-			for(j in 1:p) H.mat <- H.mat + fn.H2a(X[,j], xstar[,j]) 
+			for(j in 1:p){
+				if(is.factor(X[,j]))  H.mat <- H.mat + fn.H1(X[,j], xstar[,j])							#Pearson
+				else{
+					if(object$kernel=="FBM") H.mat <- H.mat + fn.H3(X[,j], xstar[,j], gamma=object$gam)	#FBM
+					else H.mat <- H.mat + fn.H2a(X[,j], xstar[,j])										#Canonical
+				} 			
 			H.mat.lam <- object$lambda * H.mat
+			}
 		}
 		ystar <- as.vector(object$alpha + (H.mat.lam %*% object$w.hat))
 		names(ystar) <- xrownames

@@ -57,7 +57,7 @@ fn.H1 <- function(x, y=NULL){ #takes in vectors of type factors
 	tmp.mat
 }
 
-## FBM kernel (to be developed)
+## FBM kernel
 fn.H3 <- function(x, y=NULL, gamma=NULL){ #takes in vector of covariates
 	if(is.null(gamma)) gamma <- 0.5
 	x <- as.numeric(x)
