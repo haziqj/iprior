@@ -14,8 +14,8 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	if(progress == "none"){ clean <- T; silent <- T; paramprogress <- F }
 	if(progress == "full"){ clean <- F; silent <- F; paramprogress <- T }
 	if(progress == "predloglik"){ clean <- F; silent <- F; paramprogress <- F }
-	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	x <- as.data.frame(x)
+	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
 	y <- as.numeric(y)
 	n <- length(y)
 	
@@ -115,7 +115,7 @@ summary.iprior <- function(object, ...){
 	}
 	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, gamma=object$gamma)
+	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, p=object$p, gamma=object$gamma, formula=object$formula)
 	class(res) <- "summary.iprior"
 	res
 }
@@ -123,8 +123,10 @@ summary.iprior <- function(object, ...){
 print.summary.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	xPearson <- names(x$whichPearson)[x$whichPearson]
-	xCanOrFBM <- names(x$whichPearson)[!x$whichPearson]
+	if(!is.null(x$formula)) x.names <- names(x$whichPearson)
+	else x.names <- paste0("X", 1:x$p)
+	xPearson <- x.names[x$whichPearson]
+	xCanOrFBM <- x.names[!x$whichPearson]
 	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$gamma)
 	printPearson <-	paste0("Pearson (", paste(xPearson, collapse=", "), ")")
 	printCanOrFBM <- paste0(CanOrFBM, " (", paste(xCanOrFBM, collapse=", "), ")")
