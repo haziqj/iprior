@@ -6,12 +6,12 @@
 iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), gamfbm=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), ...){
+iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), Hurst=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), silent_=F, ...){
 	kernel <- match.arg(kernel)
 	invmethod <- match.arg(invmethod)
 	progress <- match.arg(progress)
 	if(progress == "lite"){ clean <- T; silent <- F; paramprogress <- F }
-	if(progress == "none"){ clean <- T; silent <- T; paramprogress <- F }
+	if(progress == "none" | silent_ ){ clean <- T; silent <- T; paramprogress <- F }
 	if(progress == "full"){ clean <- F; silent <- F; paramprogress <- T }
 	if(progress == "predloglik"){ clean <- F; silent <- F; paramprogress <- F }
 	x <- as.data.frame(x)
@@ -19,12 +19,12 @@ iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c
 	y <- as.numeric(y)
 	n <- length(y)
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, gamfbm=gamfbm, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
+	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, gamfbm=Hurst, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
-	colnames(est$res.param) <- names(param)
-	if(is.null(gamfbm)) gamma <- 0.5 else gamma <- gamfbm
+	# colnames(est$res.param) <- names(param)
+	if(is.null(Hurst)) gamma <- 0.5 else gamma <- Hurst
 	
 	### Calculate fitted values
 	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
@@ -68,38 +68,17 @@ print.iprior <- function(x, ...){
 	cat("\n")
 }
 
-## The summary screen
+### The summary screen
 summary.iprior <- function(object, ...){
-	## Calculate standard errors through Inverse (observed) Fisher information matrix
-	ipriorloglik <- function(theta){
-		alpha <- theta[1]; lambda <- theta[-c(1,length(theta))]; psi <- theta[length(theta)]
-		n <- length(fitted(object))
-		y <- object$yval
-		if(!object$one.lam){
-			lambda.int <- lambda
-			if(!is.null(object$interactions) && object$parsm){
-				Tmpo <- object$interactions[[1]]
-				Tmpf <- object$interactions[[2]]
-				no.int <- sum(Tmpo==2)
-				for(j in 1:no.int) lambda.int <- c(lambda.int, lambda[Tmpf[1, j]]*lambda[Tmpf[2, j]])
-				H.mat.lam <- Reduce('+', mapply('*', object$H.mat, lambda.int, SIMPLIFY=F))
-			} 
-			else H.mat.lam <- Reduce('+', mapply('*', object$H.mat, lambda.int, SIMPLIFY=F))
-		} 
-		if(object$one.lam) H.mat.lam <- Reduce('+', mapply('*', object$H.mat, lambda, SIMPLIFY=F))
-		H.mat.lamsq <- H.mat.lam %*% H.mat.lam	
-		Var.Y <- psi*H.mat.lamsq + (1/psi) * diag(n)
-		loglik <- dmvn(y-alpha, rep(0,n), Var.Y, log=T)
-		loglik
-	}
-	FisherInformation <- -hessian(ipriorloglik, coef(object))
-	InverseFisher <- solve(FisherInformation)
-	se <- sqrt(diag(InverseFisher))
+	### Fisher information and standard errors
+	se <- Fisher.fn(	alpha=object$alpha, psi=object$psi, lambda=object$lambda, 
+						P.matsq=object$P.matsq, H.mat.lam=object$H.mat.lam, 
+						S.mat=object$S.mat, 	Var.Y.inv=object$Var.Y.inv )
 	
-	## Z values to compare against (standard) Normal distribution
+	### Z values to compare against (standard) Normal distribution
 	zval <- coef(object) / se
 	
-	## Create table for summary screen
+	### Create table for summary screen
 	tab <- cbind(	Estimate=round(coef(object), digits=4),
 					S.E.=round(se, digits=4),
 					z=round(zval, digits=3),
@@ -165,8 +144,9 @@ iprior.formula <- function(formula, data=list(), ...){
 	x <- model.frame(Terms, mf)
 	y <- model.response(mf)
 	
-	## for interactions
+	### For interactions
 	tmpo <- attr(tt, "order")
+	if(any(tmpo>2)) stop("iprior does not currently work with higher order interactions.")
 	tmpf <- attr(tt, "factors")
 	tmpf2 <- as.matrix(tmpf[-1, tmpo==2])	#this obtains 2nd order interactions
 	int2 <- apply(tmpf2, 2, function(x) which(x == 1))
@@ -187,10 +167,13 @@ iprior.formula <- function(formula, data=list(), ...){
 	names(est$fitted.values) <- row.names(mf)
 	names(est$residuals) <- row.names(mf)
 	est$terms <- tt
+	est$yval <- y
+	est$xval <- x
+	est$yname <- names(attr(tt, "dataClasses"))[1]
 	est
 }
 
-## Prediction
+### Prediction
 predict.iprior <- function(object, newdata=NULL, ...){
 	Y <- object$y; X <- object$x; p <- ncol(X)
 	if(is.null(newdata)) ystar <- fitted(object)
@@ -217,7 +200,7 @@ predict.iprior <- function(object, newdata=NULL, ...){
 			for(j in 1:p){
 				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j], xstar[,j])								#Pearson
 				else{
-					if(object$kernel=="FBM") H.mat[[j]] <- fn.H3(X[,j], xstar[,j], gamma=object$gam)	#FBM
+					if(object$kernel=="FBM") H.mat[[j]] <- fn.H3a(X[,j], xstar[,j], gamma=object$gam)	#FBM
 					else H.mat[[j]] <- fn.H2a(X[,j], xstar[,j])											#Canonical
 				} 			
 			}
@@ -238,7 +221,7 @@ predict.iprior <- function(object, newdata=NULL, ...){
 			for(j in 1:p){
 				if(is.factor(X[,j]))  H.mat <- H.mat + fn.H1(X[,j], xstar[,j])							#Pearson
 				else{
-					if(object$kernel=="FBM") H.mat <- H.mat + fn.H3(X[,j], xstar[,j], gamma=object$gam)	#FBM
+					if(object$kernel=="FBM") H.mat <- H.mat + fn.H3a(X[,j], xstar[,j], gamma=object$gam)	#FBM
 					else H.mat <- H.mat + fn.H2a(X[,j], xstar[,j])										#Canonical
 				} 			
 			H.mat.lam <- object$lambda * H.mat

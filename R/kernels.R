@@ -5,7 +5,7 @@ fn.H2 <- function(x, y=NULL){ #takes in vector of covariates
 	tmp
 }
 
-## (centred) Canonical kernel function
+## Centred Canonical kernel function
 fn.H2a <- function(x, y=NULL){ #takes in vector of covariates
 	x <- as.numeric(x)
 	if(is.null(y)) y <- x
@@ -64,15 +64,14 @@ fn.H3 <- function(x, y=NULL, gamma=NULL){ #takes in vector of covariates
 	n <- length(x)
 	
 	if(is.null(y)){
-		w <- 1:n
-		index <- cbind( row = rep(w, times=(length(w)-1):0 ) ,
-						col = unlist(lapply(1:(length(w)-1), function(x) w[-(1:x)])) )
-		index <- index[order(index[,2]),]				
+		tmp <- matrix(0, n, n)
+		index.mat <- upper.tri(tmp, diag=T)
+		index <- which(index.mat, arr.ind=T)
 		tmp2 <- abs(x[index[,1]])^(2*gamma) + abs(x[index[,2]])^(2*gamma) - abs(x[index[,1]]-x[index[,2]])^(2*gamma)
-		mat0 <- diag(0,n)
-		mat0[upper.tri(mat0)] <- tmp2
-		tmp <- diag(2*abs(x)^(2*gamma) - abs(x - x)^(2*gamma)) + mat0 + t(mat0)
-	}
+		tmp[index.mat] <- tmp2 
+		tmp2 <- tmp; diag(tmp2) <- 0
+		tmp <- tmp + t(tmp2) 
+	}																			
 	else{
 		y <- as.numeric(y); m <- length(y)
 		tmp <- matrix(NA, nc=n, nr=m)
@@ -82,7 +81,48 @@ fn.H3 <- function(x, y=NULL, gamma=NULL){ #takes in vector of covariates
 			}
 		}
 	}
-	
 	tmp
+	
 }
 
+## Centred and scaled FBM kernel
+fn.H3a <- function(x, y=NULL, gamma=NULL){ #takes in vector of covariates
+	if(is.null(gamma)) gamma <- 0.5
+	x <- as.numeric(x)
+	n <- length(x)
+	
+	if(is.null(y)){
+		A <- matrix(0, n, n)
+		index.mat <- upper.tri(A)
+		index <- which(index.mat, arr.ind=T)
+		tmp2 <- abs(x[index[,1]]-x[index[,2]])^(2*gamma)
+		A[index.mat] <- tmp2 
+		A <- A + t(A)
+		rvec <- apply(A, 1, sum)
+		s <- sum(rvec)
+		rvec1 <- tcrossprod(rvec, rep(1,n))
+		tmp <- (A - rvec1/n - t(rvec1)/n + s/(n^2))/(-2)
+	}
+	else{
+		y <- as.numeric(y); m <- length(y)	
+
+		A <- matrix(0, n, n)
+		index.mat <- upper.tri(A)
+		index <- which(index.mat, arr.ind=T)
+		tmp2 <- abs(x[index[,1]]-x[index[,2]])^(2*gamma)
+		A[index.mat] <- tmp2 
+		A <- A + t(A)		
+		rvec <- apply(A, 1, sum)
+		s <- sum(rvec)
+		rvec1 <- tcrossprod(rep(1,m), rvec)
+		
+		B <- matrix(0, m, n)
+		indexy <- expand.grid(1:m, 1:n)
+		B[,] <- abs(y[indexy[,1]]-x[indexy[,2]])^(2*gamma)
+		qvec <- apply(B, 1, sum)
+		qvec1 <- tcrossprod(qvec, rep(1,n))
+		
+		tmp <- (B - qvec1/n - rvec1/n + s/(n^2))/(-2)
+	}
+	tmp
+}
