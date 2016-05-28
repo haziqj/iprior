@@ -152,7 +152,7 @@ ipriorEM <- function(x, y, whichkernel, interactions, one.lam, parsm, kernel, ga
 	H.mat2 <- H.matsq <- P.mat <- P.matsq <- R.mat <- U.mat <- S.mat <- ind <- NULL
 	if(one.lam | q==1){
 		P.mat <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))
-		P.matsq <- list(P.mat %*% P.mat)
+		P.matsq <- list(FastSquare(P.mat))
 		P.mat <- list(P.mat)
 		BlockB <- function(k){}
 		S.mat <- list(matrix(0, nr=N, nc=N))
