@@ -92,9 +92,9 @@ summary.iprior <- function(object, ...){
 		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
 		rownames(tab) <- lamnames
 	}
-	#tab <- tab[-length(coef(object)),]	#removes the psi from the table
+	tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, p=object$p, gamma=object$gamma, formula=object$formula)
+	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, p=object$p, gamma=object$gamma, formula=object$formula, psi.and.se=c(coef(object)[length(se)], se[length(se)]))
 	class(res) <- "summary.iprior"
 	res
 }
@@ -120,10 +120,10 @@ print.summary.iprior <- function(x, ...){
 	print(summary(x$resid)[-4])
 	cat("\n")
 	tab <- x$coefficients
-	psi.and.se <- tab[length(rownames(tab)),]
+	psi.and.se <- x$psi.and.se
 	sigma <- 1 / sqrt(psi.and.se[1])
 	sesigma <- psi.and.se[2] * sigma^3 / 2
-	tab <- tab[-length(rownames(tab)),]
+	# tab <- tab[-length(rownames(tab)),]
 	printCoefmat(tab, P.value=T, has.Pvalue=T)
 	cat("\n")
 	if(x$converged) cat("EM converged to within", x$stop.crit, "tolerance.")
