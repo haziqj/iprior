@@ -2,7 +2,7 @@
 
 >**[v0.5](https://github.com/haziqjamil/iprior/releases/tag/v0.5) NEW: Speed bumps and plotting feature**
 
->**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>5000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20). A test of model fit with 2 variables and interactions for `n=6795` took x minutes.**
+>**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>5000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
 
 > *For installation instructions and a basic functionality tutorial, read on below. Have a look at the [wiki](https://github.com/haziqjamil/iprior/wiki/) for further guidance on topics such as the full list of modelling options, modelling interaction effects, using the predicted log-likelihood feature, and the `update()` function.*
 
