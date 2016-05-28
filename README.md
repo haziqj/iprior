@@ -1,12 +1,12 @@
 # R/iprior: An R package for I-prior regression
 
->**[v0.4.7](https://github.com/haziqjamil/iprior/releases/tag/v0.4.7) NEW: Fractional Brownian Motion kernel**
+>**[v0.5](https://github.com/haziqjamil/iprior/releases/tag/v0.5) NEW: Speed bumps and plotting feature**
 
->**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
+>**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>5000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20). A test of model fit with 2 variables and interactions for `n=6795` took x minutes.**
 
 > *For installation instructions and a basic functionality tutorial, read on below. Have a look at the [wiki](https://github.com/haziqjamil/iprior/wiki/) for further guidance on topics such as the full list of modelling options, modelling interaction effects, using the predicted log-likelihood feature, and the `update()` function.*
 
-Based on manuscript entitled "Regression modelling with I-priors" by Wicher Bergsma [2014, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, `predict`, and so on.
+Based on manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, `predict`, and so on.
 
 Currently, either a single scale parameter or several individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor. A full list of options can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options).
 
