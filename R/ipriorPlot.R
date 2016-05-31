@@ -18,10 +18,10 @@ plot.iprior <- function(object, UseOwnLabels=F, plots=c("all", "allinone", "fitt
 	if(!is.numeric(plots)){
 		thisplot <- match.arg(plots)
 		if((thisplot == "all") | (thisplot == "allinone")) thisplot <- 1:3
-		else if(thisplot == "fitted") thisplot <- c(3)
-		else if(thisplot == "diagnostic") thisplot <- c(1,2)
-		else if(thisplot == "residuals") thisplot <- c(1)
-		else if(thisplot == "qqplot") thisplot <- c(2)
+		else if(thisplot == "fitted") thisplot <- c(1)
+		else if(thisplot == "diagnostic") thisplot <- c(2,3)
+		else if(thisplot == "residuals") thisplot <- c(2)
+		else if(thisplot == "qqplot") thisplot <- c(3)
 	} 
 	else{
 		thisplot <- plots
@@ -35,8 +35,29 @@ plot.iprior <- function(object, UseOwnLabels=F, plots=c("all", "allinone", "fitt
 
 	if(length(c(cts.vars, ctg.vars)) <= 2){
 		x.cts <- x[,cts.vars]
-		if(sum(object$whichPearson) == 1){
-			x.ctg <- x[,ctg.vars[1]]
+		if(length(cts.vars) == 0){
+			yhat.unq <- unique(yhat)
+			x.ctg <- x[,ctg.vars]
+			plotlvl <- levels(x.ctg)
+			grp <- as.numeric(x.ctg)
+			if(UseOwnLabels) plotlvl <- unique(grp)
+			plot1 <- function(z){
+				plot(x=grp, y=y, type="n", xlab=xnames[ctg.vars], ylab=yname, main="Fitted regression curve", xaxt="n", xlim=c(0.5, length(unique(grp))+0.5))
+				for(i in unique(grp)){
+					text(x=grp[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
+					abline(a=yhat.unq[i], b=0, col=colx[(i-1)%%22+1])
+				}
+			}			
+		}
+		else if(length(ctg.vars) == 0){
+			plot1 <- function(z){
+				xorder <- order(x.cts)							
+				plot(x=x.cts, y=y, xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
+				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1])			
+			}
+		}
+		else{
+			x.ctg <- x[,ctg.vars]
 			plotlvl <- levels(x.ctg)
 			grp <- as.numeric(x.ctg)
 			if(UseOwnLabels) plotlvl <- unique(grp)
@@ -47,13 +68,6 @@ plot.iprior <- function(object, UseOwnLabels=F, plots=c("all", "allinone", "fitt
 					text(x=x.cts[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
 					lines(x=x.cts[grp==i][xorder], yhat[grp==i][xorder], col=colx[(i-1)%%22+1])
 				}
-			}
-		}
-		else{
-			plot1 <- function(z){
-				xorder <- order(x.cts)							
-				plot(x=x.cts, y=y, xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
-				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1])
 			}
 		}
 	}

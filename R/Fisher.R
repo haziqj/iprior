@@ -11,13 +11,13 @@ Fisher.fn <- function(alpha, psi, lambda, P.matsq, S.mat, H.mat.lam, Var.Y.inv){
 	}
 	F.mat[[q+1]] <- diag(1/psi, N)
 	Fisher <- matrix(0, nr=q+2, nc=q+2)
-	Fisher[1,1] <- sum(Var.Y.inv)
+	# Fisher[1,1] <- sum(Var.Y.inv)
 	for(i in 1:(q+1)){
 		for(j in 1:(q+1)){
 			Fisher[i+1,j+1] <- 1/2*sum(F.mat[[i]]*F.mat[[j]])
 		}
 	}
-	InverseFisher <- solve(Fisher)
-	se <- sqrt(diag(InverseFisher))
+	InverseFisher <- solve(Fisher[-1,-1])
+	se <- sqrt(c(1/sum(Var.Y.inv), diag(InverseFisher)))
 	se
 }
