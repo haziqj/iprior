@@ -92,7 +92,7 @@ plot.iprior <- function(object, UseOwnLabels=F, plots=c("all", "allinone", "fitt
 	}
 
 	## Plot
-	if(match.arg(plots) == "allinone"){
+	if(!is.numeric(plots) && match.arg(plots) == "allinone"){
 		dev.new(width=14, height=5.3)
 		par(mfrow=c(1,3))
 		for(i in which(whichplot)){
