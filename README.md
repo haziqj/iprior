@@ -1,16 +1,12 @@
 # R/iprior: An R package for I-prior regression
 
->**[v0.5](https://github.com/haziqjamil/iprior/releases/tag/v0.5) NEW: Speed bumps and plotting feature**
+>**[v0.5](https://github.com/haziqjamil/iprior/releases/tag/v0.5) UPDATED: 28/6/16. Speed bumps and plotting feature.**
 
-Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. An I-prior is an uninformative class of such priors based on the principle of maximum entropy. 
+Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy. 
 
-This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters (`lambda`) and the standard deviation of errors (`sigma`), with the main interest being prediction.
+This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters of the reproducing kernel Hilbert space over the set of covariates, `lambda`, and the standard deviation of model fit errors,`sigma`. While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
-Currently, either a single scale parameter or several individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor. A full list of options can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options).
-
-`iprior()` function now recognises categorical covariates in the data frame (as factors). This enables predictors which are categorical, ordinal, or even multi-level modelling (categorical group indicators). As of [v0.4](https://github.com/haziqjamil/iprior/releases/tag/v0.4), the programme supports modelling **interaction effects**. For a tutorial on this, have a look at [this page](https://github.com/haziqjamil/iprior/wiki/Modelling-interactions). 
-
-By default, the Canonical kernel (straight lines) is used for continuous variables, but this can be changed to the [FBM kernel](https://github.com/haziqjamil/iprior/releases/tag/v0.4.6) for smoothing (see below, or the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options)). Also, a [small writeup](https://github.com/haziqjamil/iprior/wiki/Using-FBM-kernel-for-regression-with-functional-covariates) on using the FBM kernel for the Tecator dataset.
+For installation instructions and some examples of I-prior modelling, continue reading below. A full list of options, along with some other useful documentation, can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/). 
 
 ## Installation
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
@@ -20,7 +16,7 @@ install.packages("devtools")
 library(devtools)
 ```
 
-Then install R/iprior
+Then, run the following code to install R/iprior and load the `iprior` library.
 
 ```r
 install_github("haziqjamil/iprior")
