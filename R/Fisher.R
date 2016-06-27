@@ -9,7 +9,7 @@ Fisher.fn <- function(alpha, psi, lambda, P.matsq, S.mat, H.mat.lam, Var.Y.inv){
 	for(i in 1:q){
 		F.mat[[i]] <- Var.Y.inv %*% ( psi*(2*lambda[i]*P.matsq[[i]] + S.mat[[i]]) ) 
 	}
-	F.mat[[q+1]] <- diag(1/psi, N)
+	F.mat[[q+1]] <- diag(1/psi, N) - (2/psi^2)*Var.Y.inv
 	Fisher <- matrix(0, nr=q+2, nc=q+2)
 	# Fisher[1,1] <- sum(Var.Y.inv)
 	for(i in 1:(q+1)){

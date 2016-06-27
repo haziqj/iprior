@@ -3,64 +3,85 @@
 ### only a call to UseMethod
 ###
 
-iprior <- function(formula, data, one.lam, parsm, progress=c("lite", "none", "full", "predloglik"), ...) UseMethod("iprior")
+iprior <- function(y, ..., model=list(), control=list()) UseMethod("iprior")
 
 ### The default method
-iprior.default <- function(x, y, interactions=NULL, parsm=T, one.lam=F, kernel=c("Canonical", "FBM"), Hurst=NULL, maxit=50000, stop.crit=1e-7, report.int=100, alpha=rnorm(1), lambda=NULL, psi=10, invmethod=c("eigen", "chol"), progress=c("lite", "none", "full", "predloglik"), silent_=F, ...){
-	kernel <- match.arg(kernel)
-	invmethod <- match.arg(invmethod)
-	progress <- match.arg(progress)
+iprior.default <- function (y, ..., model=list(), control=list()) {
+	
+	con <- list( maxit=50000, stop.crit=1e-7, report.int=100, 
+				 lambda=NULL, psi=abs(rnorm(1)),
+				 progress="lite", silent=F )
+	con_names <- names(con)
+	con[(control_names <- names(control))] <- control
+    if (length(noNms <- control_names[! control_names %in% con_names])) {
+        warning("Unknown names in control options: ", paste(noNms, collapse = ", "), call.=F)
+	}
+
+	list2env(con, environment())
+	silent_ <- silent
+	.progress <- c("lite", "none", "full", "predloglik")
+	progress <- match.arg(progress, .progress)
 	if(progress == "lite"){ clean <- T; silent <- F; paramprogress <- F }
-	if(progress == "none" | silent_ ){ clean <- T; silent <- T; paramprogress <- F }
+	if(progress == "none" | silent ){ clean <- T; silent <- T; paramprogress <- F }
 	if(progress == "full"){ clean <- F; silent <- F; paramprogress <- T }
 	if(progress == "predloglik"){ clean <- F; silent <- F; paramprogress <- F }
-	x <- as.data.frame(x)
-	ifelse(is.null(ncol(x)), Whichkernel <- is.factor(x), Whichkernel <- sapply(x, is.factor))
-	y <- as.numeric(y)
-	n <- length(y)
+	cl <- match.call()
 	
-	est <- ipriorEM(x, y, whichkernel=Whichkernel, interactions=interactions, one.lam=one.lam, parsm=parsm, kernel=kernel, gamfbm=Hurst, maxit=maxit, stop.crit=stop.crit, report.int=report.int, silent=silent, alpha.init=alpha, lambda.init=lambda, psi.init=psi, invmethod=invmethod, clean=clean, paramprogress=paramprogress)
+	### Accept objects of class 'ipriorKernel' and 'iprior'
+	if (is(y, "ipriorKernel")) ipriorKernel <- y
+	else if (is(y, "iprior")) {
+		ipriorKernel <- y$ipriorKernel
+		lambda <- y$lambda
+		psi <- y$psi
+		cl <- y$fullcall
+	} 
+	else ipriorKernel <- kernL(y, ..., model=model) #pass to kernel loader
+	
+	### Pass to iprior EM
+	est <- ipriorEM(ipriorKernel, maxit, stop.crit, report.int, silent_, lambda, psi, clean, paramprogress)
+	est$ipriorKernel <- ipriorKernel
+	
 	param <- c(est$alpha, est$lambda, est$psi)
 	if(length(param) == 3) names(param) <- c("(Intercept)", "lambda", "psi")	
 	else names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)), "psi")
-	# colnames(est$res.param) <- names(param)
-	if(is.null(Hurst)) gamma <- 0.5 else gamma <- Hurst
 	
 	### Calculate fitted values
-	Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
+	if(maxit==0) Y.hat <- rep(est$alpha, nrow(est$H.mat.lam))
+	else Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
 	est$fitted.values <- Y.hat
-	est$residuals <- y-Y.hat
+	est$residuals <- ipriorKernel$Y - Y.hat
+	names(est$fitted.values) <- names(ipriorKernel$Y)
+	names(est$residuals) <- names(ipriorKernel$Y)
 	
 	### Changing the call to simply iprior
-	cl <- match.call(); est$fullcall <- cl
+	est$fullcall <- cl
     cl[[1L]] <- as.name("iprior")
-    m <- match(c("x", "y", "one.lam", "parsm"), names(cl), 0L)
-    cl <- cl[c(1L, m)]
+    m <- match(c("control"), names(cl), 0L)
+    if(any(m > 0)) cl <- cl[-m]
 	est$call <- cl
 	
 	### Other things to return	
-	est$gamma <- gamma
+	est$control <- con
 	est$coefficients <- param
-	est$yval <- y
-	est$xval <- x
 	est$sigma <- 1/sqrt(est$psi)
 	est$T2 <- as.numeric(crossprod(est$w.hat) / est$psi)
 	
 	class(est) <- "iprior"
-	est
+	if (is(y, "iprior")) assign(deparse(substitute(y)), est, envir=parent.frame())
+	else est
 }
 
 print.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$gamma)
+	if(x$ipriorKernel$model$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$ipriorKernel$model$Hurst)
 	kerneltypes <- c(CanOrFBM, "Pearson", paste(CanOrFBM, "& Pearson"))
-	if(all(x$whichPearson)) cat("\nRKHS used:", kerneltypes[2])
+	if(all(x$ipriorKernel$whichPearson)) cat("\nRKHS used:", kerneltypes[2])
 	else{
-		if(!all(x$whichPearson) && !any(x$whichPearson)) cat("\nRKHS used:", kerneltypes[1])
+		if(!all(x$ipriorKernel$whichPearson) && !any(x$ipriorKernel$whichPearson)) cat("\nRKHS used:", kerneltypes[1])
 		else cat("\nRKHS used:", kerneltypes[3])
 	} 
-	if(x$q == 1) cat(", with a single scale parameter.\n")
+	if(x$ipriorKernel$q == 1) cat(", with a single scale parameter.\n")
 	else cat(", with multiple scale parameters.\n")
 	cat("\n")
 	cat("\nParameter estimates:\n")
@@ -83,18 +104,24 @@ summary.iprior <- function(object, ...){
 					S.E.=round(se, digits=4),
 					z=round(zval, digits=3),
 					"P[|Z>z|]"=round(2*pnorm(-abs(zval)), digits=3) )
-	if(object$q == 1){ #only rename rows when using multiple lambdas
+	xname <- object$ipriorKernel$model$xname
+	if(object$ipriorKernel$q == 1){ #only rename rows when using multiple lambdas
 		lamnames <- c("(Intercept)", "lambda", "psi")
 		rownames(tab) <- lamnames
 	}
 	else{
 		lamnames <- paste0("lam", 1:(length(coef(object))-2))
-		lamnames <- c("(Intercept)", paste(lamnames, attr(object$terms, "term.labels")[1:length(lamnames)], sep="."), "psi")
+		lamnames <- c("(Intercept)", paste(lamnames, xname[1:object$ipriorKernel$q], sep="."), "psi")
 		rownames(tab) <- lamnames
 	}
 	tab <- tab[-length(coef(object)),]	#removes the psi from the table
 	
-	res <- list(call=object$call, coefficients=tab, whichPearson=object$whichPearson, kernel=object$kernel, resid=object$residuals, log.lik=object$log.lik, no.iter=object$no.iter, converged=object$converged, stop.crit=object$stop.crit, one.lam=object$one.lam, T2=object$T2, q=object$q, p=object$p, gamma=object$gamma, formula=object$formula, psi.and.se=c(coef(object)[length(se)], se[length(se)]))
+	res <- list( call=object$call, coefficients=tab, whichPearson=object$ipriorKernel$whichPearson, 
+				 kernel=object$ipriorKernel$model$kernel, resid=object$residuals, log.lik=object$log.lik, 
+				 no.iter=object$no.iter, converged=object$converged, stop.crit=object$control$stop.crit, 
+				 one.lam=object$ipriorKernel$model$one.lam, T2=object$T2, q=object$ipriorKernel$q, 
+				 p=object$ipriorKernel$p, Hurst=object$ipriorKernel$model$Hurst, formula=object$formula,
+				 psi.and.se=c(coef(object)[length(se)], se[length(se)]), xname=xname )
 	class(res) <- "summary.iprior"
 	res
 }
@@ -102,11 +129,10 @@ summary.iprior <- function(object, ...){
 print.summary.iprior <- function(x, ...){
 	cat("\nCall:\n")
 	print(x$call)
-	if(!is.null(x$formula)) x.names <- names(x$whichPearson)
-	else x.names <- paste0("X", 1:x$p)
+    x.names <- x$xname[1:x$q]
 	xPearson <- x.names[x$whichPearson]
 	xCanOrFBM <- x.names[!x$whichPearson]
-	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$gamma)
+	if(x$kernel == "Canonical") CanOrFBM <- "Canonical" else CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$Hurst)
 	printPearson <-	paste0("Pearson (", paste(xPearson, collapse=", "), ")")
 	printCanOrFBM <- paste0(CanOrFBM, " (", paste(xCanOrFBM, collapse=", "), ")")
 	cat("\n")
@@ -135,103 +161,55 @@ print.summary.iprior <- function(x, ...){
 	cat("\n")
 }
 
-## Formulas
-iprior.formula <- function(formula, data=list(), ...){
-	mf <- model.frame(formula=formula, data=data)
-	tt <- terms(mf)
-	Terms <- delete.response(tt)
-	#attr(attr(mf, "terms"), "intercept") <- 0
-	x <- model.frame(Terms, mf)
-	y <- model.response(mf)
+### Formulas
+iprior.formula <- function(formula, data, model=list(), control=list()){
 	
-	### For interactions
-	tmpo <- attr(tt, "order")
-	if(any(tmpo>2)) stop("iprior does not currently work with higher order interactions.")
-	tmpf <- attr(tt, "factors")
-	tmpf2 <- as.matrix(tmpf[-1, tmpo==2])	#this obtains 2nd order interactions
-	int2 <- apply(tmpf2, 2, function(x) which(x == 1))
-	interactions <- list(tmpo=tmpo, tmpf=int2)
+	### Pass to iprior default
+	ipriorKernel <- kernL(formula, data, model=model)
+	est <- iprior(ipriorKernel, control=control)	
 	
-	ifelse(max(tmpo) > 1, 
-		est <- iprior(x, y, interactions=interactions, ...),
-		est <- iprior(x, y, ...)
-	)
-	
-	## changing the call to simply iprior
+	### Changing the call to simply iprior
 	cl <- match.call(); est$fullcall <- cl
     cl[[1L]] <- as.name("iprior")
-    m <- match(c("formula", "data", "one.lam", "parsm"), names(cl), 0L)
+    m <- match(c("formula", "data"), names(cl), 0L)
     cl <- cl[c(1L, m)]
 	est$call <- cl
 	est$formula <- formula
-	names(est$fitted.values) <- row.names(mf)
-	names(est$residuals) <- row.names(mf)
-	est$terms <- tt
-	est$yval <- y
-	est$xval <- x
-	est$yname <- names(attr(tt, "dataClasses"))[1]
+	est$terms <- 
+	
+	class(est) <- "iprior"
 	est
 }
 
 ### Prediction
-predict.iprior <- function(object, newdata=NULL, ...){
-	Y <- object$y; X <- object$x; p <- ncol(X)
-	if(is.null(newdata)) ystar <- fitted(object)
-	else{
-		if(!is.null(object$formula)){
-			## model has been fitted using formula interface
-			tt <- terms(object)
+predict.iprior <- function (object, newdata=list(), ...) {
+	list2env(object$ipriorKernel, environment())
+	list2env(model, environment())
+	
+	if (length(newdata) == 0) ystar <- object$fitted
+	else {
+		if (!is.null(object$formula)) { #model has been fitted using formula interface
+			mf <- model.frame(formula=object$formula, data=newdata)
+			tt <- terms(mf)
 			Terms <- delete.response(tt)
-			xstar <- model.frame(Terms, newdata) #previously m
-			# xstar <- model.matrix(Terms, m)
-			# xstar <- model.matrix(object$formula, newdata)
-			# wheres.int <- (colnames(xstar) == "(Intercept)")
-			# xstar <- matrix(xstar[,!wheres.int], nc=p)
-			# colnames(xstar) <- xcolnames[!wheres.int]
+			xstar <- model.frame(Terms, newdata)
+			xrownames <- rownames(xstar)
+			xstar <- unlist(list(xstar), recursive=F)
 		}
-		else{
-			xstar <- as.matrix(newdata)
+		else {
+			xstar <- newdata
+			xrownames <- rownames(do.call(cbind, newdata))
 		}
-		xcolnames <- colnames(xstar); xrownames <- rownames(xstar)
 		
-		## Define new kernel matrix
-		if(!object$one.lam){ #for multiple lambdas
-			H.mat <- NULL
-			for(j in 1:p){
-				if(is.factor(X[,j]))  H.mat[[j]] <- fn.H1(X[,j], xstar[,j])								#Pearson
-				else{
-					if(object$kernel=="FBM") H.mat[[j]] <- fn.H3a(X[,j], xstar[,j], gamma=object$gam)	#FBM
-					else H.mat[[j]] <- fn.H2a(X[,j], xstar[,j])											#Canonical
-				} 			
-			}
-			if(!is.null(object$interactions) && object$parsm){ #for non-parsimonious interactions
-				Tmpo <- object$interactions[[1]]
-				Tmpf <- object$interactions[[2]]
-				no.int <- sum(Tmpo==2)
-				p1 <- p + no.int
-				for(j in (p1-no.int+1):p1){
-					H.mat[[j]] <- H.mat[[ Tmpf[1, j-p1+no.int] ]] * H.mat[[ Tmpf[2, j-p1+no.int] ]]
-				}
-				H.mat.lam <- Reduce('+', mapply('*', H.mat, object$lambda.int, SIMPLIFY=F))
-			} 
-			else H.mat.lam <- Reduce('+', mapply('*', H.mat, object$lambda, SIMPLIFY=F))
-		}
-		if(object$one.lam){ #for single lambdas
-			H.mat <- 0
-			for(j in 1:p){
-				if(is.factor(X[,j]))  H.mat <- H.mat + fn.H1(X[,j], xstar[,j])							#Pearson
-				else{
-					if(object$kernel=="FBM") H.mat <- H.mat + fn.H3a(X[,j], xstar[,j], gamma=object$gam)	#FBM
-					else H.mat <- H.mat + fn.H2a(X[,j], xstar[,j])										#Canonical
-				} 			
-			H.mat.lam <- object$lambda * H.mat
-			}
-		}
+		### Define new kernel matrix
+		H.mat <- Hmat_list(x, kernel, whichPearson, intr, no.int, gamma, xstar)
+		lambda <- object$lambda
+		if (parsm && no.int > 0){ for (j in 1:no.int) lambda <- c(lambda, lambda[intr[1,j]]*lambda[intr[2,j]]) }
+		H.mat.lam <- Reduce('+', mapply('*', H.mat[1:(p+no.int)], lambda[1:(p+no.int)], SIMPLIFY=F))
+		
+		### Calculate fitted values
 		ystar <- as.vector(object$alpha + (H.mat.lam %*% object$w.hat))
 		names(ystar) <- xrownames
 	}
 	ystar
 }
-
-### New feature soon
-#merge.iprior <- function(x, ...) cat("hello")

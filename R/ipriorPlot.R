@@ -2,78 +2,90 @@
 ### Plot function
 ###
 
-plot.iprior <- function(object, UseOwnLabels=F, plots=c("all", "allinone", "fitted", "diagnostic", "residuals", "qqplot"), ...){
+plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fitted", "diagnostic", "residuals", "qqplot"), ...) {
 	require(RColorBrewer, quietly=T)
-	x <- object$xval
-	y <- object$yval
-	p <- object$p
-	no.plot <- sum(!object$whichPearson)
-	xnames <- colnames(x)
-	yname <- object$yname
-	yhat <- fitted(object)
-	resid <- residuals(object)
+	x <- object$ipriorKernel$x
+	y <- object$ipriorKernel$Y
+	p <- object$ipriorKernel$p
+	whichPearson <- object$ipriorKernel$whichPearson
+	no.plot <- sum(!whichPearson)
+	xnames <- object$ipriorKernel$model$xname
+	yname <- object$ipriorKernel$model$yname
+	yhat <- object$fitted
+	resid <- object$residuals
 	top3 <- order(abs(resid), decreasing=T)[1:3]
 	colx <- c(brewer.pal(9, "Set1")[-6], brewer.pal(12, "Paired")[c(2,4,6,8,10,12)], brewer.pal(8,"Dark2"))
 
 	if(!is.numeric(plots)){
 		thisplot <- match.arg(plots)
-		if((thisplot == "all") | (thisplot == "allinone")) thisplot <- 1:3
-		else if(thisplot == "fitted") thisplot <- c(1)
-		else if(thisplot == "diagnostic") thisplot <- c(2,3)
-		else if(thisplot == "residuals") thisplot <- c(2)
-		else if(thisplot == "qqplot") thisplot <- c(3)
+		if ((thisplot == "all") | (thisplot == "allinone")) thisplot <- 1:3
+		else if (thisplot == "fitted") thisplot <- c(1)
+		else if (thisplot == "diagnostic") thisplot <- c(2,3)
+		else if (thisplot == "residuals") thisplot <- c(2)
+		else if (thisplot == "qqplot") thisplot <- c(3)
 	} 
 	else{
 		thisplot <- plots
-		if(any((thisplot > 3) | (thisplot < 1))) stop("Must be between 0 and 1.")
+		if (any((thisplot > 3) | (thisplot < 1))) stop("Must be between 0 and 1.")
 	} 
 	whichplot <- (1:3) %in% thisplot
 
 	### Plot 1: Fitted values
-	cts.vars <- which(!object$whichPearson)
-	ctg.vars <- which(object$whichPearson)
+	cts.vars <- which(!whichPearson)
+	ctg.vars <- which(whichPearson)
 
-	if(length(c(cts.vars, ctg.vars)) <= 2){
-		x.cts <- x[,cts.vars]
-		if(length(cts.vars) == 0){
-			yhat.unq <- unique(yhat)
-			x.ctg <- x[,ctg.vars]
-			plotlvl <- levels(x.ctg)
-			grp <- as.numeric(x.ctg)
-			if(UseOwnLabels) plotlvl <- unique(grp)
+	if ((length(cts.vars) == 1) | (length(ctg.vars) > 0)) {
+		if (length(ctg.vars) == 0) { #plot only continuous variables
+			x.cts <- unlist(x[cts.vars], use.names=F)
+			if (length(x.cts) != length(y)) stop("X variable not a vector.")
 			plot1 <- function(z){
-				plot(x=grp, y=y, type="n", xlab=xnames[ctg.vars], ylab=yname, main="Fitted regression curve", xaxt="n", xlim=c(0.5, length(unique(grp))+0.5))
-				for(i in unique(grp)){
-					text(x=grp[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
-					abline(a=yhat.unq[i], b=0, col=colx[(i-1)%%22+1])
-				}
-			}			
-		}
-		else if(length(ctg.vars) == 0){
-			plot1 <- function(z){
-				xorder <- order(x.cts)							
+				xorder <- order(x.cts)			
 				plot(x=x.cts, y=y, xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
 				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1])			
+			}			
+		} else {
+			if (length(ctg.vars) == 1) x.ctg <- x[[ctg.vars]]
+			else {
+				x.ctg <- as.data.frame(x[ctg.vars])
+				x.ctg <- interaction(x.ctg)
+				# x.ctg <- x.ctg[,2]
+			}		
+			if (length(cts.vars) == 0) { #plot only categorical variables
+				yhat.unq <- unique(yhat)
+				plotlvl <- levels(x.ctg)
+				grp <- as.numeric(x.ctg)
+				plotlvl <- plotlvl[unique(grp)]
+				grp <- as.numeric(factor(grp))
+				if (UseOwnLabels) plotlvl <- unique(grp)
+				plot1 <- function (z) {
+					plot(x=grp, y=y, type="n", xlab=xnames[ctg.vars], ylab=yname, main="Fitted regression curve", xaxt="n", xlim=c(0.5, length(unique(grp))+0.5))
+					for (i in unique(grp)) {
+						text(x=grp[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
+						abline(a=yhat.unq[i], b=0, col=colx[(i-1)%%22+1])
+					}
+				} 
 			}
-		}
-		else{
-			x.ctg <- x[,ctg.vars]
-			plotlvl <- levels(x.ctg)
-			grp <- as.numeric(x.ctg)
-			if(UseOwnLabels) plotlvl <- unique(grp)
-			plot1 <- function(z){
-				plot(x=x.cts, y=y, type="n", xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
-				for(i in unique(grp)){
-					xorder <- order(x.cts[grp==i])				
-					text(x=x.cts[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
-					lines(x=x.cts[grp==i][xorder], yhat[grp==i][xorder], col=colx[(i-1)%%22+1])
+			else {
+				x.cts <- as.numeric(x[[cts.vars]])
+				if (length(x.cts) != length(y)) stop("X variable not a vector.")
+				plotlvl <- levels(x.ctg)
+				grp <- as.numeric(x.ctg)
+				plotlvl <- plotlvl[unique(grp)]
+				grp <- as.numeric(factor(grp))
+				if (UseOwnLabels) plotlvl <- unique(grp)
+				plot1 <- function(z){
+					plot(x=x.cts, y=y, type="n", xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
+					for (i in unique(grp)) {
+						xorder <- order(x.cts[grp==i])				
+						text(x=x.cts[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
+						lines(x=x.cts[grp==i][xorder], yhat[grp==i][xorder], col=colx[(i-1)%%22+1])
+					}
 				}
 			}
 		}
-	}
-	else{
+	} else {
 		whichplot[3] <- F
-		message("Fitted plot not generated because number of x variables is greater than 1.")
+		message("Fitted plot not generated because number of continuous x variables is greater than 1.")
 	}
 	
 	### Plot 2: Fitted vs. Residuals

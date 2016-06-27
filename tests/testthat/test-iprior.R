@@ -8,3 +8,10 @@ test_that("Fitted object is iprior",{
 	
 })
 
+test_that("Successfully fit interactions",{
+	
+	data(cats, package="MASS")
+	mod <- iprior(Hwt ~ Bwt * Sex, cats, silent=T)
+	expect_that(mod, is_a("iprior"))
+	
+})

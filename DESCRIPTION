@@ -5,8 +5,14 @@ Version: 1.0.0
 Date: 2016-05-27
 Author: Haziq Jamil
 Maintainer: Haziq Jamil <h.jamil@lse.ac.uk>
-Description: This is a package which allows the user to perform linear regression using I-priors.
-Imports: RColorBrewer, Rcpp (>= 0.12.5), RcppEigen (>= 0.3.2.8.1)
+Description: This is a package which allows the user to perform linear
+    regression using I-priors.
+Imports:
+    RColorBrewer,
+    Rcpp (>= 0.12.5),
+    RcppEigen (>= 0.3.2.8.1)
 LinkingTo: Rcpp, RcppEigen
 License: GPL-2
-Suggests: testthat
+Suggests:
+    testthat
+RoxygenNote: 5.0.1

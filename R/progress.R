@@ -5,23 +5,16 @@
 progress <- function(x, interval=c("auto", "all", "input any number")){
 	if(class(x) != "iprior") stop("Input iprior class models only.", call.=F)
 	if(!x$converged) warning("The EM has not yet converged.", call.=F)
-	
-	#Log-likelihood
 	rn <- rownames(x$res.loglik)
-	# dloglik <- x$res.loglik[,2]
-	# dloglikold <- c(NA, dloglik[-length(dloglik)])
-	# a <- ifelse((0 < dloglik) & (dloglik < dloglikold), dloglik/dloglikold, 0)
-	# predloglik <- x$res.loglik[,1] - dloglik + dloglik/(1-a)
-	# res <- cbind(x$res.loglik[,1], predloglik, x$res.loglik[,2])
 	
-	#Parameters
+	### Parameters
 	res <- x$res.loglik
 	cn <- c("Log-likelihood", "Pred.log-lik.", "Delta(i,i-1)", colnames(x$res.param)[-1])
 	res <- cbind(res, x$res.param[,-1])
 	res <- as.data.frame(res, row.names=rn)
 	colnames(res) <- cn
 	
-	#Trim the table
+	### Trim the table
 	no.iter <- x$no.iter
 	if(!is.numeric(interval)) interval <- match.arg(interval)
 	if(interval == "auto") interval <- max(no.iter %/% 8, 1)
