@@ -2,11 +2,9 @@
 
 >**[v0.5](https://github.com/haziqjamil/iprior/releases/tag/v0.5) NEW: Speed bumps and plotting feature**
 
->**WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>5000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue [#20](https://github.com/haziqjamil/iprior/issues/20).**
+Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. An I-prior is an uninformative class of such priors based on the principle of maximum entropy. 
 
-> *For installation instructions and a basic functionality tutorial, read on below. Have a look at the [wiki](https://github.com/haziqjamil/iprior/wiki/) for further guidance on topics such as the full list of modelling options, modelling interaction effects, using the predicted log-likelihood feature, and the `update()` function.*
-
-Based on manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. This package performs linear regression modelling like `lm`. It is formula based, but also takes vectors and matrices. It enjoys all the methods of `lm` like `summary`, `coef`, `predict`, and so on.
+This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters (`lambda`) and the standard deviation of errors (`sigma`), with the main interest being prediction.
 
 Currently, either a single scale parameter or several individual scale parameters for each covariate is supported. This is done by calling the `iprior()` function with option `one.lam=T` and `one.lam=F` (default) respectively. Future updates will hopefully see finer control of the scale parameter for each predictor. A full list of options can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options).
 
