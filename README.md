@@ -145,7 +145,7 @@ plot(mod.iprior, plots="fitted")
 
 Instead of just "straight-line" regression functions, we could also smoothed curves. The vector space which contains such curves is called the *Fractional Brownian Motion* RKHS with a Hurst coefficient `Hurst`, which defaults to 0.5. The Hurst coefficient can be thought of as a smoothing parameter, but this is treated as a fixed parameter in the `iprior` package.
 
-Consider a simulated set of points in `datfbm` which were generated from a mixed Gaussian distribution `fx <- function(x) 65*dnorm(x, mean=2)+ 35*dnorm(x,mean=7,sd=1.5)`. 
+Consider a simulated set of points in `datfbm` which were generated from a mixed Gaussian distribution `fx <- function(x) 65*dnorm(x, mean=2) + 35*dnorm(x,mean=7,sd=1.5)`. 
 
 ```{r data3}
 data(datfbm)
