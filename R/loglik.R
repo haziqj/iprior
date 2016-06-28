@@ -10,10 +10,10 @@
 #' @param alpha (Optional) specify intercept value.
 #' @param lambda (Optional) specify lambda value.
 #' @param psi (Optional) specify psi value.
-#' @return List of length 2. 
+#' @return List of length 2.
 #' @examples
 #' mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
-#' ipriorloglik(mod.iprior)
+#' loglik(mod.iprior)
 
 loglik <- function (object, ...) UseMethod("loglik")
 
@@ -21,10 +21,10 @@ loglik.iprior <- function (object, theta=NULL) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
 			lambda <- theta[-length(theta)]
-			psi <- theta[length(theta)]	
-		} 
-		ipriorEM(ipriorKernel, maxit=0, silent=T, lambda.init=lambda, psi.init=psi, clean=T)	
-	} )			  
+			psi <- theta[length(theta)]
+		}
+		ipriorEM(ipriorKernel, maxit=0, silent=T, lambda.init=lambda, psi.init=psi, clean=T)
+	} )
 	return(tmp$log.lik)
 }
 

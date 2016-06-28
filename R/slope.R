@@ -8,14 +8,14 @@
 #' @param alpha (Optional) specify intercept value.
 #' @param lambda (Optional) specify lambda value.
 #' @param psi (Optional) specify psi value.
-#' @return List of length 2. 
+#' @return List of length 2.
 #' @examples
-#' mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
-#' betas(mod.iprior)
+#' mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)
+#' slope(mod.iprior)
 
 slope <- function(object){
 	if (!is(object, "iprior")) stop("Input iprior class models only.", call.=F)
-	
+
 	y <- object$fitted.values
 	x <- object$ipriorKernel$x
 	whichPearson <- object$ipriorKernel$whichPearson
@@ -27,6 +27,7 @@ slope <- function(object){
 		names(res) <- levels(grp)
 	} else {
 		res <- coef(lm(dat[,1]~dat[,2]))[2]
+		names(res) <- "slope"
 	}
 	res
 }

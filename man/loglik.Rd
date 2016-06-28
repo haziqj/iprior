@@ -28,6 +28,6 @@ Test
 }
 \examples{
 mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
-ipriorloglik(mod.iprior)
+loglik(mod.iprior)
 }
 
