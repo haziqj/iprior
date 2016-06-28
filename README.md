@@ -24,6 +24,17 @@ install_github("haziqjamil/iprior")
 library(iprior)
 ```
 
+## Syntax
+
+To fit an I-prior model to `mod` regressing `y` against `x`, where these are contained in the data frame `dat`, the following syntax are equivalent.
+
+```{r syntax, eval=FALSE}
+mod <- iprior(y ~ x, data=dat)    #formula based input
+mod <- iprior(y=dat$y, x=dat$x)   #non-formula based input
+```
+
+The call to `iprior()` can be accompanied by model options in the form of `model=list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control=list()`. For details, see this [wiki page](https://github.com/haziqjamil/iprior/wiki/List-of-options).
+
 ## Example 1: Multiple linear regression
 
 We will be analysing Brownlee's stack loss plant data, which is available in R built-in. For more information and a description of the dataset, consult the help section `?stackloss`.
