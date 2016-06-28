@@ -92,7 +92,7 @@ The object `mod.iprior` is of class `iprior` and contains a bunch of things of i
 
 To compare the I-prior model against a regular linear regression model, we could look at the fitted versus residual plot.
 
-![eg1plot](/images/frontpage/Rplot1.png)
+![eg1plot](/images/frontpage/eg1plot.png)
 
 ## Example 2: Multilevel modelling
 
@@ -139,7 +139,7 @@ A plot of fitted lines, one for each school, is produced using the `plot()` func
 plot(mod.iprior, plots="fitted")
 ```
 
-![eg2plot](/images/frontpage/Rplot2.png)
+![eg2plot](/images/frontpage/eg2plot.png)
 
 ## Example 3: One-dimensional smoothing
 
@@ -190,4 +190,4 @@ plot(mod.iprior, plots="fitted")
 ##
 ```
 
-![eg3plot](/images/frontpage/Rplot3.png)
+![eg3plot](/images/frontpage/eg3plot.png)
