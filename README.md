@@ -146,6 +146,8 @@ We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with t
 ##
 ```
 
+On a technical note, the vector space for functions over the set of nominal-type variables (such as `schoolid`) is called the *Pearson* RKHS. 
+
 A plot of fitted lines, one for each school, is produced using the `plot()` function. The option `plots="fitted"` produces the plot of interest, but there are other options for this as well.
 
 ```{r plot2}

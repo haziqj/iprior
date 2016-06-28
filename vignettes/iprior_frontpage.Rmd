@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.width=6.5, fig.height=4.33, fig.align="center")
 # devtools::install_github("haziqjamil/iprior")
 library(iprior)
 ```
@@ -77,7 +77,7 @@ To compare the I-prior model against a regular linear regression model, we could
 ```{r plot1, echo=FALSE}
 plot(y=residuals(mod.iprior), x=fitted(mod.iprior), pch=19, ylab="Residuals", xlab="Fitted values", main="Fitted vs. Residuals")
 mod.lm <- lm(stack.loss~., stackloss)
-points(y=residuals(mod.lm), x=fitted(mod.lm),, col=2)
+points(y=residuals(mod.lm), x=fitted(mod.lm), col=2)
 abline(0,0, col="gray", lty=2)
 legend("bottomleft", legend=c("iprior", "lm"), pch=c(19,1), col=c(1,2))
 ```
@@ -91,13 +91,15 @@ data(hsbsmall)
 str(hsbsmall)
 ```
 
-This dataset contains the variables mathach, a measure of mathematics achievement; ses, the socioeconomic status of the students based on parental education, occupation and income; and schoolid, the school identifier for the students. The original dataset contains 160 groups with varying number of observations per group (n=7185 in total). However, this smaller set contains only 16 randomly selected schools, such that the total sample size is n=661. This was mainly done for computational reasons to illustrate this example.
+This dataset contains the variables `mathach`, a measure of mathematics achievement; `ses`, the socioeconomic status of the students based on parental education, occupation and income; and `schoolid`, the school identifier for the students. The original dataset contains 160 groups with varying number of observations per group (n=7185 in total). However, this smaller set contains only 16 randomly selected schools, such that the total sample size is n=661. This was mainly done for computational reasons to illustrate this example.
 
-We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with the assumption that students' `ses` varied by `schoolid`. 
+We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with the assumption that students' `ses` varied by `schoolid`. This achieved by adding an interaction term between the two variables.
 
 ```{r mod2}
 (mod.iprior <- iprior(mathach ~ ses + schoolid + ses:schoolid, data=hsbsmall))
 ```
+
+On a technical note, the vector space for functions over the set of nominal-type variables (such as `schoolid`) is called the *Pearson* RKHS. 
 
 A plot of fitted lines, one for each school, is produced using the `plot()` function. The option `plots="fitted"` produces the plot of interest, but there are other options for this as well.
 
