@@ -4,7 +4,7 @@
 
 Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy. 
 
-This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters of the reproducing kernel Hilbert space over the set of covariates, `lambda`, and the standard deviation of model errors,`sigma`. While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
+This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters of the reproducing kernel Hilbert space over the set of covariates, `lambda`, and the standard deviation of model errors, `sigma`. While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
 For installation instructions and some examples of I-prior modelling, continue reading below. A full list of options, along with some other useful documentation, can be found in the [wiki](https://github.com/haziqjamil/iprior/wiki/). 
 
