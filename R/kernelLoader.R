@@ -139,6 +139,7 @@ kernL.default <- function (y, ..., model=list()) {
 	if (!mod$silent) close(pb) 		
 	BlockBstuff <- list(H.mat2=H.mat2, H.matsq=H.matsq, P.mat=P.mat, P.matsq=P.matsq, S.mat=S.mat, ind1=ind1, ind2=ind2, ind=ind, BlockB=BlockB)
 	
+	mod <- mod[-8] #remove silent control
 	kernelLoaded <- list(Y=y, x=x, H.mat=H.mat, N=N, p=p, q=q, no.int=no.int, whichPearson=whichPearson, BlockBstuff=BlockBstuff, model=mod)
 	class(kernelLoaded) <- "ipriorKernel"
 	kernelLoaded
