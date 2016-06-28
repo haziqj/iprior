@@ -100,5 +100,5 @@ summary(mod.iprior)
 plot(mod.iprior, plots="fitted")
 ```
 
-![FBMplot](/images/frontpage/Rplot3.png)
+![FBMplot](/images/frontpage/Rplot1.png)
 
