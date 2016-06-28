@@ -14,8 +14,10 @@ plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fit
 	yhat <- object$fitted
 	resid <- object$residuals
 	top3 <- order(abs(resid), decreasing=T)[1:3]
-	colx <- c(brewer.pal(9, "Set1")[-6], brewer.pal(12, "Paired")[c(2,4,6,8,10,12)], brewer.pal(8,"Dark2"))
-
+	# colx <- c(brewer.pal(9, "Set1")[-6], brewer.pal(12, "Paired")[c(2,4,6,8,10,12)], brewer.pal(8,"Dark2"))
+	# colx <- c(brewer.pal(8, "Dark2"), brewer.pal(8, "Set2"))
+	colx <- c(brewer.pal(9, "Set1")[-9], brewer.pal(8, "Dark2")); colx[6] <- brewer.pal(8, "Set2")[6] 
+	
 	if(!is.numeric(plots)){
 		thisplot <- match.arg(plots)
 		if ((thisplot == "all") | (thisplot == "allinone")) thisplot <- 1:3
@@ -60,8 +62,8 @@ plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fit
 				plot1 <- function (z) {
 					plot(x=grp, y=y, type="n", xlab=xnames[ctg.vars], ylab=yname, main="Fitted regression curve", xaxt="n", xlim=c(0.5, length(unique(grp))+0.5))
 					for (i in unique(grp)) {
-						text(x=grp[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
-						abline(a=yhat.unq[i], b=0, col=colx[(i-1)%%22+1])
+						text(x=grp[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%16+1], cex=0.8)
+						abline(a=yhat.unq[i], b=0, col=colx[(i-1)%%16+1])
 					}
 				} 
 			}
@@ -77,8 +79,8 @@ plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fit
 					plot(x=x.cts, y=y, type="n", xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
 					for (i in unique(grp)) {
 						xorder <- order(x.cts[grp==i])				
-						text(x=x.cts[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%22+1], cex=0.8)
-						lines(x=x.cts[grp==i][xorder], yhat[grp==i][xorder], col=colx[(i-1)%%22+1])
+						text(x=x.cts[grp==i], y[grp==i], plotlvl[i], col=colx[(i-1)%%16+1], cex=0.55)
+						lines(x=x.cts[grp==i][xorder], yhat[grp==i][xorder], col=colx[(i-1)%%16+1], lwd=1.55)
 					}
 				}
 			}
