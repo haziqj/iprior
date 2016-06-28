@@ -42,8 +42,8 @@ plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fit
 			if (length(x.cts) != length(y)) stop("X variable not a vector.")
 			plot1 <- function(z){
 				xorder <- order(x.cts)			
-				plot(x=x.cts, y=y, xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve")
-				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1])			
+				plot(x=x.cts, y=y, xlab=xnames[cts.vars], ylab=yname, main="Fitted regression curve", cex=0.55)
+				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1], lwd=1.55)			
 			}			
 		} else {
 			if (length(ctg.vars) == 1) x.ctg <- x[[ctg.vars]]
