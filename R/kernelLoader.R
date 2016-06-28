@@ -13,7 +13,7 @@ kernL.default <- function (y, ..., model=list()) {
 	
 	### Model options and checks
 	mod <- list( kernel="Canonical", Hurst=0.5, interactions=NULL, parsm=T, one.lam=F, 
-				 yname="y", xname=NULL)
+				 yname="y", xname=NULL, silent=T)
 	mod_names <- names(mod)
 	mod[(model_names <- names(model))] <- model
     if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -68,7 +68,7 @@ kernL.default <- function (y, ..., model=list()) {
 	}
 	
 	### Set up progress bar
-	pb <- txtProgressBar(min=0, max=1, style=3, width=47)
+	if (!mod$silent) pb <- txtProgressBar(min=0, max=1, style=3, width=47)
 	pb.count <- 0
 	
 	### Block B update function
@@ -85,21 +85,21 @@ kernL.default <- function (y, ..., model=list()) {
 		if (mod$one.lam) whichPearson <- F
 		BlockB <- function(k){}
 		S.mat <- list(matrix(0, nr=N, nc=N))
-		setTxtProgressBar(pb, 1)
+		if (!mod$silent) setTxtProgressBar(pb, 1)
 	}
 	else {
 		### Prepare the indices (also required for indx.fn)
 		z <- 1:(p+no.int)
 		ind1 <- rep(z, times=(length(z)-1):0)
 		ind2 <- unlist(lapply(2:length(z), function(x) c(NA,z)[-(0:x)]))
-		pb <- txtProgressBar(min=0, max=length(c(ind1,z)), style=3, width=47)
+		if (!mod$silent) pb <- txtProgressBar(min=0, max=length(c(ind1,z)), style=3, width=47)
 		
 		### Cross-product terms of square kernel matrices
 		for (j in 1:length(ind1)) {	#this is a list of (p+no.int)C2
 			H.mat2[[j]] <- H.mat[[ ind1[j] ]] %*% H.mat[[ ind2[j] ]] + 
 							H.mat[[ ind2[j] ]] %*% H.mat[[ ind1[j] ]]
 			pb.count <- pb.count + 1
-			setTxtProgressBar(pb, pb.count)					
+			if (!mod$silent) setTxtProgressBar(pb, pb.count)					
 		}
 		
 		if (!is.null(intr) && mod$parsm) { #CASE: parsimonious interactions only
@@ -107,7 +107,7 @@ kernL.default <- function (y, ..., model=list()) {
 				H.matsq[[k]] <- FastSquare(H.mat[[k]])
 				if(k <= p) ind[[k]] <- indx.fn(k)
 				pb.count <- pb.count + 1
-				setTxtProgressBar(pb, pb.count)	 			
+				if (!mod$silent) setTxtProgressBar(pb, pb.count)	 			
 			}
 			BlockB <- function (k) {								
 				indB <- ind[[k]]
@@ -128,7 +128,7 @@ kernL.default <- function (y, ..., model=list()) {
 				P.mat[[k]] <- H.mat[[k]]
 				P.matsq[[k]] <- FastSquare(P.mat[[k]])	
 				pb.count <- pb.count + 1
-				setTxtProgressBar(pb, pb.count)	 		
+				if (!mod$silent) setTxtProgressBar(pb, pb.count)	 		
 			}
 			BlockB <- function (k) {	
 				ind <- which(ind1==k | ind2==k)
@@ -136,7 +136,7 @@ kernL.default <- function (y, ..., model=list()) {
 			}
 		}
 	}
-	close(pb) 		
+	if (!mod$silent) close(pb) 		
 	BlockBstuff <- list(H.mat2=H.mat2, H.matsq=H.matsq, P.mat=P.mat, P.matsq=P.matsq, S.mat=S.mat, ind1=ind1, ind2=ind2, ind=ind, BlockB=BlockB)
 	
 	kernelLoaded <- list(Y=y, x=x, H.mat=H.mat, N=N, p=p, q=q, no.int=no.int, whichPearson=whichPearson, BlockBstuff=BlockBstuff, model=mod)
