@@ -1,6 +1,5 @@
 #' @export
-plot.iprior <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fitted", "diagnostic", "residuals", "qqplot"), ...) {
-	require(RColorBrewer, quietly=T)
+plot.ipriorMod <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fitted", "diagnostic", "residuals", "qqplot"), ...) {
 	x <- object$ipriorKernel$x
 	y <- object$ipriorKernel$Y
 	p <- object$ipriorKernel$p

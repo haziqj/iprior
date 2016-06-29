@@ -23,6 +23,12 @@ For installation instructions and some examples of I-prior modelling, continue r
 
 ## Installation
 
+R/iprior uses several C++ code, so as a prerequisit, you must have a working C++ compiler. To get it:
+
+* On Windows, install [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
+* On Mac, install Xcode from the app store.
+* On Linux, `sudo apt-get install r-base-dev` or similar.
+
 Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
 
 ```{r devtool_install, eval=FALSE}

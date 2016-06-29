@@ -131,3 +131,9 @@ ipriorEMprettyLoglik <- function(x){
   #tmp <- format(tmp, digits=8, width=10, nsmall=5)
   tmp
 }
+
+.onUnload <- function(libpath) {
+  # Whenever you use C++ code in your package, you need to clean up after
+  # yourself when your package is unloaded.
+  library.dynam.unload("iprior", libpath)
+}

@@ -10,4 +10,5 @@
 #' @importFrom stats coef delete.response kernel lm model.frame model.response
 #'   pnorm printCoefmat qqnorm rnorm terms
 #' @importFrom utils combn setTxtProgressBar str txtProgressBar
+#' @import RColorBrewer
 NULL

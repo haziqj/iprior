@@ -15,7 +15,7 @@
 #'
 #' @export
 slope <- function(object){
-	if (!is(object, "iprior")) stop("Input iprior class models only.", call.=F)
+	if (!is(object, "ipriorMod")) stop("Input iprior class models only.", call.=F)
 
 	y <- object$fitted.values
 	x <- object$ipriorKernel$x

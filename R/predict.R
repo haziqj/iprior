@@ -13,7 +13,7 @@
 #' \donttest{predict(mod, newdata = data.frame(c(1,2,3)))}
 #'
 #' @export
-predict.iprior <- function(object, newdata = list(), ...) {
+predict.ipriorMod <- function(object, newdata = list(), ...) {
   list2env(object$ipriorKernel, environment())
   list2env(model, environment())
 

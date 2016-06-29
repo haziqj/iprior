@@ -19,8 +19,6 @@ iprior <- function(formula, data, model = list(), control = list(), ...) {
 #' @rdname iprior
 #' @export
 iprior.default <- function(y, ..., model = list(), control = list()) {
-  # The default S3 constructor function for "iprior" objects.
-
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report.int = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE)
@@ -103,7 +101,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est$sigma        <- 1/sqrt(est$psi)
   est$T2           <- as.numeric(crossprod(est$w.hat)/est$psi)
 
-  class(est) <- "iprior"
+  class(est) <- "ipriorMod"
   if (is(y, "iprior")) {
     assign(deparse(substitute(y)), est, envir = parent.frame())
   } else {
@@ -127,13 +125,12 @@ iprior.formula <- function(formula, data, model = list(), control = list()) {
   cl <- cl[c(1L, m)]
   est$call <- cl
   est$formula <- formula
-  est$terms <- class(est) <- "iprior"
+  est$terms <- class(est) <- "ipriorMod"
   est
 }
 
 #' @export
-print.iprior <- function(x, ...) {
-  # Print for iprior objects.
+print.ipriorMod <- function(x, ...) {
   whichPearson <- x$ipriorKernel$whichPearson
   cat("\nCall:\n")
   print(x$call)
@@ -178,7 +175,7 @@ print.iprior <- function(x, ...) {
 #'
 #'
 #' @export
-summary.iprior <- function(object, ...) {
+summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
   se <- fisher(alpha = object$alpha, psi = object$psi, lambda = object$lambda,
                   P.matsq = object$P.matsq, H.mat.lam = object$H.mat.lam,
@@ -216,12 +213,12 @@ summary.iprior <- function(object, ...) {
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
               xname = xname)
-  class(res) <- "summary.iprior"
+  class(res) <- "ipriorSummary"
   res
 }
 
 #' @export
-print.summary.iprior <- function(x, ...) {
+print.ipriorSummary <- function(x, ...) {
   # The print out of the S3 summary method for iprior objects.
   cat("\nCall:\n")
   print(x$call)

@@ -3,7 +3,7 @@ context("model fitting")
 test_that("Fitted object is iprior",{
 
 	mod <- iprior(y = rnorm(100), x = rnorm(100), control = list(silent = TRUE))
-	expect_that(mod, is_a("iprior"))
+	expect_that(mod, is_a("ipriorMod"))
 
 })
 

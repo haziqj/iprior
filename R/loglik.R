@@ -20,7 +20,7 @@
 loglik <- function (object, ...) UseMethod("loglik")
 
 #' @export
-loglik.iprior <- function (object, theta=NULL) {
+loglik.ipriorMod <- function (object, theta=NULL) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
 			lambda <- theta[-length(theta)]
@@ -40,7 +40,7 @@ loglik.ipriorKernel <- function (object, theta=NULL) {
 }
 
 #' @export
-deviance.iprior <- function (object, theta=NULL) {
+deviance.ipriorMod <- function (object, theta=NULL) {
 	return(-2*loglik(object, theta))
 }
 
