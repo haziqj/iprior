@@ -2,9 +2,12 @@
 % Please edit documentation in R/iprior.R
 \name{iprior}
 \alias{iprior}
+\alias{iprior.default}
 \title{Fit an I-prior regression model}
 \usage{
 iprior(formula, data, model = list(), control = list(), ...)
+
+\method{iprior}{default}(y, ..., model = list(), control = list())
 }
 \arguments{
 \item{formula}{the model formula to fit}

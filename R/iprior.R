@@ -9,18 +9,18 @@
 #'
 #' @examples (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
 #'
-#' @exportClass iprior
 #' @export
-#' @import RcppEigen
-#' @importFrom Rcpp evalCpp
-#' @useDynLib iprior
-
 iprior <- function(formula, data, model = list(), control = list(), ...) {
+  # The S3 generic function for objects of class "iprior"
   UseMethod("iprior")
 }
 
 # The default method -----------------------------------------------------------
+#' @rdname iprior
+#' @export
 iprior.default <- function(y, ..., model = list(), control = list()) {
+  # The default S3 constructor function for "iprior" objects.
+
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report.int = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE)
@@ -87,9 +87,8 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
     Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
   }
   est$fitted.values <- Y.hat
-  est$residuals <- ipriorKernel$Y - Y.hat
-  names(est$fitted.values) <- names(ipriorKernel$Y)
-  names(est$residuals) <- names(ipriorKernel$Y)
+  est$residuals     <- ipriorKernel$Y - Y.hat
+  names(est$fitted.values) <- names(est$residuals) <- names(ipriorKernel$Y)
 
   # Changing the call to simply iprior -----------------------------------------
   est$fullcall <- cl
@@ -99,10 +98,10 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est$call <- cl
 
   # Other things to return -----------------------------------------------------
-  est$control <- con
+  est$control      <- con
   est$coefficients <- param
-  est$sigma <- 1/sqrt(est$psi)
-  est$T2 <- as.numeric(crossprod(est$w.hat)/est$psi)
+  est$sigma        <- 1/sqrt(est$psi)
+  est$T2           <- as.numeric(crossprod(est$w.hat)/est$psi)
 
   class(est) <- "iprior"
   if (is(y, "iprior")) {
@@ -112,7 +111,29 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   }
 }
 
+#' @export
+iprior.formula <- function(formula, data, model = list(), control = list()) {
+  # Formula based S3 constructor function for iprior.
+
+  # Pass to iprior default -----------------------------------------------------
+  ipriorKernel <- kernL(formula, data, model = model)
+  est <- iprior(ipriorKernel, control = control)
+
+  # Changing the call to simply iprior -----------------------------------------
+  cl <- match.call()
+  est$fullcall <- cl
+  cl[[1L]] <- as.name("iprior")
+  m <- match(c("formula", "data"), names(cl), 0L)
+  cl <- cl[c(1L, m)]
+  est$call <- cl
+  est$formula <- formula
+  est$terms <- class(est) <- "iprior"
+  est
+}
+
+#' @export
 print.iprior <- function(x, ...) {
+  # Print for iprior objects.
   whichPearson <- x$ipriorKernel$whichPearson
   cat("\nCall:\n")
   print(x$call)
@@ -143,10 +164,23 @@ print.iprior <- function(x, ...) {
   cat("\n")
 }
 
-# The summary screen -----------------------------------------------------------
+#' Summary screen for iprior models.
+#'
+#' Summary screen for iprior models.
+#'
+#' Summary screen for iprior models.
+#'
+#' @param object Objects of class \code{iprior}.
+#'
+#' @examples
+#' \donttest{mod <- iprior(Hwt ~ ., data=MASS::cats)}
+#' \donttest{summary(mod)}
+#'
+#'
+#' @export
 summary.iprior <- function(object, ...) {
-  # Fisher information and standard errors -------------------------------------
-  se <- Fisher.fn(alpha = object$alpha, psi = object$psi, lambda = object$lambda,
+  # Standard errors from inverse observed Fisher matrix ------------------------
+  se <- fisher(alpha = object$alpha, psi = object$psi, lambda = object$lambda,
                   P.matsq = object$P.matsq, H.mat.lam = object$H.mat.lam,
                   S.mat = object$S.mat, Var.Y.inv = object$Var.Y.inv)
 
@@ -177,7 +211,7 @@ summary.iprior <- function(object, ...) {
               resid = object$residuals, log.lik = object$log.lik,
               no.iter = object$no.iter, converged = object$converged,
               stop.crit = object$control$stop.crit,
-              one.lam = object$ipriorKernel$model$one.lam,T2 = object$T2,
+              one.lam = object$ipriorKernel$model$one.lam, T2 = object$T2,
               q = object$ipriorKernel$q, p = object$ipriorKernel$p,
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
@@ -186,7 +220,9 @@ summary.iprior <- function(object, ...) {
   res
 }
 
+#' @export
 print.summary.iprior <- function(x, ...) {
+  # The print out of the S3 summary method for iprior objects.
   cat("\nCall:\n")
   print(x$call)
   x.names <- x$xname[1:x$q]
@@ -229,61 +265,4 @@ print.summary.iprior <- function(x, ...) {
   cat("\nT2 statistic:", signif(x$T2, digits = 4), "on ??? degrees of freedom.")
   cat("\nLog-likelihood value:", x$log.lik, "\n")
   cat("\n")
-}
-
-# Formula based input ----------------------------------------------------------
-iprior.formula <- function(formula, data, model = list(), control = list()) {
-  # Pass to iprior default -----------------------------------------------------
-  ipriorKernel <- kernL(formula, data, model = model)
-  est <- iprior(ipriorKernel, control = control)
-
-  # Changing the call to simply iprior -----------------------------------------
-  cl <- match.call()
-  est$fullcall <- cl
-  cl[[1L]] <- as.name("iprior")
-  m <- match(c("formula", "data"), names(cl), 0L)
-  cl <- cl[c(1L, m)]
-  est$call <- cl
-  est$formula <- formula
-  est$terms <- class(est) <- "iprior"
-  est
-}
-
-# Prediction -------------------------------------------------------------------
-predict.iprior <- function(object, newdata = list(), ...) {
-  list2env(object$ipriorKernel, environment())
-  list2env(model, environment())
-
-  if (length(newdata) == 0) {
-    ystar <- object$fitted
-  } else {
-    if (!is.null(object$formula)) {
-      # model has been fitted using formula interface
-      mf <- model.frame(formula = object$formula, data = newdata)
-      tt <- terms(mf)
-      Terms <- delete.response(tt)
-      xstar <- model.frame(Terms, newdata)
-      xrownames <- rownames(xstar)
-      xstar <- unlist(list(xstar), recursive = F)
-    } else {
-      xstar <- newdata
-      xrownames <- rownames(do.call(cbind, newdata))
-    }
-
-    # Define new kernel matrix -------------------------------------------------
-    H.mat <- Hmat_list(x, kernel, whichPearson, intr, no.int, gamma, xstar)
-    lambda <- object$lambda
-    if (parsm && no.int > 0) {
-      for (j in 1:no.int) {
-        lambda <- c(lambda, lambda[intr[1, j]] * lambda[intr[2, j]])
-      }
-    }
-    H.mat.lam <- Reduce("+", mapply("*", H.mat[1:(p + no.int)],
-                                    lambda[1:(p + no.int)], SIMPLIFY = F))
-
-    # Calculate fitted values --------------------------------------------------
-    ystar <- as.vector(object$alpha + (H.mat.lam %*% object$w.hat))
-    names(ystar) <- xrownames
-  }
-  ystar
 }

@@ -1,4 +1,5 @@
-#' Function which returns the log-likelihood value of an \code{iprior} or \code{ipriorKernel} object.
+#' Function which returns the log-likelihood value of an \code{iprior} or
+#' \code{ipriorKernel} object.
 #'
 #' \code{loglik} returns the log-likelihood value.
 #'
@@ -15,8 +16,10 @@
 #' mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
 #' loglik(mod.iprior)
 
+#' @export
 loglik <- function (object, ...) UseMethod("loglik")
 
+#' @export
 loglik.iprior <- function (object, theta=NULL) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
@@ -28,6 +31,7 @@ loglik.iprior <- function (object, theta=NULL) {
 	return(tmp$log.lik)
 }
 
+#' @export
 loglik.ipriorKernel <- function (object, theta=NULL) {
 	lambda <- theta[-length(theta)]
 	psi <- theta[length(theta)]
@@ -35,10 +39,12 @@ loglik.ipriorKernel <- function (object, theta=NULL) {
 	return(tmp$log.lik)
 }
 
+#' @export
 deviance.iprior <- function (object, theta=NULL) {
 	return(-2*loglik(object, theta))
 }
 
+#' @export
 deviance.ipriorKernel <- function (object, theta=NULL) {
 	return(-2*loglik(object, theta))
 }

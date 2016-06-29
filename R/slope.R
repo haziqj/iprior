@@ -12,7 +12,8 @@
 #' @examples
 #' mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)
 #' slope(mod.iprior)
-
+#'
+#' @export
 slope <- function(object){
 	if (!is(object, "iprior")) stop("Input iprior class models only.", call.=F)
 

@@ -10,8 +10,8 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width=6.5, fig.height=4.33, fig.align="center")
-# devtools::install_github("haziqjamil/iprior")
+knitr::opts_chunk$set(echo = TRUE, fig.width = 6.5, fig.height = 4.33, 
+                      fig.align = "center")
 library(iprior)
 ```
 
@@ -42,8 +42,8 @@ library(iprior)
 To fit an I-prior model to `mod` regressing `y` against `x`, where these are contained in the data frame `dat`, the following syntax are equivalent.
 
 ```{r syntax, eval=FALSE}
-mod <- iprior(y ~ x, data=dat)    #formula based input
-mod <- iprior(y=dat$y, x=dat$x)   #non-formula based input
+mod <- iprior(y ~ x, data = dat)    #formula based input
+mod <- iprior(y = dat$y, x = dat$x)   #non-formula based input
 ```
 
 The call to `iprior()` can be accompanied by model options in the form of `model=list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control=list()`. For details, see this [wiki page](https://github.com/haziqjamil/iprior/wiki/List-of-options).
@@ -59,7 +59,7 @@ str(stackloss)
 We can fit a multiple regression model on the dataset, regressing `stack.loss` against the other three variables. The I-prior for our function lives in a "straight line" RKHS which we call the *Canonical* RKHS. We fit an I-prior model as follows:
 
 ```{r mod1}
-mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
+mod.iprior <- iprior(stack.loss ~ ., data = stackloss)
 ```
 
 The `iprior` package estimates the model by an EM algorithm, and by default prints reports for every 100 iterations completed. Several options are available to tweak this by supplying a list of control options (see the [wiki](https://github.com/haziqjamil/iprior/wiki/List-of-options)).
@@ -75,11 +75,12 @@ The object `mod.iprior` is of class `iprior` and contains a bunch of things of i
 To compare the I-prior model against a regular linear regression model, we could look at the fitted versus residual plot.
 
 ```{r plot1, echo=FALSE}
-plot(y=residuals(mod.iprior), x=fitted(mod.iprior), pch=19, ylab="Residuals", xlab="Fitted values", main="Fitted vs. Residuals")
-mod.lm <- lm(stack.loss~., stackloss)
-points(y=residuals(mod.lm), x=fitted(mod.lm), col=2)
-abline(0,0, col="gray", lty=2)
-legend("bottomleft", legend=c("iprior", "lm"), pch=c(19,1), col=c(1,2))
+plot(y = residuals(mod.iprior), x = fitted(mod.iprior), pch = 19,
+     ylab = "Residuals", xlab = "Fitted values", main = "Fitted vs. Residuals")
+mod.lm <- lm(stack.loss ~ ., stackloss)
+points(y = residuals(mod.lm), x = fitted(mod.lm), col = 2)
+abline(0, 0, col = "gray", lty=2)
+legend("bottomleft", legend = c("iprior", "lm"), pch = c(19,1), col = c(1,2))
 ```
 
 ## Example 2: Multilevel modelling
@@ -96,7 +97,7 @@ This dataset contains the variables `mathach`, a measure of mathematics achievem
 We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with the assumption that students' `ses` varied by `schoolid`. This achieved by adding an interaction term between the two variables.
 
 ```{r mod2}
-(mod.iprior <- iprior(mathach ~ ses + schoolid + ses:schoolid, data=hsbsmall))
+(mod.iprior <- iprior(mathach ~ ses + schoolid + ses:schoolid, data = hsbsmall))
 ```
 
 On a technical note, the vector space for functions over the set of nominal-type variables (such as `schoolid`) is called the *Pearson* RKHS. 
@@ -104,14 +105,14 @@ On a technical note, the vector space for functions over the set of nominal-type
 A plot of fitted lines, one for each school, is produced using the `plot()` function. The option `plots="fitted"` produces the plot of interest, but there are other options for this as well.
 
 ```{r plot2}
-plot(mod.iprior, plots="fitted")
+plot(mod.iprior, plots = "fitted")
 ```
 
 ## Example 3: One-dimensional smoothing
 
 Instead of just "straight-line" regression functions, we could also smoothed curves. The vector space which contains such curves is called the *Fractional Brownian Motion* RKHS with a Hurst coefficient `Hurst`, which defaults to 0.5. The Hurst coefficient can be thought of as a smoothing parameter, but this is treated as a fixed parameter in the `iprior` package.
 
-Consider a simulated set of points in `datfbm` which were generated from a mixed Gaussian distribution `fx <- function(x) 65*dnorm(x, mean=2)+ 35*dnorm(x,mean=7,sd=1.5)`. 
+Consider a simulated set of points in `datfbm` which were generated from a mixed Gaussian distribution `fx <- function(x) 65 * dnorm(x, mean=2) + 35 * dnorm(x, mean = 7, sd = 1.5)`. 
 
 ```{r data3}
 data(datfbm)
@@ -121,7 +122,7 @@ str(datfbm)
 To illustrate one-dimensional smoothing, we fit an iprior model and produce the plot of fitted values.
 
 ```{r mod3}
-mod.iprior <- iprior(y ~ x, data=datfbm, model=list(kernel="FBM"), control=list(silent=T))
+mod.iprior <- iprior(y ~ x, data = datfbm, model = list(kernel = "FBM"), control = list(silent = TRUE))
 summary(mod.iprior)
-plot(mod.iprior, plots="fitted")
+plot(mod.iprior, plots = "fitted")
 ```

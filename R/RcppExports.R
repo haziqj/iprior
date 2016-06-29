@@ -10,8 +10,6 @@
 #'
 #' @param X A symmetric, positive-definite matrix
 #'
-#' @export
-#'
 eigenCpp <- function(X) {
     .Call('iprior_eigenCpp', PACKAGE = 'iprior', X)
 }
@@ -25,7 +23,6 @@ eigenCpp <- function(X) {
 #'
 #' @param X A symmetric matrix
 #'
-#' @export
 fastSquare <- function(X) {
     .Call('iprior_fastSquare', PACKAGE = 'iprior', X)
 }
@@ -40,7 +37,6 @@ fastSquare <- function(X) {
 #' @param X A symmetric, square matrix of dimension \code{n} by \code{n}
 #' @param y A vector of length \code{n}
 #'
-#' @export
 fastVDiag <- function(X, y) {
     .Call('iprior_fastVDiag', PACKAGE = 'iprior', X, y)
 }

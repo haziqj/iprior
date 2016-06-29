@@ -16,7 +16,6 @@ using Eigen::Lower;
 //'
 //' @param X A symmetric matrix
 //'
-//' @export
 // [[Rcpp::export]]
 
 Eigen::MatrixXd fastSquare(SEXP X) {

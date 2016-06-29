@@ -18,8 +18,6 @@ using Eigen::SelfAdjointEigenSolver;    // one of the eigenvalue solvers
 //'
 //' @param X A symmetric, positive-definite matrix
 //'
-//' @export
-//'
 // [[Rcpp::export]]
 
 Rcpp::List eigenCpp(Eigen::Map<Eigen::MatrixXd> X) {

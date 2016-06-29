@@ -2,18 +2,19 @@
 ### Function to check progress of EM
 ###
 
+#' @export
 progress <- function(x, interval=c("auto", "all", "input any number")){
 	if(class(x) != "iprior") stop("Input iprior class models only.", call.=F)
 	if(!x$converged) warning("The EM has not yet converged.", call.=F)
 	rn <- rownames(x$res.loglik)
-	
+
 	### Parameters
 	res <- x$res.loglik
 	cn <- c("Log-likelihood", "Pred.log-lik.", "Delta(i,i-1)", colnames(x$res.param)[-1])
 	res <- cbind(res, x$res.param[,-1])
 	res <- as.data.frame(res, row.names=rn)
 	colnames(res) <- cn
-	
+
 	### Trim the table
 	no.iter <- x$no.iter
 	if(!is.numeric(interval)) interval <- match.arg(interval)

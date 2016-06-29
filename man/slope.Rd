@@ -27,5 +27,6 @@ Test
 \examples{
 mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)
 slope(mod.iprior)
+
 }
 
