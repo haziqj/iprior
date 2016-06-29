@@ -6,37 +6,37 @@
 
 using namespace Rcpp;
 
-// EigenCpp
-Rcpp::List EigenCpp(Eigen::Map<Eigen::MatrixXd> M);
-RcppExport SEXP iprior_EigenCpp(SEXP MSEXP) {
+// eigenCpp
+Rcpp::List eigenCpp(Eigen::Map<Eigen::MatrixXd> X);
+RcppExport SEXP iprior_eigenCpp(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type M(MSEXP);
-    __result = Rcpp::wrap(EigenCpp(M));
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type X(XSEXP);
+    __result = Rcpp::wrap(eigenCpp(X));
     return __result;
 END_RCPP
 }
-// FastSquare
-Eigen::MatrixXd FastSquare(SEXP AA);
-RcppExport SEXP iprior_FastSquare(SEXP AASEXP) {
+// fastSquare
+Eigen::MatrixXd fastSquare(SEXP X);
+RcppExport SEXP iprior_fastSquare(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< SEXP >::type AA(AASEXP);
-    __result = Rcpp::wrap(FastSquare(AA));
+    Rcpp::traits::input_parameter< SEXP >::type X(XSEXP);
+    __result = Rcpp::wrap(fastSquare(X));
     return __result;
 END_RCPP
 }
-// FastVdiag
-NumericMatrix FastVdiag(NumericMatrix X, NumericVector y);
-RcppExport SEXP iprior_FastVdiag(SEXP XSEXP, SEXP ySEXP) {
+// fastVDiag
+NumericMatrix fastVDiag(NumericMatrix X, NumericVector y);
+RcppExport SEXP iprior_fastVDiag(SEXP XSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    __result = Rcpp::wrap(FastVdiag(X, y));
+    __result = Rcpp::wrap(fastVDiag(X, y));
     return __result;
 END_RCPP
 }

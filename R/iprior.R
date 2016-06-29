@@ -6,14 +6,16 @@
 #' @param control list of control options for EM algorithm and output
 #'
 #' @return an object of class iprior
+#'
+#' @examples (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
+#'
+#' @exportClass iprior
 #' @export
 #' @import RcppEigen
 #' @importFrom Rcpp evalCpp
 #' @useDynLib iprior
-#'
-#' @examples (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
 
-iprior <- function(formula, data, model = list(), control = list()) {
+iprior <- function(formula, data, model = list(), control = list(), ...) {
   UseMethod("iprior")
 }
 

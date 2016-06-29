@@ -76,7 +76,7 @@ kernL.default <- function (y, ..., model=list()) {
 	H.mat2 <- H.matsq <- P.mat <- P.matsq <- S.mat <- ind <- ind1 <- ind2 <- NULL
 	if (mod$one.lam | q==1) {
 		P.mat <- Reduce('+', mapply('*', H.mat, 1, SIMPLIFY=F))
-		P.matsq <- list(FastSquare(P.mat))
+		P.matsq <- list(fastSquare(P.mat))
 		if (mod$one.lam) mod$xname <- paste0("(", paste(names(H.mat), collapse=" + "), ")")
 		H.mat <- P.mat <- list(P.mat)
 		x <- list(as.data.frame(x))
@@ -103,7 +103,7 @@ kernL.default <- function (y, ..., model=list()) {
 
 		if (!is.null(intr) && mod$parsm) { #CASE: parsimonious interactions only
 			for (k in z) { #these do not depend on lambda, so setup once
-				H.matsq[[k]] <- FastSquare(H.mat[[k]])
+				H.matsq[[k]] <- fastSquare(H.mat[[k]])
 				if(k <= p) ind[[k]] <- indx.fn(k)
 				pb.count <- pb.count + 1
 				if (!mod$silent) setTxtProgressBar(pb, pb.count)
@@ -125,7 +125,7 @@ kernL.default <- function (y, ..., model=list()) {
 		else{ #CASE: multiple lambda, no interactions, or non-parsimonious interactions
 			for (k in 1:q) {	#these do not depend on lambda, so setup once
 				P.mat[[k]] <- H.mat[[k]]
-				P.matsq[[k]] <- FastSquare(P.mat[[k]])
+				P.matsq[[k]] <- fastSquare(P.mat[[k]])
 				pb.count <- pb.count + 1
 				if (!mod$silent) setTxtProgressBar(pb, pb.count)
 			}

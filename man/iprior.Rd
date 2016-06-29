@@ -4,7 +4,7 @@
 \alias{iprior}
 \title{Fit an I-prior regression model}
 \usage{
-iprior(formula, data, model = list(), control = list())
+iprior(formula, data, model = list(), control = list(), ...)
 }
 \arguments{
 \item{formula}{the model formula to fit}
@@ -23,5 +23,6 @@ Fit an I-prior regression model
 }
 \examples{
 (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
+
 }
 

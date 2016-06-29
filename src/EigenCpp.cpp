@@ -9,22 +9,23 @@ using Eigen::MatrixXd;                  // variable size matrix, double precisio
 using Eigen::VectorXd;                  // variable size vector, double precision
 using Eigen::SelfAdjointEigenSolver;    // one of the eigenvalue solvers
 
-//' Eigen decomposition of a matrix in C++
+//' Eigen decomposition of a matrix in C++.
 //'
-//' Returns the eigenvalues and eigenvectors of a matrix \code{M}.
+//' Returns the eigenvalues and eigenvectors of a matrix X.
 //'
-//' @param M A symmetric, positive-definite matrix
+//' A fast implementation of eigen for symmetric, positive-definite
+//' matrices. This helps speed up the I-prior EM algorithm.
 //'
+//' @param X A symmetric, positive-definite matrix
 //'
-//' @details A fast implementation of \code{eigen()} for symmetric,
-//' positive-definite matrices. This helps speed up the I-prior EM algorithm.
 //' @export
+//'
 // [[Rcpp::export]]
 
-Rcpp::List EigenCpp(Eigen::Map<Eigen::MatrixXd> M) {
+Rcpp::List eigenCpp(Eigen::Map<Eigen::MatrixXd> X) {
     VectorXd values;
     MatrixXd vectors;
-    SelfAdjointEigenSolver<MatrixXd> es(M);
+    SelfAdjointEigenSolver<MatrixXd> es(X);
     return List::create(
         Named("values") = es.eigenvalues(),
         Named("vectors") = es.eigenvectors()

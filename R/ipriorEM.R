@@ -35,7 +35,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 
 	### Linear solver and inverse
 	linsolvinv <- function(b=NULL){
-		if(is.null(b)) a <- FastVdiag(V, 1/{u+s}) #a C++ alternative
+		if(is.null(b)) a <- fastVDiag(V, 1/{u+s}) #a C++ alternative
 		else a <- V %*% ( diag(1/(u+s)) %*% (t(V) %*% b) )
 		a
 	}
@@ -56,7 +56,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		H.mat.lam.fn()
 		A <- H.mat.lam
 		s <<- 1/psi
-		tmp <- EigenCpp(A) #a C++ alternative
+		tmp <- eigenCpp(A) #a C++ alternative
 		u <<- psi*tmp$val^2
 		V <<- tmp$vec
 		isVarYneg <<- F; isVarYneg <<- any(u + s < 0)	#checks if Var.Y is negative
@@ -114,7 +114,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		}
 
 		### Update for psi
-		H.mat.lamsq <- FastSquare(H.mat.lam) #a C++ alternative
+		H.mat.lamsq <- fastSquare(H.mat.lam) #a C++ alternative
 		T3 <- crossprod(Y-alpha) + sum(H.mat.lamsq * W.hat) - 2*crossprod(Y-alpha, crossprod(H.mat.lam, w.hat))
 		psi <- sqrt(max(0, as.numeric(sum(diag(W.hat))/T3)))
 
