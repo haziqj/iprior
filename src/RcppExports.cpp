@@ -40,15 +40,3 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// FastVdiag2
-NumericMatrix FastVdiag2(NumericMatrix X, NumericVector y);
-RcppExport SEXP iprior_FastVdiag2(SEXP XSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    __result = Rcpp::wrap(FastVdiag2(X, y));
-    return __result;
-END_RCPP
-}

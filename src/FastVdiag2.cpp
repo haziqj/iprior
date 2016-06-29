@@ -9,8 +9,19 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::Lower;
 
+//' Computing a quadratic matrix form in C++
+//'
+//' Returns \code{X %*% diag(y) %*% t(X)}
+//'
+//' @param X A symmetric, square matrix of dimension \code{n} by \code{n}
+//' @param y A vector of length \code{n}
+//'
+//' @details A fast implementation of \code{X %*% diag(y) %*% t(X)}. This helps
+//'   speed up the I-prior EM algorithm.
+//' @export
 // [[Rcpp::export]]
-NumericMatrix FastVdiag2(NumericMatrix X, NumericVector y) {
+
+NumericMatrix FastVdiag(NumericMatrix X, NumericVector y) {
     const Eigen::Map<Eigen::MatrixXd> XX(Rcpp::as<Eigen::Map<Eigen::MatrixXd> >(X));
     Eigen::MatrixXd XT(XX.transpose());
     unsigned int ncol = X.ncol();
