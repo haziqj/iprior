@@ -3,28 +3,60 @@
 \name{iprior}
 \alias{iprior}
 \alias{iprior.default}
+\alias{iprior.formula}
+\alias{iprior.ipriorKernel}
+\alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
-iprior(formula, data, model = list(), control = list(), ...)
+iprior(object, ...)
 
-\method{iprior}{default}(formula = NULL, data = list(), model = list(),
-  control = list(), y = NULL, ...)
+\method{iprior}{default}(object = NULL, model = list(), control = list(),
+  y, ...)
+
+\method{iprior}{formula}(object, data, model = list(), control = list(),
+  ...)
+
+\method{iprior}{ipriorKernel}(object, control = list(), ...)
+
+\method{iprior}{ipriorMod}(object, control = list(), ...)
 }
 \arguments{
-\item{formula}{the model formula to fit}
+\item{object}{This is either an object of class formula (when fitting using
+formula interface), \code{ipriorKernel} or \code{ipriorModel}. When left
+\code{NULL}, then \code{y} must be used, along with the
+covariates/independent variables.}
 
-\item{data}{data frame containing variables}
+\item{...}{Only for when fitting using non-formula, enter the variables
+(vectors or matrices) separated by commas. No other options applicable
+here.}
 
-\item{model}{list of model options}
+\item{model}{(optional) List of model options. Not used for
+\code{ipriorKernel} or \code{ipriorModel} objects.}
 
-\item{control}{list of control options for EM algorithm and output}
+\item{control}{(optional) list of control options for EM algorithm and
+output.}
+
+\item{y}{Vector of response variables.}
+
+\item{data}{Data frame containing variables when using formula interface.}
 }
 \value{
-an object of class iprior
+An object of class \code{ipriorMod}.
 }
 \description{
-Fit an I-prior regression model
+Description
 }
+\details{
+Details
+}
+\section{Methods (by class)}{
+\itemize{
+\item \code{ipriorKernel}: Takes in object of type \code{ipriorKernel} and estimates
+the parameters of the model via the EM algorithm.
+
+\item \code{ipriorMod}: Re-run or continue running the EM algorithm from last
+attained parameter values in object \code{ipriorMod}.
+}}
 \examples{
 (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
 

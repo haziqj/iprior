@@ -1,39 +1,36 @@
-#' Function which returns the log-likelihood value of an \code{iprior} or
+#' Function which returns the log-likelihood value of an \code{ipriorMod} or
 #' \code{ipriorKernel} object.
 #'
-#' \code{loglik} returns the log-likelihood value.
+#' Description.
 #'
-#' \code{deviance} returns twice the negative log-likelihood value.
+#' Details.
 #'
-#' Test
+#' @param object an object of class \code{ipriorMod} or \code{ipriorKernel}.
+#' @param theta (optional) evaluates the log-likelihood at \code{theta} which is
+#'   of the form \code{theta = c(lambda, psi)}.
 #'
-#' @param x Object of class "iprior"
-#' @param alpha (Optional) specify intercept value.
-#' @param lambda (Optional) specify lambda value.
-#' @param psi (Optional) specify psi value.
-#' @return List of length 2.
 #' @examples
 #' mod.iprior <- iprior(stack.loss ~ ., data=stackloss)
-#' loglik(mod.iprior)
-
+#' logLik(mod.iprior)
+#'
+#' @name logLik
+#' @rdname logLik
 #' @export
-loglik <- function(object, ...) UseMethod("loglik")
-
-#' @export
-loglik.ipriorMod <- function(object, theta = NULL, ...) {
+logLik.ipriorMod <- function(object, theta = NULL, ...) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
 			lambda <- theta[-length(theta)]
 			psi <- theta[length(theta)]
 		}
-		ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init=lambda,
+		ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init = lambda,
 		         psi.init = psi, clean = TRUE)
 	} )
 	return(tmp$log.lik)
 }
 
+#' @rdname logLik
 #' @export
-loglik.ipriorKernel <- function(object, theta = NULL, ...) {
+logLik.ipriorKernel <- function(object, theta = NULL, ...) {
 	lambda <- theta[-length(theta)]
 	psi <- theta[length(theta)]
 	tmp <- ipriorEM(object, maxit = 0, silent = TRUE, lambda.init = lambda,
@@ -43,10 +40,10 @@ loglik.ipriorKernel <- function(object, theta = NULL, ...) {
 
 #' @export
 deviance.ipriorMod <- function(object, theta = NULL, ...) {
-	return(-2 * loglik(object, theta))
+	return(-2 * logLik(object, theta))
 }
 
 #' @export
 deviance.ipriorKernel <- function(object, theta = NULL, ...) {
-	return(-2 * loglik(object, theta))
+	return(-2 * logLik(object, theta))
 }

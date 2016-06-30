@@ -34,7 +34,7 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
     }
 
     # Define new kernel matrix -------------------------------------------------
-    H.mat <- Hmat_list(x, kernel, whichPearson, intr, no.int, gamma, xstar)
+    H.mat <- hMatList(x, kernel, whichPearson, intr, no.int, gamma, xstar)
     lambda <- object$lambda
     if (parsm && no.int > 0) {
       for (j in 1:no.int) {

@@ -1,5 +1,7 @@
 ### Creation of H.mat list
-Hmat_list <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(NULL)) {
+hMatList <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(NULL)) {
+  # Helper function for creation of list of H matrices. Used in Kernel_loader.r
+  # and predict.R
 	p <- length(x)
 	if (kernel == "FBM") H.mat <- mapply(fnH3, x=x[!whichPearson], y=xstar[!whichPearson], gamma=gamma, SIMPLIFY=F)
 	else H.mat <- mapply(fnH2, x=x[!whichPearson], y=xstar[!whichPearson], SIMPLIFY=F)
