@@ -1,5 +1,9 @@
 #' @export
-plot.ipriorMod <- function (object, UseOwnLabels=F, plots=c("all", "allinone", "fitted", "diagnostic", "residuals", "qqplot"), ...) {
+plot.ipriorMod <- function(x,
+                           plots = c("all", "allinone", "fitted", "diagnostic",
+                                     "residuals", "qqplot"),
+                           UseOwnLabels = FALSE, ...) {
+  object <- x
 	x <- object$ipriorKernel$x
 	y <- object$ipriorKernel$Y
 	p <- object$ipriorKernel$p

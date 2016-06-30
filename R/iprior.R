@@ -18,7 +18,9 @@ iprior <- function(formula, data, model = list(), control = list(), ...) {
 # The default method -----------------------------------------------------------
 #' @rdname iprior
 #' @export
-iprior.default <- function(y, ..., model = list(), control = list()) {
+iprior.default <- function(formula = NULL, data = list(),
+                           model = list(), control = list(),
+                           y = NULL, ...) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report.int = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE)
@@ -110,12 +112,13 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
 }
 
 #' @export
-iprior.formula <- function(formula, data, model = list(), control = list()) {
+iprior.formula <- function(formula, data, model = list(), control = list(),
+                           ...) {
   # Formula based S3 constructor function for iprior.
 
   # Pass to iprior default -----------------------------------------------------
   ipriorKernel <- kernL(formula, data, model = model)
-  est <- iprior(ipriorKernel, control = control)
+  est <- iprior(y = ipriorKernel, control = control)
 
   # Changing the call to simply iprior -----------------------------------------
   cl <- match.call()

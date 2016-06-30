@@ -3,7 +3,8 @@
 ###
 
 #' @export
-update.ipriorKernel <- function (object, add=list(), delete=NULL, model=list()) {
+update.ipriorKernel <- function(object, add = list(), delete = NULL,
+                                model = list(), ...) {
 	x <- object$x
 	y <- object$Y
 	mod <- object$model

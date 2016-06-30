@@ -3,10 +3,10 @@
 ###
 
 #' @export
-kernL <- function (y, ..., model=list()) UseMethod("kernL")
+kernL <- function(y, ..., model = list()) UseMethod("kernL")
 
 #' @export
-kernL.default <- function (y, ..., model=list()) {
+kernL.default <- function(y, ..., model=list()) {
 	x <- list(...)
 	if (any(sapply(x, is.list))) x <- unlist(x, recursive=F)
 	N <- length(y)
@@ -147,7 +147,7 @@ kernL.default <- function (y, ..., model=list()) {
 }
 
 #' @export
-kernL.formula <- function (formula, data, model=list()) {
+kernL.formula <- function(formula, data, model = list(), ...) {
 	mf <- model.frame(formula=formula, data=data)
 	tt <- terms(mf)
 	Terms <- delete.response(tt)

@@ -17,34 +17,36 @@
 #' loglik(mod.iprior)
 
 #' @export
-loglik <- function (object, ...) UseMethod("loglik")
+loglik <- function(object, ...) UseMethod("loglik")
 
 #' @export
-loglik.ipriorMod <- function (object, theta=NULL) {
+loglik.ipriorMod <- function(object, theta = NULL, ...) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
 			lambda <- theta[-length(theta)]
 			psi <- theta[length(theta)]
 		}
-		ipriorEM(ipriorKernel, maxit=0, silent=T, lambda.init=lambda, psi.init=psi, clean=T)
+		ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init=lambda,
+		         psi.init = psi, clean = TRUE)
 	} )
 	return(tmp$log.lik)
 }
 
 #' @export
-loglik.ipriorKernel <- function (object, theta=NULL) {
+loglik.ipriorKernel <- function(object, theta = NULL, ...) {
 	lambda <- theta[-length(theta)]
 	psi <- theta[length(theta)]
-	tmp <- ipriorEM(object, maxit=0, silent=T, lambda.init=lambda, psi.init=psi, clean=T)
+	tmp <- ipriorEM(object, maxit = 0, silent = TRUE, lambda.init = lambda,
+	                psi.init = psi, clean = TRUE)
 	return(tmp$log.lik)
 }
 
 #' @export
-deviance.ipriorMod <- function (object, theta=NULL) {
-	return(-2*loglik(object, theta))
+deviance.ipriorMod <- function(object, theta = NULL, ...) {
+	return(-2 * loglik(object, theta))
 }
 
 #' @export
-deviance.ipriorKernel <- function (object, theta=NULL) {
-	return(-2*loglik(object, theta))
+deviance.ipriorKernel <- function(object, theta = NULL, ...) {
+	return(-2 * loglik(object, theta))
 }

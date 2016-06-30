@@ -7,7 +7,8 @@
 \usage{
 iprior(formula, data, model = list(), control = list(), ...)
 
-\method{iprior}{default}(y, ..., model = list(), control = list())
+\method{iprior}{default}(formula = NULL, data = list(), model = list(),
+  control = list(), y = NULL, ...)
 }
 \arguments{
 \item{formula}{the model formula to fit}

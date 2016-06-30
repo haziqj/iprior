@@ -25,7 +25,7 @@ install.packages("devtools")
 library(devtools)
 ```
 
-Then, run the following code to install R/iprior and load the `iprior` library.
+Then, run the following code to install and attach the `iprior` package.
 
 ```{r iprior_install, eval=FALSE}
 install_github("haziqjamil/iprior")
