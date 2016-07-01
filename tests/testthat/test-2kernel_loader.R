@@ -159,7 +159,7 @@ test_that("Names OK using formula with interactions",{
 test_that("Can't use interactions with one.lam in formula input",{
 
   expect_error(kernL(stack.loss ~ . ^ 2, data = stackloss,
-                     model = list(interactions = "1:2", one.lam = TRUE)))
+                     model = list(one.lam = TRUE)))
 
 })
 
@@ -168,5 +168,14 @@ test_that("Names OK using formula and one.lam = TRUE",{
   xname <- "Air.Flow + Water.Temp + Acid.Conc."
   mod <- kernL(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
   expect_equal(names(mod$H.mat), xname)
+
+})
+
+test_that("Incorrect specification of interactions",{
+
+  expect_error(kernL(y = stackloss$stack.loss, air = stackloss$Air.Flow,
+               water = stackloss$Water.Temp, model = list(interactions = 1:2)))
+  expect_error(kernL(y = stackloss$stack.loss, air = stackloss$Air.Flow,
+               water = stackloss$Water.Temp, model = list(interactions = "12")))
 
 })

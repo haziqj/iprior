@@ -31,7 +31,7 @@ kernL.default <- function(y, ..., model = list()) {
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = "y", xname = NULL,
-              silent = TRUE)
+              silent = TRUE, order = as.character(1:p))
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -40,13 +40,27 @@ kernL.default <- function(y, ..., model = list()) {
   }
   mod$kernel <- match.arg(mod$kernel, c("Canonical", "FBM"))
 
+  # Check for higher order terms -----------------------------------------------
+  mod$order <- as.character(mod$order)
+  hord.check <- all(mod$order == as.character(1:p))
+  if (!hord.check) {
+    hord.check1 <- length(mod$order) != p
+    hord.check2 <- any(grepl("\\^", mod$order))
+    if (hord.check1 | !hord.check2) {
+      stop("Incorrect prescription of higher order terms.", call. = FALSE)
+    }
+  }
+
   ## Set up interactions, p and q ----------------------------------------------
   names(mod)[3] <- "intr"  #rename to something simpler
   if (!is.null(mod$intr)) {
     if (!is.matrix(mod$intr)) {
       # not fitted using formula
-      if (!is.character(mod$intr))
-        stop("Incorrect prescription of interactions.")
+      intr.check1 <- is.character(mod$intr)
+      intr.check2 <- all(grepl(":", mod$intr))
+      if (!intr.check1 | !intr.check2) {
+        stop("Incorrect prescription of interactions.", call. = FALSE)
+      }
       mod$intr <- sapply(strsplit(mod$intr, ":"), as.numeric)
     }
     no.int <- ncol(mod$intr)
