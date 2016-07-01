@@ -50,12 +50,15 @@ kernL.default <- function(y, ..., model = list()) {
       stop("Incorrect prescription of higher order terms.", call. = FALSE)
     }
   }
+  mod$order <- sepOrd(mod$order)
+  r <- length(mod$order$hord)
 
-  ## Set up interactions, p and q ----------------------------------------------
+  # Set up interactions, p and q -----------------------------------------------
   names(mod)[3] <- "intr"  #rename to something simpler
   if (!is.null(mod$intr)) {
+    # Interactions present
     if (!is.matrix(mod$intr)) {
-      # not fitted using formula
+      # Not fitted using formula
       intr.check1 <- is.character(mod$intr)
       intr.check2 <- all(grepl(":", mod$intr))
       if (!intr.check1 | !intr.check2) {
@@ -64,16 +67,21 @@ kernL.default <- function(y, ..., model = list()) {
       mod$intr <- sapply(strsplit(mod$intr, ":"), as.numeric)
     }
     no.int <- ncol(mod$intr)
-    if (mod$parsm) q <- p
-    else q <- p + no.int
   } else {
-    # no interactions
+    # No interactions
     no.int <- 0L
-    q <- p
   }
   if (any(mod$intr > p | mod$intr < 1)) {
     stop("Prescribed interactions out of bounds.")
   }
+  q <- p + no.int
+  if (!mod$parsm) l <- q else l <- p - r
+  # For clarity, the definitions of p, q, r, and l are
+  # p = Number of H matrices in H.mat minus interactions = l + r
+  # l = Number of unique lambdas (= q when parsm = TRUE)
+  # r = Number of higher order terms
+  # q = Length of expanded lambda = p + no.int
+  # h = length(H.mat)
 
   # Set up names for x variables -----------------------------------------------
   if (is.null(mod$xname)) mod$xname <- names(x)
@@ -96,14 +104,15 @@ kernL.default <- function(y, ..., model = list()) {
   names(x) <- mod$xname[1:p]
 
   # Set up list of H matrices --------------------------------------------------
-  H.mat <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
-  names(H.mat) <- mod$xname[1:length(H.mat)]
-  if (length(mod$xname) < length(H.mat) && !mod$one.lam && !is.null(mod$intr)) {
-    for (i in 1:ncol(mod$intr)) {
+  Hl <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
+  h <- length(Hl)
+  names(Hl) <- mod$xname[1:h]
+  if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
+    for (i in 1:no.int) {
       mod$xname <- c(mod$xname, paste(mod$xname[mod$intr[1, i]],
                                       mod$xname[mod$intr[2, i]], sep = ":"))
     }
-    names(H.mat) <- mod$xname
+    names(Hl) <- mod$xname
   }
 
   ### Set up progress bar ------------------------------------------------------
@@ -112,17 +121,17 @@ kernL.default <- function(y, ..., model = list()) {
 
   ### Block B update function --------------------------------------------------
   intr <- mod$intr
-  environment(indx.fn) <- environment()
-  H.mat2 <- H.matsq <- P.mat <- P.matsq <- S.mat <- ind <- ind1 <- ind2 <- NULL
+  environment(indxFn) <- environment()
+  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
   if (q == 1) {
-    P.mat <- H.mat
-    P.matsq <- list(fastSquare(P.mat[[1]]))
+    Pl <- Hl
+    Psql <- list(fastSquare(Pl[[1]]))
     BlockB <- function(k) NULL
-    S.mat <- list(matrix(0, nrow = N, ncol = N))
+    Sl <- list(matrix(0, nrow = N, ncol = N))
     if (!mod$silent) setTxtProgressBar(pb, 1)
   } else {
-    # Next, prepare the indices (also required for indx.fn).
-    z <- 1:(p + no.int)
+    # Next, prepare the indices required for indxFn().
+    z <- 1:h
     ind1 <- rep(z, times = (length(z) - 1):0)
     ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
     if (!mod$silent) {
@@ -130,10 +139,10 @@ kernL.default <- function(y, ..., model = list()) {
                            width = 47)
     }
     # Prepare the cross-product terms of squared kernel matrices. This is a list
-    # of (p + no.int)_choose_2.
+    # of q_choose_2.
     for (j in 1:length(ind1)) {
-      H.mat2[[j]] <- H.mat[[ind1[j]]] %*% H.mat[[ind2[j]]] +
-                     H.mat[[ind2[j]]] %*% H.mat[[ind1[j]]]
+      H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]] +
+                  Hl[[ind2[j]]] %*% Hl[[ind1[j]]]
       pb.count <- pb.count + 1
       if (!mod$silent) setTxtProgressBar(pb, pb.count)
     }
@@ -141,57 +150,54 @@ kernL.default <- function(y, ..., model = list()) {
     if (!is.null(intr) && mod$parsm) {
       # CASE: Parsimonious interactions only -----------------------------------
       for (k in z) {
-        H.matsq[[k]] <- fastSquare(H.mat[[k]])
-        if (k <= p)
-          ind[[k]] <- indx.fn(k)
+        Hsql[[k]] <- fastSquare(Hl[[k]])
+        if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
         pb.count <- pb.count + 1
-        if (!mod$silent)
-          setTxtProgressBar(pb, pb.count)
+        if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
       BlockB <- function(k) {
         indB <- ind[[k]]
         lambda.P <- c(1, lambda[indB$k.int.lam])
-        P.mat[[k]] <<- Reduce("+", mapply("*", H.mat[c(k, indB$k.int)],
-                                          lambda.P, SIMPLIFY = FALSE))
-        P.matsq[[k]] <<- Reduce("+", mapply("*", H.matsq[indB$Psq],
-                                            c(1, lambda[indB$Psq.lam] ^ 2),
-                                            SIMPLIFY = FALSE))
+        Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
+                                       SIMPLIFY = FALSE))
+        Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                         c(1, lambda[indB$Psq.lam] ^ 2),
+                                         SIMPLIFY = FALSE))
         if (!is.null(indB$P2.lam1)) {
           lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
           lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
-          P.matsq[[k]] <<- P.matsq[[k]] +
-                           Reduce("+", mapply("*", H.mat2[indB$P2], lambda.P2,
-                                              SIMPLIFY = FALSE))
+          Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
+                                                       lambda.P2,
+                                                       SIMPLIFY = FALSE))
         }
         lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
         lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
-        S.mat[[k]] <<- Reduce("+", mapply("*", H.mat2[indB$PRU], lambda.PRU,
-                                          SIMPLIFY = FALSE))
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                       SIMPLIFY = FALSE))
       }
     } else {
       # CASE: Multiple lambda with no interactions, or with non-parsimonious ---
       # interactions -----------------------------------------------------------
       for (k in 1:q) {
-        P.mat[[k]] <- H.mat[[k]]
-        P.matsq[[k]] <- fastSquare(P.mat[[k]])
+        Pl[[k]] <- Hl[[k]]
+        Psql[[k]] <- fastSquare(Pl[[k]])
         pb.count <- pb.count + 1
         if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
       BlockB <- function(k) {
         ind <- which(ind1 == k | ind2 == k)
-        S.mat[[k]] <<- Reduce("+", mapply("*", H.mat2[ind], lambda[-k],
-                                          SIMPLIFY = FALSE))
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k],
+                                       SIMPLIFY = FALSE))
       }
     }
   }
   if (!mod$silent) close(pb)
   mod <- mod[-8]  #remove silent control
 
-  BlockBstuff <- list(H.mat2 = H.mat2, H.matsq = H.matsq, P.mat = P.mat,
-                      P.matsq = P.matsq, S.mat = S.mat, ind1 = ind1,
-                      ind2 = ind2, ind = ind, BlockB = BlockB)
-  kernelLoaded <- list(Y = y, x = x, H.mat = H.mat, N = N, p = p, q = q,
-                       no.int = no.int, whichPearson = whichPearson,
+  BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
+                      ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
+  kernelLoaded <- list(Y = y, x = x, Hl = Hl, N = N, p = p, l = l, r = r,
+                       no.int = no.int, q = q, whichPearson = whichPearson,
                        BlockBstuff = BlockBstuff, model = mod)
   class(kernelLoaded) <- "ipriorKernel"
   kernelLoaded
@@ -257,9 +263,10 @@ print.ipriorKernel <- function(x, ...) {
   # with a single scale parameter.\n') else cat(', with', x$q, 'scale
   # parameters.\n')
   cat("Sample size = ", x$N, "\n")
-  cat("Number of scale parameters, p = ", x$q, "\n")
+  cat("Number of x variables, p = ", x$p, "\n")
+  cat("Number of scale parameters, l = ", x$l, "\n")
   cat("Number of interactions = ", x$no.int, "\n")
   cat("\nInfo on H matrix:\n\n")
-  str(x$H.mat)
+  str(x$Hl)
   cat("\n")
 }

@@ -55,6 +55,8 @@ test_that("Successfully fit interactions",{
 	               model = list(interactions = "1:2"),
 	               control = list(silent = TRUE))
 	expect_equal(mod1$log, mod2$log)  # check if same log-likelihood value achieved
+  tmp <- summary(mod1)
+  tmp <- summary(mod2)
 
 })
 
@@ -67,5 +69,7 @@ test_that("Successfully fit parsimonious interactions",{
                  model = list(interactions = "1:2", parsm = FALSE),
                  control = list(silent = TRUE))
   expect_equal(mod1$log, mod2$log)  # check if same log-likelihood value achieved
+  tmp <- summary(mod1)
+  tmp <- summary(mod2)
 
 })

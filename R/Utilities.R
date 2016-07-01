@@ -9,6 +9,12 @@ testXForm <- function(x) {
   xform
 }
 
+sepOrd <- function(x) {
+  # Identifies higher order terms. Used in kernL().
+  where.ord <- grep("\\^", x, invert = TRUE)
+  list(ord = x[where.ord], hord = x[-where.ord])
+}
+
 ### Creation of H.mat list
 hMatList <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(NULL)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
@@ -29,8 +35,9 @@ hMatList <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(N
 }
 
 ### Indexer helper function
-indx.fn <- function(k) { #indices for H.mat2
-				 		 #note: intr, ind1 and ind2 are created in kernL()
+indxFn <- function(k) {
+  # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
+  # ind2 are created in kernL().
 	ind.int1 <- intr[1,]==k; ind.int2 <- intr[2,]==k	#locating var/kernel matrix
 	ind.int <- which(ind.int1 | ind.int2)				#of interactions (out of 1:no.int)
 	k.int <- ind.int+p	#which kernel matrix has interactions involves k

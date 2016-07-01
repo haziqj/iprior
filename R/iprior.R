@@ -106,9 +106,9 @@ iprior.default <- function(object = NULL, y, ..., model = list(),
 
   # Calculate fitted values and residuals --------------------------------------
   if (maxit == 0) {
-    Y.hat <- rep(est$alpha, nrow(est$H.mat.lam))
+    Y.hat <- rep(est$alpha, nrow(est$Hlam.mat))
   } else {
-    Y.hat <- est$alpha + as.vector(crossprod(est$H.mat.lam, est$w.hat))
+    Y.hat <- est$alpha + as.vector(crossprod(est$Hlam.mat, est$w.hat))
   }
   est$fitted.values <- Y.hat
   est$residuals     <- ipriorKernel$Y - Y.hat
@@ -213,8 +213,8 @@ print.ipriorMod <- function(x, ...) {
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
   se <- fisher(alpha = object$alpha, psi = object$psi, lambda = object$lambda,
-                  P.matsq = object$P.matsq, H.mat.lam = object$H.mat.lam,
-                  S.mat = object$S.mat, Var.Y.inv = object$Var.Y.inv)
+               Psql = object$Psql, Sl = object$Sl, Hlam.mat = object$Hlam.mat,
+               VarY.inv = object$VarY.inv)
 
   # Z values to compare against (standard) Normal distribution -----------------
   zval <- coef(object)/se
@@ -225,13 +225,13 @@ summary.ipriorMod <- function(object, ...) {
                z          = round(zval, digits = 3),
                `P[|Z>z|]` = round(2 * pnorm(-abs(zval)), digits = 3))
   xname <- object$ipriorKernel$model$xname
-  if (object$ipriorKernel$q == 1) {
+  if (object$ipriorKernel$l == 1) {
     # only rename rows when using multiple lambdas
     lamnames <- c("(Intercept)", "lambda", "psi")
     rownames(tab) <- lamnames
   } else {
     lamnames <- paste0("lam", 1:(length(coef(object)) - 2))
-    lamnames <- c("(Intercept)", paste(lamnames, xname[1:object$ipriorKernel$q],
+    lamnames <- c("(Intercept)", paste(lamnames, xname[1:object$ipriorKernel$l],
                                        sep = "."), "psi")
     rownames(tab) <- lamnames
   }
@@ -257,7 +257,7 @@ print.ipriorSummary <- function(x, ...) {
   # The print out of the S3 summary method for iprior objects.
   cat("\nCall:\n")
   print(x$call)
-  x.names <- x$xname[1:(x$q - x$no.int)]
+  x.names <- x$xname[1:x$p]
   xPearson <- x.names[x$whichPearson]
   xCanOrFBM <- x.names[!x$whichPearson]
   if (x$kernel == "Canonical") {
