@@ -4,10 +4,13 @@
 
 ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silent=F, lambda.init=NULL, psi.init=NULL, clean=F, paramprogress=F){
 
-	list2env(ipriorKernel, environment())
-	list2env(BlockBstuff, environment())
-	list2env(model, environment())
-	environment(BlockB) <- environment()
+  ipriorEM.env <- environment()
+	list2env(ipriorKernel, ipriorEM.env)
+	list2env(BlockBstuff, ipriorEM.env)
+	list2env(model, ipriorEM.env)
+	environment(BlockB) <- ipriorEM.env
+	environment(ipriorEMClosedForm) <- ipriorEM.env
+  environment(ipriorEMOptim) <- ipriorEM.env
 
 	if(report.int == 0)	report.int <- maxit
 
@@ -19,9 +22,14 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		if(length(lambda.init) != q) stop(paste("Incorrect dimension of lambda initial values. vector of length", q, "required."), call.=F)
 		else lambda <- lambda.init
 	}
-	lambda.fn <- function(){
-		lambda <<- lambda[1:q]
-		if(parsm && no.int > 0){ for(j in 1:no.int) lambda <<- c(lambda, lambda[intr[1,j]]*lambda[intr[2,j]]) }
+	lambda.fn <- function(lambda_ = lambda, env = ipriorEM.env){
+		assign("lambda", lambda_[1:q], envir = env)
+		if (parsm && no.int > 0){
+		  for (j in 1:no.int) {
+		    assign(c("lambda", lambda_[intr[1, j]] * lambda_[intr[2, j]]),
+		           envir = env)
+		  }
+		}
 	}
 	lambda.fn()
 
@@ -42,11 +50,15 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 
 	### Calculating H.mat.lam
 	if (q==1) {
-		H.mat.lam.fn <- function() H.mat.lam <<- lambda[1] * P.mat[[1]]
+		H.mat.lam.fn <- function(lambda_ = lambda, env = ipriorEM.env) {
+		  assign("H.mat.lam", lambda_[1] * P.mat[[1]], envir = env)
+		}
 	}
 	else {
-		H.mat.lam.fn <- function(){
-			H.mat.lam <<- Reduce('+', mapply('*', H.mat[1:(p+no.int)], lambda[1:(p+no.int)], SIMPLIFY=F))
+		H.mat.lam.fn <- function(lambda_ = lambda, env = ipriorEM.env){
+			assign("H.mat.lam", Reduce('+', mapply('*', H.mat[1:(p + no.int)],
+			                                       lambda_[1:(p + no.int)],
+			                                       SIMPLIFY = FALSE)), envir = env)
 		}
 	}
 
@@ -104,23 +116,9 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		i <- i + 1
 		log.lik0 <- log.lik1
 
-		### Update for lambda
-		BlockC() #Var.Y.inv through linear solver, and calculation of w.hat and W.hat
-		for(k in 1:q){
-			BlockB(k)
-			T1 <- sum(P.matsq[[k]] * W.hat)
-			T2 <- 2*crossprod(Y-alpha, crossprod(P.mat[[k]], w.hat)) - sum(S.mat[[k]] * W.hat)
-			lambda[k] <- as.vector(T2/(2*T1))
-		}
-
-		### Update for psi
-		H.mat.lamsq <- fastSquare(H.mat.lam) #a C++ alternative
-		T3 <- crossprod(Y-alpha) + sum(H.mat.lamsq * W.hat) - 2*crossprod(Y-alpha, crossprod(H.mat.lam, w.hat))
-		psi <- sqrt(max(0, as.numeric(sum(diag(W.hat))/T3)))
-
-		### Estimating alpha
-		# tmp.alpha <- crossprod(x0, Var.Y.inv)
-		# alpha <- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
+    # Update for parameters lambda and psi -------------------------------------
+    ipriorEMClosedForm()
+    # ipriorEMOptim()
 
 		### New value of log-likelihood
 		BlockA() #H.mat.lam, and eigendecomposition
@@ -160,6 +158,9 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 			else ipriorEMprettyIter(res.loglik[i+1,], i)
 		}
 	}
+
+	# One last update of Block B
+	for(k in 1:q) BlockB(k)
 
 	res.loglik <- res.loglik[1:(i+1),]; res.param <- res.param[1:(i+1),]
 
