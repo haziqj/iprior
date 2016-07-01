@@ -1,4 +1,4 @@
-context("model fitting")
+context("Model fitting")
 
 test_that("Fit using non-formula",{
 
@@ -58,7 +58,7 @@ test_that("Successfully fit interactions",{
 
 })
 
-test_that("Successfully fit pasrimonious interactions",{
+test_that("Successfully fit parsimonious interactions",{
 
   mod1 <- iprior(len ~ supp * dose, ToothGrowth,
                  model = list(parsm = FALSE), control = list(silent = TRUE))

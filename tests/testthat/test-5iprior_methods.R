@@ -1,4 +1,4 @@
-context("iprior methods")
+context("I-prior methods")
 
 test_that("Predict method works",{
 

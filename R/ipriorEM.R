@@ -26,7 +26,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		assign("lambda", lambda_[1:q], envir = env)
 		if (parsm && no.int > 0){
 		  for (j in 1:no.int) {
-		    assign(c("lambda", lambda_[intr[1, j]] * lambda_[intr[2, j]]),
+		    assign("lambda", c(lambda, lambda_[intr[1, j]] * lambda_[intr[2, j]]),
 		           envir = env)
 		  }
 		}

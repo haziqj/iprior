@@ -1,4 +1,4 @@
-context("Kernel loader")
+context("Kernel loader with higher order terms")
 
 test_that("Higher order non-formula",{
 

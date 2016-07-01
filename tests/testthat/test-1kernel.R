@@ -1,4 +1,4 @@
-context("kernel matrices")
+context("Kernel matrices")
 
 test_that("FBM with Hurst=1 equals Canonical",{
 
