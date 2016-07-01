@@ -9,10 +9,13 @@ testXForm <- function(x) {
   xform
 }
 
-sepOrd <- function(x) {
-  # Identifies higher order terms. Used in kernL().
-  where.ord <- grep("\\^", x, invert = TRUE)
-  list(ord = x[where.ord], hord = x[-where.ord])
+whereOrd <- function(x) {
+  # Index of non-higher order terms.
+  grep("\\^", x, invert = TRUE)
+}
+
+lenHOrd <- function(x) {
+  length(grep("\\^", x))
 }
 
 ### Creation of H.mat list

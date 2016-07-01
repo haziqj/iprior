@@ -1,11 +1,15 @@
 lambdaExpand <- function(lambda_ = lambda, env = ipriorEM.env){
-  assign("lambda", lambda_[1:l], envir = env)
-  if (parsm && no.int > 0){
+  assign("lambda", lambdaContract(lambda_, order), envir = env)
+  if (parsm && no.int > 0) {
     for (j in 1:no.int) {
       assign("lambda", c(lambda, lambda_[intr[1, j]] * lambda_[intr[2, j]]),
              envir = env)
     }
   }
+}
+
+lambdaContract <- function(x, ord) {
+  x[whereOrd(ord)]
 }
 
 ipriorEMClosedForm <- function() {

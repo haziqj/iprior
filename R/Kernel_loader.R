@@ -50,8 +50,7 @@ kernL.default <- function(y, ..., model = list()) {
       stop("Incorrect prescription of higher order terms.", call. = FALSE)
     }
   }
-  mod$order <- sepOrd(mod$order)
-  r <- length(mod$order$hord)
+  r <- lenHOrd(mod$order)
 
   # Set up interactions, p and q -----------------------------------------------
   names(mod)[3] <- "intr"  #rename to something simpler
@@ -75,7 +74,12 @@ kernL.default <- function(y, ..., model = list()) {
     stop("Prescribed interactions out of bounds.")
   }
   q <- p + no.int
-  if (!mod$parsm) l <- q else l <- p - r
+  if (!mod$parsm) {
+    l <- q
+    mod$order <- as.character(1:l)
+  } else {
+    l <- p - r
+  }
   # For clarity, the definitions of p, q, r, and l are
   # p = Number of H matrices in H.mat minus interactions = l + r
   # l = Number of unique lambdas (= q when parsm = TRUE)
@@ -102,6 +106,9 @@ kernL.default <- function(y, ..., model = list()) {
   # print(here)
   mod$xname[here] <- names(x)[here]
   names(x) <- mod$xname[1:p]
+
+  # Set up names for lambda parameters -----------------------------------------
+
 
   # Set up list of H matrices --------------------------------------------------
   Hl <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
