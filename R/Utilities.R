@@ -1,3 +1,14 @@
+testXForm <- function(x) {
+  # Tests whether object x is a data frame fitted using formula interface.
+  xform <- FALSE
+  if (length(x) == 1) {
+    if (is.data.frame(x[[1]])) {
+      xform <- !is.null(attr(x[[1]], "terms"))
+    }
+  }
+  xform
+}
+
 ### Creation of H.mat list
 hMatList <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(NULL)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r

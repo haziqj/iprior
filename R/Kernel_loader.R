@@ -22,10 +22,11 @@ kernL <- function(y, ..., model = list()) UseMethod("kernL")
 #' @export
 kernL.default <- function(y, ..., model = list()) {
   x <- list(...)
-  if (any(sapply(x, is.list))) x <- unlist(x, recursive = FALSE)
+  if (testXForm(x)) x <- unlist(x, recursive = FALSE)
+  x <- lapply(x, as.matrix)
   N <- length(y)
   p <- length(x)
-  whichPearson <- unlist(lapply(x, is.factor))
+  whichPearson <- unlist(lapply(x, function(x) is.factor(x) | is.character(x) ))
 
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
@@ -56,12 +57,6 @@ kernL.default <- function(y, ..., model = list()) {
     no.int <- 0L
     q <- p
   }
-  if (mod$one.lam) {
-    # only relevant when fitted using formula
-    if (q == 1)
-      message("Option one.lam = TRUE used with a single covariate anyway.")
-    p <- q <- 1
-  }
   if (any(mod$intr > p | mod$intr < 1)) {
     stop("Prescribed interactions out of bounds.")
   }
@@ -69,23 +64,27 @@ kernL.default <- function(y, ..., model = list()) {
   # Set up names for x variables -----------------------------------------------
   if (is.null(mod$xname)) mod$xname <- names(x)
   else names(x) <- mod$xname[1:p]
-  cond1 <- is.null(mod$xname)
-  cond2 <- any(names(x) == "")
-  cond3 <- any(is.na(names(x)))
-  if (suppressWarnings(cond1 | cond2 | cond3)) {
+  suppressWarnings(cond1 <- is.null(mod$xname))#; if (cond1) print("cond1")
+  suppressWarnings(cond2 <- any(names(x) == ""))
+  # if (!is.na(cond2)) {
+  #   if (cond2) print("cond2")
+  # }
+  suppressWarnings(cond3 <- any(is.na(names(x))))#; if (cond3) print("cond3")
+  if (cond1 | cond2 | cond3) {
     cl <- match.call()
     m <- match(c("y", "model", "control"), names(cl), 0L)
     xnamefromcall <- as.character(cl[-m])[-1]
     mod$xname <- xnamefromcall
   }
   suppressWarnings(here <- which((names(x) != "") & !is.na(names(x))))
+  # print(here)
   mod$xname[here] <- names(x)[here]
   names(x) <- mod$xname[1:p]
 
   # Set up list of H matrices --------------------------------------------------
   H.mat <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
   names(H.mat) <- mod$xname[1:length(H.mat)]
-  if (length(mod$xname) < length(H.mat) && !mod$one.lam) {
+  if (length(mod$xname) < length(H.mat) && !mod$one.lam && !is.null(mod$intr)) {
     for (i in 1:ncol(mod$intr)) {
       mod$xname <- c(mod$xname, paste(mod$xname[mod$intr[1, i]],
                                       mod$xname[mod$intr[2, i]], sep = ":"))
@@ -94,28 +93,19 @@ kernL.default <- function(y, ..., model = list()) {
   }
 
   ### Set up progress bar ------------------------------------------------------
-  if (!mod$silent)
-    pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)
+  if (!mod$silent) pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)
   pb.count <- 0
 
   ### Block B update function --------------------------------------------------
   intr <- mod$intr
   environment(indx.fn) <- environment()
   H.mat2 <- H.matsq <- P.mat <- P.matsq <- S.mat <- ind <- ind1 <- ind2 <- NULL
-  if (mod$one.lam | q == 1) {
-    P.mat <- Reduce("+", mapply("*", H.mat, 1, SIMPLIFY = FALSE))
-    P.matsq <- list(fastSquare(P.mat))
-    if (mod$one.lam)
-      mod$xname <- paste0("(", paste(names(H.mat), collapse = " + "), ")")
-    H.mat <- P.mat <- list(P.mat)
-    x <- list(as.data.frame(x))
-    names(H.mat) <- names(x) <- mod$xname
-    if (mod$one.lam)
-      whichPearson <- FALSE  # never use Pearson kernel with one.lam
+  if (q == 1) {
+    P.mat <- H.mat
+    P.matsq <- list(fastSquare(P.mat[[1]]))
     BlockB <- function(k) NULL
     S.mat <- list(matrix(0, nrow = N, ncol = N))
-    if (!mod$silent)
-      setTxtProgressBar(pb, 1)
+    if (!mod$silent) setTxtProgressBar(pb, 1)
   } else {
     # Next, prepare the indices (also required for indx.fn).
     z <- 1:(p + no.int)
@@ -126,7 +116,7 @@ kernL.default <- function(y, ..., model = list()) {
                            width = 47)
     }
     # Prepare the cross-product terms of squared kernel matrices. This is a list
-    # of (p+no.int)_choose_2.
+    # of (p + no.int)_choose_2.
     for (j in 1:length(ind1)) {
       H.mat2[[j]] <- H.mat[[ind1[j]]] %*% H.mat[[ind2[j]]] +
                      H.mat[[ind2[j]]] %*% H.mat[[ind1[j]]]
@@ -200,6 +190,10 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   Terms <- delete.response(tt)
   x <- model.frame(Terms, mf)
   y <- model.response(mf)
+  yname <- names(attr(tt, "dataClasses"))[1]
+  # xname <- attr(tt, "term.labels")
+  xname <- names(x)
+  xnl <- length(xname)
 
   # For interactions -----------------------------------------------------------
   interactions <- NULL
@@ -212,8 +206,25 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   int2 <- apply(tmpf2, 2, function(x) which(x == 1))
   if (any(tmpo == 2)) interactions <- int2
 
-  yname <- names(attr(tt, "dataClasses"))[1]
-  xname <- attr(tt, "term.labels")
+  # Deal with one.lam option ---------------------------------------------------
+  one.lam <- FALSE
+  if (any(names(model) == "one.lam")) one.lam <- model$one.lam
+  if (one.lam) {
+    if (!is.null(interactions)) {
+      stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
+    }
+    if (ncol(x) == 1) {
+      message("Option one.lam = TRUE used with a single covariate anyway.")
+    }
+    attributes(x)$terms <- attributes(x)$names <- NULL
+    if (xnl <= 3) {
+      xname <- paste(xname, collapse = " + ")
+    } else {
+      xname <- paste(xname[1], "+ ... +", xname[xnl])
+    }
+    x <- as.data.frame(x)
+  }
+
   kernelLoaded <- kernL(y = y, x, model = c(model,
                                             list(interactions = interactions,
                                                  yname = yname, xname = xname)))

@@ -10,8 +10,8 @@
 \usage{
 iprior(object, ...)
 
-\method{iprior}{default}(object = NULL, model = list(), control = list(),
-  y, ...)
+\method{iprior}{default}(object = NULL, y, ..., model = list(),
+  control = list())
 
 \method{iprior}{formula}(object, data, model = list(), control = list(),
   ...)
@@ -30,13 +30,13 @@ covariates/independent variables.}
 (vectors or matrices) separated by commas. No other options applicable
 here.}
 
+\item{y}{Vector of response variables.}
+
 \item{model}{(optional) List of model options. Not used for
 \code{ipriorKernel} or \code{ipriorModel} objects.}
 
 \item{control}{(optional) list of control options for EM algorithm and
 output.}
-
-\item{y}{Vector of response variables.}
 
 \item{data}{Data frame containing variables when using formula interface.}
 }
@@ -58,7 +58,25 @@ the parameters of the model via the EM algorithm.
 attained parameter values in object \code{ipriorMod}.
 }}
 \examples{
-(mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
+# Formula based input
+(mod.stackf <- iprior(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc.,
+                      data = stackloss))
+mod.toothf <- iprior(len ~ supp * dose, data = ToothGrowth)
+summary(mod.toothf)
 
+# Non-formula based input
+mod.stacknf <- iprior(y = stackloss$stack.loss,
+                      Air.Flow = stackloss$Air.Flow,
+                      Water.Temp = stackloss$Water.Temp,
+                      Acid.Conc. = stackloss$Acid.Conc.)
+mod.toothnf <- iprior(y = ToothGrowth$len,
+                      supp = ToothGrowth$supp,
+                      dose = ToothGrowth$dose,
+                      model = list(interactions = "1:2"))
+
+# Formula based model option one.lam = TRUE
+# Sets a single scale parameter for all variables
+modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
+modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
 }
 

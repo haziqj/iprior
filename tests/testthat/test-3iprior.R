@@ -2,9 +2,23 @@ context("model fitting")
 
 test_that("Fit using non-formula",{
 
-	mod <- iprior(y = rnorm(100), x = rnorm(100),
+  y <- rnorm(100)
+  x1 <- rnorm(100)
+  x2 <- matrix(rnorm(100), ncol = 1)
+  x3 <- matrix(rnorm(200), ncol = 2)
+  x4 <- as.data.frame(x3)
+	mod1 <- iprior(y = y, x = x1,
 	              control = list(silent = TRUE, maxit = 5))
-	expect_that(mod, is_a("ipriorMod"))
+	mod2 <- iprior(y = y, x1 = x1, x2 = x2,
+	               control = list(silent = TRUE, maxit = 5))
+	mod3 <- iprior(y = y, x1 = x1, x2 = x2, x3 = x3,
+	               control = list(silent = TRUE, maxit = 5))
+	mod4 <- iprior(y = rnorm(100), x = x4,
+	               control = list(silent = TRUE, maxit = 5))
+	expect_that(mod1, is_a("ipriorMod"))
+	expect_that(mod2, is_a("ipriorMod"))
+	expect_that(mod3, is_a("ipriorMod"))
+	expect_that(mod4, is_a("ipriorMod"))
 
 })
 
@@ -41,5 +55,17 @@ test_that("Successfully fit interactions",{
 	               model = list(interactions = "1:2"),
 	               control = list(silent = TRUE))
 	expect_equal(mod1$log, mod2$log)  # check if same log-likelihood value achieved
+
+})
+
+test_that("Successfully fit pasrimonious interactions",{
+
+  mod1 <- iprior(len ~ supp * dose, ToothGrowth,
+                 model = list(parsm = FALSE), control = list(silent = TRUE))
+  mod2 <- iprior(y = ToothGrowth$len, supp = ToothGrowth$supp,
+                 dose = ToothGrowth$dose,
+                 model = list(interactions = "1:2", parsm = FALSE),
+                 control = list(silent = TRUE))
+  expect_equal(mod1$log, mod2$log)  # check if same log-likelihood value achieved
 
 })

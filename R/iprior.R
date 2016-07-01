@@ -20,9 +20,27 @@
 #'
 #' @return An object of class \code{ipriorMod}.
 #'
-#' @examples (mod.iprior <- iprior(stack.loss ~ ., data = stackloss))
+#' @examples
+#' # Formula based input
+#' (mod.stackf <- iprior(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc.,
+#'                       data = stackloss))
+#' mod.toothf <- iprior(len ~ supp * dose, data = ToothGrowth)
+#' summary(mod.toothf)
 #'
-#' @name iprior
+#' # Non-formula based input
+#' mod.stacknf <- iprior(y = stackloss$stack.loss,
+#'                       Air.Flow = stackloss$Air.Flow,
+#'                       Water.Temp = stackloss$Water.Temp,
+#'                       Acid.Conc. = stackloss$Acid.Conc.)
+#' mod.toothnf <- iprior(y = ToothGrowth$len,
+#'                       supp = ToothGrowth$supp,
+#'                       dose = ToothGrowth$dose,
+#'                       model = list(interactions = "1:2"))
+#'
+#' # Formula based model option one.lam = TRUE
+#' # Sets a single scale parameter for all variables
+#' modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
+#' modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
 #' @export
 iprior <- function(object, ...) {
   # The S3 generic function for objects of class "iprior"
@@ -31,8 +49,8 @@ iprior <- function(object, ...) {
 
 #' @rdname iprior
 #' @export
-iprior.default <- function(object = NULL, model = list(),
-                           control = list(), y, ...) {
+iprior.default <- function(object = NULL, y, ..., model = list(),
+                           control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report.int = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE)
@@ -139,7 +157,7 @@ iprior.formula <- function(object, data, model = list(), control = list(), ...) 
 #'   the parameters of the model via the EM algorithm.
 #' @export
 iprior.ipriorKernel <- function(object, control = list(), ...) {
-  est <- iprior.default(object, control = control, y = NULL)
+  est <- iprior.default(object = object, control = control, y = NULL)
   est
 }
 
@@ -191,19 +209,6 @@ print.ipriorMod <- function(x, ...) {
   cat("\n")
 }
 
-#' Summary screen for iprior models.
-#'
-#' Summary screen for iprior models.
-#'
-#' Summary screen for iprior models.
-#'
-#' @param object Objects of class \code{iprior}.
-#'
-#' @examples
-#' \donttest{mod <- iprior(Hwt ~ ., data=MASS::cats)}
-#' \donttest{summary(mod)}
-#'
-#'
 #' @export
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
@@ -242,7 +247,7 @@ summary.ipriorMod <- function(object, ...) {
               q = object$ipriorKernel$q, p = object$ipriorKernel$p,
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
-              xname = xname)
+              xname = xname, no.int = object$ipriorKernel$no.int)
   class(res) <- "ipriorSummary"
   res
 }
@@ -252,7 +257,7 @@ print.ipriorSummary <- function(x, ...) {
   # The print out of the S3 summary method for iprior objects.
   cat("\nCall:\n")
   print(x$call)
-  x.names <- x$xname[1:x$q]
+  x.names <- x$xname[1:(x$q - x$no.int)]
   xPearson <- x.names[x$whichPearson]
   xCanOrFBM <- x.names[!x$whichPearson]
   if (x$kernel == "Canonical") {
