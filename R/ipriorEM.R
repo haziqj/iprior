@@ -2,7 +2,9 @@
 ### The iprior EM
 ###
 
-ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silent=F, lambda.init=NULL, psi.init=NULL, clean=F, paramprogress=F){
+ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
+                     silent = FALSE, lambda.init = NULL, psi.init = NULL,
+                     clean = FALSE, paramprogress = FALSE, force.regEM = FALSE){
   # Declare all variables and functions to be used in this environment ---------
   ipriorEM.env <- environment()
 	list2env(ipriorKernel, ipriorEM.env)
@@ -11,7 +13,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 	environment(BlockB) <- ipriorEM.env
   environment(lambdaExpand) <- ipriorEM.env
   environment(lambdaContract) <- ipriorEM.env
-  if (r > 0) {
+  if (r > 0 | force.regEM) {
     environment(ipriorEMOptim2) <- ipriorEM.env
     ipriorEMRoutine <- ipriorEMOptim2
   } else {
