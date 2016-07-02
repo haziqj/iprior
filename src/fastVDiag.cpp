@@ -9,16 +9,16 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::Lower;
 
-//' Computing a quadratic matrix form in C++.
-//'
-//' Returns XdiagyXT.
-//'
-//' A fast implementation of XdiagyXT. This helps speed up
-//' the I-prior EM algorithm.
-//'
-//' @param X A symmetric, square matrix of dimension \code{n} by \code{n}
-//' @param y A vector of length \code{n}
-//'
+// Computing a quadratic matrix form in C++.
+//
+// Returns XdiagyXT.
+//
+// A fast implementation of XdiagyXT. This helps speed up
+// the I-prior EM algorithm.
+//
+// @param X A symmetric, square matrix of dimension \code{n} by \code{n}
+// @param y A vector of length \code{n}
+//
 // [[Rcpp::export]]
 
 NumericMatrix fastVDiag(NumericMatrix X, NumericVector y) {

@@ -1,7 +1,7 @@
-# Rcpp stuff -------------------------------------------------------------------
+# Rcpp and RcppEigen stuff -----------------------------------------------------
+#' @useDynLib iprior
 #' @import RcppEigen
 #' @importFrom Rcpp evalCpp
-#' @useDynLib iprior
 #'
 # iprior package imports -------------------------------------------------------
 #' @importFrom grDevices dev.new
