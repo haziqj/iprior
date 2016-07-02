@@ -4,6 +4,7 @@ language: r
 sudo: false
 cache: packages
 
-after_success:
-  - cd /home/travis/R/Library/iprior/libs
+before_script:
+  - ls -l *
+script:
   - ls -l *
