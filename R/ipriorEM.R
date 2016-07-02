@@ -14,8 +14,13 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   environment(lambdaExpand) <- ipriorEM.env
   environment(lambdaContract) <- ipriorEM.env
   if (r > 0 | force.regEM) {
-    environment(ipriorEMOptim2) <- ipriorEM.env
-    ipriorEMRoutine <- ipriorEMOptim2
+    if (l > 1) {
+      environment(ipriorEMOptim2) <- ipriorEM.env
+      ipriorEMRoutine <- ipriorEMOptim2
+    } else {
+      environment(ipriorEMOptim1) <- ipriorEM.env
+      ipriorEMRoutine <- ipriorEMOptim1
+    }
   } else {
     environment(ipriorEMClosedForm) <- ipriorEM.env
     ipriorEMRoutine <- ipriorEMClosedForm
