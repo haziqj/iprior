@@ -1,11 +1,19 @@
 #' Load the kernel matrices for \code{iprior} fit
 #'
-#' @param formula the model formula to fit
-#' @param data data frame containing variables
-#' @param model list of model options
-#' @param control list of control options for EM algorithm and output
+#' Description.
 #'
-#' @return an object of class iprior
+#' Details.
+#'
+#' @param y Vector of response variables.
+#' @param ... Only for when fitting using non-formula, enter the variables
+#'   (vectors or matrices) separated by commas. No other options applicable
+#'   here.
+#' @param model (optional) List of model options. Not used for
+#'   \code{ipriorKernel} or \code{ipriorModel} objects.
+#' @param formula The formula to fit when using formula interface.
+#' @param data Data frame containing variables when using formula interface.
+#'
+#' @return an object of class ipriorKernel.
 #'
 #' @examples
 #' str(ToothGrowth)
@@ -18,7 +26,6 @@
 #' @export
 kernL <- function(y, ..., model = list()) UseMethod("kernL")
 
-#' @rdname kernL
 #' @export
 kernL.default <- function(y, ..., model = list()) {
   x <- list(...)
@@ -206,6 +213,7 @@ kernL.default <- function(y, ..., model = list()) {
   kernelLoaded
 }
 
+#' @rdname kernL
 #' @export
 kernL.formula <- function(formula, data, model = list(), ...) {
   mf <- model.frame(formula = formula, data = data)

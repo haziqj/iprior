@@ -1,7 +1,13 @@
-###
-### Function to check progress of EM
-###
-
+#' Progress for fitted \code{ipriorMod} object
+#'
+#' Description.
+#'
+#' Details.
+#'
+#' @param x x
+#'
+#' @param interval interval
+#'
 #' @export
 progress <- function(x, interval=c("auto", "all", "input any number")){
 	if(class(x) != "ipriorMod") stop("Input iprior class models only.", call.=F)

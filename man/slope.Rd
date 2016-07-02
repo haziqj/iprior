@@ -4,25 +4,19 @@
 \alias{slope}
 \title{Function which returns the Variance of Y and log-likelihood value.}
 \usage{
-slope(object)
+slope(ipriorMod)
 }
 \arguments{
-\item{x}{Object of class "iprior"}
-
-\item{alpha}{(Optional) specify intercept value.}
-
-\item{lambda}{(Optional) specify lambda value.}
-
-\item{psi}{(Optional) specify psi value.}
+\item{ipriorMod}{Object of class "ipriorMod"}
 }
 \value{
-List of length 2.
+What.
 }
 \description{
 \code{slope} returns the slopes.
 }
 \details{
-Test
+Details.
 }
 \examples{
 mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)

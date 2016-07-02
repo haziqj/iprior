@@ -1,22 +1,22 @@
+#' @export
+iprior <- function(...) {
+  # The S3 generic function for objects of class "iprior"
+  UseMethod("iprior")
+}
+
 #' Fit an I-prior regression model
 #'
 #' Description
 #'
 #' Details
 #'
+#' @inheritParams kernL
 #' @param object This is either an object of class formula (when fitting using
 #'   formula interface), \code{ipriorKernel} or \code{ipriorModel}. When left
 #'   \code{NULL}, then \code{y} must be used, along with the
 #'   covariates/independent variables.
-#' @param y Vector of response variables.
-#' @param ... Only for when fitting using non-formula, enter the variables
-#'   (vectors or matrices) separated by commas. No other options applicable
-#'   here.
-#' @param model (optional) List of model options. Not used for
-#'   \code{ipriorKernel} or \code{ipriorModel} objects.
-#' @param control (optional) list of control options for EM algorithm and
+#' @param control (optional) List of control options for EM algorithm and
 #'   output.
-#' @param data Data frame containing variables when using formula interface.
 #'
 #' @return An object of class \code{ipriorMod}.
 #'
@@ -41,16 +41,10 @@
 #' # Sets a single scale parameter for all variables
 #' modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
 #' modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
+#'
+#' @name iprior
 #' @export
-iprior <- function(object, ...) {
-  # The S3 generic function for objects of class "iprior"
-  UseMethod("iprior")
-}
-
-#' @rdname iprior
-#' @export
-iprior.default <- function(object = NULL, y, ..., model = list(),
-                           control = list()) {
+iprior.default <- function(y, ..., model = list(), control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE,
@@ -88,12 +82,11 @@ iprior.default <- function(object = NULL, y, ..., model = list(),
   cl <- match.call()
 
   # Pass to kernel loader and then EM routine ----------------------------------
-  if (!is.null(y)) {
+  if (is.ipriorKernel(y)) {
+    ipriorKernel <- y
+  } else {
     # When using y and x to call iprior
     ipriorKernel <- kernL(y, ..., model = model)  # pass to kernel loader
-  } else {
-    # Otherwise, it is guaranteed to be an ipriorKernel object via the methods
-    ipriorKernel <- object
   }
   est <- ipriorEM(ipriorKernel, maxit, stop.crit, report, silent, lambda,
                   psi, clean, paramprogress, force.regEM)
@@ -135,22 +128,21 @@ iprior.default <- function(object = NULL, y, ..., model = list(),
 
 #' @rdname iprior
 #' @export
-iprior.formula <- function(object, data, model = list(), control = list(), ...) {
-  # Formula based S3 constructor function for iprior.
-
+iprior.formula <- function(formula, data = parent.frame(), model = list(),
+                           control = list(), ...) {
   # Pass to iprior default -----------------------------------------------------
-  ipriorKernel <- kernL(object, data, model = model)
-  est <- iprior.default(object = ipriorKernel, control = control, y = NULL)
+  ipriorKernel <- kernL(formula, data, model = model)
+  est <- iprior.default(y = ipriorKernel, control = control)
 
   # Changing the call to simply iprior -----------------------------------------
   cl <- match.call()
   est$fullcall <- cl
   cl[[1L]] <- as.name("iprior")
-  m <- match(c("object", "data"), names(cl), 0L)
+  m <- match(c("formula", "data"), names(cl), 0L)
   cl <- cl[c(1L, m)]
   est$call <- cl
   names(est$call)[2] <- "formula"
-  est$formula <- object
+  est$formula <- formula
   est$terms <- class(est) <- "ipriorMod"
   est
 }
@@ -159,7 +151,7 @@ iprior.formula <- function(object, data, model = list(), control = list(), ...) 
 #'   the parameters of the model via the EM algorithm.
 #' @export
 iprior.ipriorKernel <- function(object, control = list(), ...) {
-  est <- iprior.default(object = object, control = control, y = NULL)
+  est <- iprior.default(y = object, control = control)
   est
 }
 
@@ -174,7 +166,7 @@ iprior.ipriorMod <- function(object, control = list(), ...) {
   con <- list(lambda = lambda, psi = psi)
   con <- c(control, con)
 
-  est <- iprior.default(object = ipriorKernel, control = con, y = NULL)
+  est <- iprior.default(y = ipriorKernel, control = con)
   est$fullcall <- object$fullcall
   assign(deparse(substitute(object)), est, envir = parent.frame())
 }

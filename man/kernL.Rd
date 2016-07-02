@@ -2,27 +2,35 @@
 % Please edit documentation in R/Kernel_loader.R
 \name{kernL}
 \alias{kernL}
-\alias{kernL.default}
+\alias{kernL.formula}
 \title{Load the kernel matrices for \code{iprior} fit}
 \usage{
 kernL(y, ..., model = list())
 
-\method{kernL}{default}(y, ..., model = list())
+\method{kernL}{formula}(formula, data, model = list(), ...)
 }
 \arguments{
-\item{model}{list of model options}
+\item{y}{Vector of response variables.}
 
-\item{formula}{the model formula to fit}
+\item{...}{Only for when fitting using non-formula, enter the variables
+(vectors or matrices) separated by commas. No other options applicable
+here.}
 
-\item{data}{data frame containing variables}
+\item{model}{(optional) List of model options. Not used for
+\code{ipriorKernel} or \code{ipriorModel} objects.}
 
-\item{control}{list of control options for EM algorithm and output}
+\item{formula}{The formula to fit when using formula interface.}
+
+\item{data}{Data frame containing variables when using formula interface.}
 }
 \value{
-an object of class iprior
+an object of class ipriorKernel.
 }
 \description{
-Load the kernel matrices for \code{iprior} fit
+Description.
+}
+\details{
+Details.
 }
 \examples{
 str(ToothGrowth)

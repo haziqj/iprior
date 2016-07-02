@@ -11,6 +11,8 @@
 
 \item{newdata}{(Optional) A data frame in which to look for variables with
 which to predict. If omitted, the fitted values are used.}
+
+\item{...}{This is not used here.}
 }
 \description{
 Predict for iprior models.

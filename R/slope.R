@@ -2,24 +2,23 @@
 #'
 #' \code{slope} returns the slopes.
 #'
-#' Test
+#' Details.
 #'
-#' @param x Object of class "iprior"
-#' @param alpha (Optional) specify intercept value.
-#' @param lambda (Optional) specify lambda value.
-#' @param psi (Optional) specify psi value.
-#' @return List of length 2.
+#' @param ipriorMod Object of class "ipriorMod"
+#'
+#' @return What.
+#'
 #' @examples
 #' mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)
 #' slope(mod.iprior)
 #'
 #' @export
-slope <- function(object){
-	if (!is(object, "ipriorMod")) stop("Input iprior class models only.", call.=F)
+slope <- function(ipriorMod){
+	if (!is.ipriorMod(ipriorMod)) stop("Input iprior class models only.", call.=F)
 
-	y <- object$fitted.values
-	x <- object$ipriorKernel$x
-	whichPearson <- object$ipriorKernel$whichPearson
+	y <- ipriorMod$fitted.values
+	x <- ipriorMod$ipriorKernel$x
+	whichPearson <- ipriorMod$ipriorKernel$whichPearson
 	dat <- cbind(y, as.data.frame(x))
 	if (any(whichPearson)) {
 		grp <- dat[[which(whichPearson)+1]]

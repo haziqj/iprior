@@ -16,6 +16,8 @@
 
 \item{theta}{(optional) evaluates the log-likelihood at \code{theta} which is
 of the form \code{theta = c(lambda, psi)}.}
+
+\item{...}{This is not used here.}
 }
 \description{
 Description.

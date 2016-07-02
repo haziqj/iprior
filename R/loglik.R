@@ -8,6 +8,7 @@
 #' @param object an object of class \code{ipriorMod} or \code{ipriorKernel}.
 #' @param theta (optional) evaluates the log-likelihood at \code{theta} which is
 #'   of the form \code{theta = c(lambda, psi)}.
+#' @param ... This is not used here.
 #'
 #' @examples
 #' mod.iprior <- iprior(stack.loss ~ ., data=stackloss)

@@ -8,37 +8,36 @@
 \alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
-iprior(object, ...)
+\method{iprior}{default}(y, ..., model = list(), control = list())
 
-\method{iprior}{default}(object = NULL, y, ..., model = list(),
-  control = list())
-
-\method{iprior}{formula}(object, data, model = list(), control = list(),
-  ...)
+\method{iprior}{formula}(formula, data = parent.frame(), model = list(),
+  control = list(), ...)
 
 \method{iprior}{ipriorKernel}(object, control = list(), ...)
 
 \method{iprior}{ipriorMod}(object, control = list(), ...)
 }
 \arguments{
-\item{object}{This is either an object of class formula (when fitting using
-formula interface), \code{ipriorKernel} or \code{ipriorModel}. When left
-\code{NULL}, then \code{y} must be used, along with the
-covariates/independent variables.}
+\item{y}{Vector of response variables.}
 
 \item{...}{Only for when fitting using non-formula, enter the variables
 (vectors or matrices) separated by commas. No other options applicable
 here.}
 
-\item{y}{Vector of response variables.}
-
 \item{model}{(optional) List of model options. Not used for
 \code{ipriorKernel} or \code{ipriorModel} objects.}
 
-\item{control}{(optional) list of control options for EM algorithm and
+\item{control}{(optional) List of control options for EM algorithm and
 output.}
 
+\item{formula}{The formula to fit when using formula interface.}
+
 \item{data}{Data frame containing variables when using formula interface.}
+
+\item{object}{This is either an object of class formula (when fitting using
+formula interface), \code{ipriorKernel} or \code{ipriorModel}. When left
+\code{NULL}, then \code{y} must be used, along with the
+covariates/independent variables.}
 }
 \value{
 An object of class \code{ipriorMod}.
@@ -78,5 +77,6 @@ mod.toothnf <- iprior(y = ToothGrowth$len,
 # Sets a single scale parameter for all variables
 modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
 modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
+
 }
 
