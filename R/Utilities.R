@@ -9,6 +9,14 @@ testXForm <- function(x) {
   xform
 }
 
+isOrd <- function(x) {
+  grepl("\\^", x)
+}
+
+ordTrf <- function(x) {
+  if (isOrd(x)) lambda
+}
+
 whereOrd <- function(x) {
   # Index of non-higher order terms.
   grep("\\^", x, invert = TRUE)

@@ -60,7 +60,7 @@ test_that("Successfully fit interactions",{
 
 })
 
-test_that("Successfully fit parsimonious interactions",{
+test_that("Successfully fit non-parsimonious interactions",{
 
   mod1 <- iprior(len ~ supp * dose, ToothGrowth,
                  model = list(parsm = FALSE), control = list(silent = TRUE))

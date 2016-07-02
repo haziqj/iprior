@@ -9,9 +9,15 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 	list2env(BlockBstuff, ipriorEM.env)
 	list2env(model, ipriorEM.env)
 	environment(BlockB) <- ipriorEM.env
-	environment(ipriorEMClosedForm) <- ipriorEM.env
-  environment(ipriorEMOptim) <- ipriorEM.env
   environment(lambdaExpand) <- ipriorEM.env
+  environment(lambdaContract) <- ipriorEM.env
+  if (r > 0) {
+    environment(ipriorEMOptim2) <- ipriorEM.env
+    ipriorEMRoutine <- ipriorEMOptim2
+  } else {
+    environment(ipriorEMClosedForm) <- ipriorEM.env
+    ipriorEMRoutine <- ipriorEMClosedForm
+  }
 
 	# Initialise parameters ------------------------------------------------------
 	alpha <- as.numeric(mean(Y))
@@ -20,7 +26,7 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 	else{
 		if (length(lambda.init) != l) {
 		  stop(paste("Incorrect dimension of lambda initial values. vector of
-		             length", l, "required."), call.=F)
+		             length", l, "required."), call. = FALSE)
 		} else {
 		  lambda <- lambda.init
 		}
@@ -45,13 +51,13 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 
 	# Function to calculate Hlam.mat ---------------------------------------------
 	if (q == 1) {
-		hlamFn <- function(lambda_ = lambda, env = ipriorEM.env) {
-		  assign("Hlam.mat", lambda_[1] * Pl[[1]], envir = env)
+		hlamFn <- function(x = lambda, env = ipriorEM.env) {
+		  assign("Hlam.mat", x[1] * Pl[[1]], envir = env)
 		}
 	}
 	else {
-	  hlamFn <- function(lambda_ = lambda, env = ipriorEM.env){
-			assign("Hlam.mat", Reduce("+", mapply("*", Hl[1:q], lambda_[1:q],
+	  hlamFn <- function(x = lambda, env = ipriorEM.env){
+			assign("Hlam.mat", Reduce("+", mapply("*", Hl[1:q], x[1:q],
 			                                      SIMPLIFY = FALSE)), envir = env)
 		}
 	}
@@ -131,8 +137,8 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 		log.lik0 <- log.lik1
 
     # Update for parameters lambda and psi -------------------------------------
-    ipriorEMClosedForm()
-    # ipriorEMOptim()
+    lambdaContract()
+    ipriorEMRoutine()
 
 		# New value of log-likelihood ----------------------------------------------
 		BlockA()  # performs Hlam.mat update and eigendecomposition
@@ -203,8 +209,9 @@ ipriorEM <- function(ipriorKernel, maxit=10, stop.crit=1e-7, report.int=1, silen
 
 	# One last update of Block B (relevant when using ipriorEMOptim) -------------
 	for (k in 1:l) BlockB(k)
+	lambdaContract()
 
-	list(alpha = alpha, lambda = lambda[1:l], psi = psi, log.lik = log.lik1,
+	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
 	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,
 	     VarY.inv = VarY.inv, w.hat = w.hat, converged = converged,
 	     res.loglik = res.loglik, res.param = res.param)

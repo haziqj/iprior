@@ -1,15 +1,25 @@
-lambdaExpand <- function(lambda_ = lambda, env = ipriorEM.env){
-  assign("lambda", lambdaContract(lambda_, order), envir = env)
+lambdaExpand <- function(x = lambda, env = ipriorEM.env){
+  lambda.tmp <- rep(NA, l)
+  for (i in 1:l) {
+    if (isOrd(x[i])) {
+      j.and.pow <- strsplit(order[3], "\\^")[[1]]
+      j <- j.and.pow[1]
+      pow <- j.and.pow[2]
+      lambda.tmp[i] <- x[as.numeric(j)] ^ as.numeric(pow)
+    }
+    else lambda.tmp[i] <- x[as.numeric(order[i])]
+  }
+  assign("lambda", lambda.tmp, envir = env)
   if (parsm && no.int > 0) {
     for (j in 1:no.int) {
-      assign("lambda", c(lambda, lambda_[intr[1, j]] * lambda_[intr[2, j]]),
+      assign("lambda", c(x, x[intr[1, j]] * x[intr[2, j]]),
              envir = env)
     }
   }
 }
 
-lambdaContract <- function(x, ord) {
-  x[whereOrd(ord)]
+lambdaContract <- function(x = lambda, env = ipriorEM.env) {
+  assign("lambda", x[whereOrd(order)], envir = env)
 }
 
 ipriorEMClosedForm <- function() {
@@ -24,7 +34,7 @@ ipriorEMClosedForm <- function() {
   }
 
   # Update for psi -------------------------------------------------------------
-  Hlamsq.mat <<- fastSquare(Hlam.mat)  # a C++ alternative
+  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
   T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
         2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
   psi <<- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
@@ -34,33 +44,58 @@ ipriorEMClosedForm <- function() {
   # alpha <- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
 }
 
-ipriorEMOptim <- function() {
-  BlockC()  # obtains Var.Y.inv and updates w.hat and W.hat
+ipriorEMOptim1 <- function() {
+  BlockC()  # obtains VarY.inv and updates w.hat and W.hat
   theta <- c(lambda, psi)
   theta.new <- optim(theta, QEstep, method = "L-BFGS-B",
-                     lower = c(rep(-Inf, length(theta) - 1), 1e-9),
-                     Y = Y, alpha = alpha, W.hat = W.hat,
-                     w.hat = w.hat, lambdaExpand = lambdaExpand,
-                     hlamFn = hlamFn, env = ipriorEM.env)
-  # print(theta.new$count)
-  theta.new <- theta.new$par
+                     lower = c(rep(-Inf, l), 1e-9),
+                     Y = Y, alpha = alpha, W.hat = W.hat, w.hat = w.hat,
+                     lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                     env = ipriorEM.env)$par
   lambda <<- theta.new[-length(theta.new)]
   psi <<- theta.new[length(theta.new)]
 }
 
-QEstep <- function(theta, Y, alpha, W.hat, w.hat, lambdaExpand,
-                   hlamFn, env) {
-  Hlam.mat <- 0
+QEstep <- function(theta, Y, alpha, W.hat, w.hat, lambdaExpand, hlamFn, env) {
   N <- length(Y)
   lambda <- theta[-length(theta)]
   psi <- theta[length(theta)]
-  environment(lambdaExpand) <- environment(Hlam.mat.fn) <- env
-  lambdaExpand(lambda_ = lambda, env = environment())
-  Hlam.mat.fn(lambda_ = lambda, env = environment())
+  environment(lambdaExpand) <- environment(hlamFn) <- env
+  lambdaExpand(lambda, env = environment())
+  hlamFn(lambda, env = environment())
   Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, N)
   Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
-  Q <- Q - 2 * psi * crossprod(Y - alpha, Hlam.mat %*% w.hat)
-  Q
+  Q <- Q - 2 * psi * crossprod(Y - alpha, (Hlam.mat %*% w.hat))
+  as.numeric(Q)
+}
+
+ipriorEMOptim2 <- function() {
+  BlockC()  # obtains VarY.inv and updates w.hat and W.hat
+
+  # Update for lambda ----------------------------------------------------------
+  lambda.EM.res <<- optim(lambda, QEstepLambda, Y = Y, alpha = alpha, psi = psi,
+                          W.hat = W.hat, w.hat = w.hat,
+                          lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                          env = ipriorEM.env)
+  lambda <<- lambda.EM.res$par
+
+    # Update for psi -------------------------------------------------------------
+  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
+  T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
+        2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
+  psi <<- sqrt(max(1e-9, as.numeric(sum(diag(W.hat)) / T3)))
+}
+
+QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
+                         hlamFn, env) {
+  N <- length(Y)
+  environment(lambdaExpand) <- environment(hlamFn) <- env
+  lambdaExpand(lambda, env = environment())
+  hlamFn(lambda, env = environment())
+  Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, N)
+  Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
+  Q <- Q - 2 * psi * crossprod(Y - alpha, (Hlam.mat %*% w.hat))
+  as.numeric(Q)
 }
 
 ###
