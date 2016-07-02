@@ -81,6 +81,6 @@ test_that("Successfully fit higher order terms",{
                 control = list(silent = TRUE))
   expect_that(mod, is_a("ipriorMod"))
   expect_equivalent(mod$ipriorKernel$r, 1)
-  # tmp <- summary(mod)
+  tmp <- summary(mod)
 
 })

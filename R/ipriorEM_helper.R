@@ -78,11 +78,12 @@ ipriorEMOptim1 <- function() {
   BlockC()
 
   # Update for lambda ----------------------------------------------------------
-  lambda.EM.res <<- optim(lambda, QEstepLambda, method = "Brent", lower = -1e9,
-                          upper = 1e9, Y = Y, alpha = alpha, psi = psi,
-                          W.hat = W.hat, w.hat = w.hat,
-                          lambdaExpand = lambdaExpand, hlamFn = hlamFn,
-                          env = ipriorEM.env)
+  assign("lambda.EM.res", optim(lambda, QEstepLambda, method = "Brent",
+                                lower = -1e9,upper = 1e9, Y = Y, alpha = alpha,
+                                psi = psi, W.hat = W.hat, w.hat = w.hat,
+                                lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                                env = ipriorEM.env, hessian = FALSE),
+         envir = ipriorEM.env)
   lambda <<- lambda.EM.res$par
 
   # Update for psi -------------------------------------------------------------
@@ -99,10 +100,11 @@ ipriorEMOptim2 <- function() {
   BlockC()  # obtains VarY.inv and updates w.hat and W.hat
 
   # Update for lambda ----------------------------------------------------------
-  lambda.EM.res <<- optim(lambda, QEstepLambda, Y = Y, alpha = alpha, psi = psi,
-                          W.hat = W.hat, w.hat = w.hat,
-                          lambdaExpand = lambdaExpand, hlamFn = hlamFn,
-                          env = ipriorEM.env)
+  assign("lambda.EM.res", optim(lambda, QEstepLambda, Y = Y, alpha = alpha,
+                                psi = psi, W.hat = W.hat, w.hat = w.hat,
+                                lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                                env = ipriorEM.env, hessian = FALSE),
+         envir = ipriorEM.env)
   lambda <<- lambda.EM.res$par
 
     # Update for psi -------------------------------------------------------------

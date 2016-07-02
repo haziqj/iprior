@@ -38,7 +38,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		  lambda <- lambda.init
 		}
 	}
-	lambdaExpand()
 
 	# Results storage, and for use in progress() ---------------------------------
 	res.loglik <- matrix(NA, nrow = maxit + 1, ncol = 3)	# loglik, predlik, delta
@@ -101,11 +100,12 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	i <- 0
 	check.naught <- 0
 	Hlam.mat <- is.VarYneg <- s <- u <- V <- VarY.inv <- w.hat <- W.hat <- 0
-	BlockA()
+	BlockA()  # lambda expanded here
 	log.lik0 <- logLikEM()
 	log.lik1 <- log.lik0 + 2 * stop.crit
 	res.loglik[1,1] <- log.lik0
-	res.param[1,] <- c(alpha, lambda[1:l], psi)
+	lambdaContract()  # for printing
+	res.param[1,] <- c(alpha, lambda, psi)
 	if (!silent) {
 		if (clean) {
 		  cat(format(paste0("Iteration " , 0, ":"), width = 16, just = "left"),
@@ -144,7 +144,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		log.lik0 <- log.lik1
 
     # Update for parameters lambda and psi -------------------------------------
-    lambdaContract()
     ipriorEMRoutine()
 
 		# New value of log-likelihood ----------------------------------------------
@@ -159,7 +158,8 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		a <- ifelse((0 < dloglik) & (dloglik < dloglikold), dloglik/dloglikold, 0)
 		predloglik <- log.lik1 - dloglik + dloglik/(1 - a)
 		res.loglik[i + 1, ] <- c(log.lik1, predloglik, dloglik)
-		res.param[i + 1, ] <- c(alpha, lambda[1:l], psi)
+		lambdaContract()  # for printing
+		res.param[i + 1, ] <- c(alpha, lambda, psi)
 
 		# Report and conclusion ----------------------------------------------------
 		check.naught <- max(0, i %% report.int)
@@ -214,9 +214,9 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	  cat("EM NOT CONVERGED!\n")#, "\nNumber of iterations =", i, "\n")
 	}
 
-	# One last update of Block B (relevant when using ipriorEMOptim) -------------
-	for (k in 1:l) BlockB(k)
-	lambdaContract()
+	# # One last update of Block B (relevant when using ipriorEMOptim) -------------
+	# for (k in 1:l) BlockB(k)
+	# lambdaContract()
 
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
 	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,

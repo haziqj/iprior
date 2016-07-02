@@ -111,7 +111,7 @@ kernL.default <- function(y, ..., model = list()) {
   names(x) <- mod$xname[1:p]
 
   # Set up names for lambda parameters -----------------------------------------
-
+  mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
 
   # Set up list of H matrices --------------------------------------------------
   Hl <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
@@ -125,82 +125,86 @@ kernL.default <- function(y, ..., model = list()) {
     names(Hl) <- mod$xname
   }
 
-  ### Set up progress bar ------------------------------------------------------
+  # Set up progress bar --------------------------------------------------------
   if (!mod$silent) pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)
   pb.count <- 0
 
-  ### Block B update function --------------------------------------------------
+  # Block B update function ----------------------------------------------------
   intr <- mod$intr
   environment(indxFn) <- environment()
   H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
-  if (q == 1) {
-    Pl <- Hl
-    Psql <- list(fastSquare(Pl[[1]]))
-    BlockB <- function(k) NULL
-    Sl <- list(matrix(0, nrow = N, ncol = N))
-    if (!mod$silent) setTxtProgressBar(pb, 1)
-  } else {
-    # Next, prepare the indices required for indxFn().
-    z <- 1:h
-    ind1 <- rep(z, times = (length(z) - 1):0)
-    ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
-    if (!mod$silent) {
-      pb <- txtProgressBar(min = 0, max = length(c(ind1, z)), style = 3,
-                           width = 47)
-    }
-    # Prepare the cross-product terms of squared kernel matrices. This is a list
-    # of q_choose_2.
-    for (j in 1:length(ind1)) {
-      H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]] +
-                  Hl[[ind2[j]]] %*% Hl[[ind1[j]]]
-      pb.count <- pb.count + 1
-      if (!mod$silent) setTxtProgressBar(pb, pb.count)
-    }
-
-    if (!is.null(intr) && mod$parsm) {
-      # CASE: Parsimonious interactions only -----------------------------------
-      for (k in z) {
-        Hsql[[k]] <- fastSquare(Hl[[k]])
-        if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
-        pb.count <- pb.count + 1
-        if (!mod$silent) setTxtProgressBar(pb, pb.count)
-      }
-      BlockB <- function(k) {
-        indB <- ind[[k]]
-        lambda.P <- c(1, lambda[indB$k.int.lam])
-        Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
-                                       SIMPLIFY = FALSE))
-        Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
-                                         c(1, lambda[indB$Psq.lam] ^ 2),
-                                         SIMPLIFY = FALSE))
-        if (!is.null(indB$P2.lam1)) {
-          lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
-          lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
-          Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
-                                                       lambda.P2,
-                                                       SIMPLIFY = FALSE))
-        }
-        lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
-        lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
-        Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                       SIMPLIFY = FALSE))
-      }
+  BlockB <- function(k) NULL
+  if (r == 0) {
+    # No need to do all the below Block B stuff if higher order terms involved.
+    if (q == 1) {
+      Pl <- Hl
+      Psql <- list(fastSquare(Pl[[1]]))
+      Sl <- list(matrix(0, nrow = N, ncol = N))
+      if (!mod$silent) setTxtProgressBar(pb, 1)
     } else {
-      # CASE: Multiple lambda with no interactions, or with non-parsimonious ---
-      # interactions -----------------------------------------------------------
-      for (k in 1:q) {
-        Pl[[k]] <- Hl[[k]]
-        Psql[[k]] <- fastSquare(Pl[[k]])
+      # Next, prepare the indices required for indxFn().
+      z <- 1:h
+      ind1 <- rep(z, times = (length(z) - 1):0)
+      ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
+      if (!mod$silent) {
+        pb <- txtProgressBar(min = 0, max = length(c(ind1, z)), style = 3,
+                             width = 47)
+      }
+      # Prepare the cross-product terms of squared kernel matrices. This is a list
+      # of q_choose_2.
+      for (j in 1:length(ind1)) {
+        H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]] +
+          Hl[[ind2[j]]] %*% Hl[[ind1[j]]]
         pb.count <- pb.count + 1
         if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
-      BlockB <- function(k) {
-        ind <- which(ind1 == k | ind2 == k)
-        Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k],
-                                       SIMPLIFY = FALSE))
+
+      if (!is.null(intr) && mod$parsm) {
+        # CASE: Parsimonious interactions only -----------------------------------
+        for (k in z) {
+          Hsql[[k]] <- fastSquare(Hl[[k]])
+          if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
+          pb.count <- pb.count + 1
+          if (!mod$silent) setTxtProgressBar(pb, pb.count)
+        }
+        BlockB <- function(k) {
+          indB <- ind[[k]]
+          lambda.P <- c(1, lambda[indB$k.int.lam])
+          Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
+                                         SIMPLIFY = FALSE))
+          Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                           c(1, lambda[indB$Psq.lam] ^ 2),
+                                           SIMPLIFY = FALSE))
+          if (!is.null(indB$P2.lam1)) {
+            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
+            lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
+            Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
+                                                         lambda.P2,
+                                                         SIMPLIFY = FALSE))
+          }
+          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
+          lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                         SIMPLIFY = FALSE))
+        }
+      } else {
+        # CASE: Multiple lambda with no interactions, or with non-parsimonious ---
+        # interactions -----------------------------------------------------------
+        for (k in 1:q) {
+          Pl[[k]] <- Hl[[k]]
+          Psql[[k]] <- fastSquare(Pl[[k]])
+          pb.count <- pb.count + 1
+          if (!mod$silent) setTxtProgressBar(pb, pb.count)
+        }
+        BlockB <- function(k) {
+          ind <- which(ind1 == k | ind2 == k)
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k],
+                                         SIMPLIFY = FALSE))
+        }
       }
     }
   }
+
   if (!mod$silent) close(pb)
   mod <- mod[-8]  #remove silent control
 

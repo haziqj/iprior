@@ -2,7 +2,6 @@ is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
-
 testXForm <- function(x) {
   # Tests whether object x is a data frame fitted using formula interface.
   xform <- FALSE
@@ -16,10 +15,6 @@ testXForm <- function(x) {
 
 isOrd <- function(x) {
   grepl("\\^", x)
-}
-
-ordTrf <- function(x) {
-  if (isOrd(x)) lambda
 }
 
 whereOrd <- function(x) {

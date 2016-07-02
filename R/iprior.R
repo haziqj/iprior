@@ -206,9 +206,7 @@ print.ipriorMod <- function(x, ...) {
 #' @export
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
-  se <- fisher(alpha = object$alpha, psi = object$psi, lambda = object$lambda,
-               Psql = object$Psql, Sl = object$Sl, Hlam.mat = object$Hlam.mat,
-               VarY.inv = object$VarY.inv)
+  se <- fisher(object)
 
   # Z values to compare against (standard) Normal distribution -----------------
   zval <- coef(object)/se
@@ -225,7 +223,8 @@ summary.ipriorMod <- function(object, ...) {
     rownames(tab) <- lamnames
   } else {
     lamnames <- paste0("lam", 1:(length(coef(object)) - 2))
-    lamnames <- c("(Intercept)", paste(lamnames, xname[1:object$ipriorKernel$l],
+    lamnames <- c("(Intercept)", paste(lamnames,
+                                       object$ipriorKernel$model$lamnamesx,
                                        sep = "."), "psi")
     rownames(tab) <- lamnames
   }
