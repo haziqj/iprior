@@ -23,4 +23,3 @@ RoxygenNote: 5.0.1
 VignetteBuilder: knitr
 URL: http://github.com/haziqjamil/iprior
 BugReports: http://github.com/haziqjamil/iprior/issues
-SystemRequirements: GNU make
