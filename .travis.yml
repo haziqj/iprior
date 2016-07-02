@@ -2,9 +2,3 @@
 
 language: r
 sudo: false
-cache: packages
-
-before_script:
-  - ls -l *
-script:
-  - ls -l *
