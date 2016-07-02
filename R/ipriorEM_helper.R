@@ -1,6 +1,6 @@
 lambdaExpand <- function(x = lambda, env = ipriorEM.env){
-  lambda.tmp <- rep(NA, p)
-  for (i in 1:p) {
+  lambda.tmp <- rep(NA, q)
+  for (i in 1:q) {
     if (isOrd(order[i])) {
       j.and.pow <- strsplit(order[i], "\\^")[[1]]
       j <- j.and.pow[1]

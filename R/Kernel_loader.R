@@ -90,12 +90,9 @@ kernL.default <- function(y, ..., model = list()) {
   # Set up names for x variables -----------------------------------------------
   if (is.null(mod$xname)) mod$xname <- names(x)
   else names(x) <- mod$xname[1:p]
-  suppressWarnings(cond1 <- is.null(mod$xname))#; if (cond1) print("cond1")
+  suppressWarnings(cond1 <- is.null(mod$xname))
   suppressWarnings(cond2 <- any(names(x) == ""))
-  # if (!is.na(cond2)) {
-  #   if (cond2) print("cond2")
-  # }
-  suppressWarnings(cond3 <- any(is.na(names(x))))#; if (cond3) print("cond3")
+  suppressWarnings(cond3 <- any(is.na(names(x))))
   if (cond1 | cond2 | cond3) {
     cl <- match.call()
     m <- match(c("y", "model", "control"), names(cl), 0L)
@@ -103,7 +100,6 @@ kernL.default <- function(y, ..., model = list()) {
     mod$xname <- xnamefromcall
   }
   suppressWarnings(here <- which((names(x) != "") & !is.na(names(x))))
-  # print(here)
   mod$xname[here] <- names(x)[here]
   names(x) <- mod$xname[1:p]
 
