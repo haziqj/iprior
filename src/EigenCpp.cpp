@@ -4,10 +4,10 @@
 
 using Rcpp::List;
 using Rcpp::Named;
-using Eigen::Map;                       // 'maps' rather than copies
-using Eigen::MatrixXd;                  // variable size matrix, double precision
-using Eigen::VectorXd;                  // variable size vector, double precision
-using Eigen::SelfAdjointEigenSolver;    // one of the eigenvalue solvers
+using Eigen::Map;                     // 'maps' rather than copies
+using Eigen::MatrixXd;                // variable size matrix, double precision
+using Eigen::VectorXd;                // variable size vector, double precision
+using Eigen::SelfAdjointEigenSolver;  // one of the eigenvalue solvers
 
 // Eigen decomposition of a matrix in C++.
 //
@@ -20,7 +20,7 @@ using Eigen::SelfAdjointEigenSolver;    // one of the eigenvalue solvers
 //
 // [[Rcpp::export]]
 
-Rcpp::List eigenCpp(Eigen::Map<Eigen::MatrixXd> X) {
+List eigenCpp(Eigen::Map<Eigen::MatrixXd> X) {
     VectorXd values;
     MatrixXd vectors;
     SelfAdjointEigenSolver<MatrixXd> es(X);

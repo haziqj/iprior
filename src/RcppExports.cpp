@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // eigenCpp
-Rcpp::List eigenCpp(Eigen::Map<Eigen::MatrixXd> X);
+List eigenCpp(Eigen::Map<Eigen::MatrixXd> X);
 RcppExport SEXP iprior_eigenCpp(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
