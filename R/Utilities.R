@@ -1,3 +1,13 @@
+triangIndex <- function(k){
+  # Function to list row and column index of upper triangular matrix including
+  # diagonals
+  w <- 1:k
+  cbind(
+    row = rep(w, times = length(w):1 ) ,
+    col = unlist(lapply(1:length(w), function(x) c(NA,w)[-(0:x)]))
+  )
+}
+
 is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
