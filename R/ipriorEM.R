@@ -235,7 +235,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	# for (k in 1:l) BlockB(k)
 	# lambdaContract()
 
-	browser()
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
 	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,
 	     VarY.inv = VarY.inv, w.hat = w.hat, converged = converged,

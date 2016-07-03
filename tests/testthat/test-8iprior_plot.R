@@ -24,3 +24,11 @@ test_that("Multilevel plot",{
   tmp <- plot(mod, plots = "qqplot")
 
 })
+
+test_that("Unable to plot if x dim > 1",{
+
+  mod <- iprior(stack.loss ~ ., stackloss, control = list(silent = TRUE,
+                                                          maxit = 5))
+  expect_message(plot(mod, plots = "fitted"))
+
+})

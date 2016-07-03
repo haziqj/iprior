@@ -97,7 +97,7 @@ plot.ipriorMod <- function(x,
 			}
 		}
 	} else {
-		whichplot[3] <- F
+		whichplot[1] <- FALSE
 		message("Fitted plot not generated because number of continuous x variables is greater than 1.")
 	}
 
