@@ -126,6 +126,10 @@ QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
   as.numeric(Q)
 }
 
+# TODO: write nlm optimiser
+
+
+
 ###
 ### An internal function of ipriorEM() which does the pretty formatting in the report
 ###
