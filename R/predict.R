@@ -17,6 +17,7 @@
 predict.ipriorMod <- function(object, newdata = list(), ...) {
   list2env(object$ipriorKernel, environment())
   list2env(model, environment())
+  environment(lambdaExpand) <- environment()
 
   if (length(newdata) == 0) {
     ystar <- object$fitted
@@ -28,25 +29,21 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
       Terms <- delete.response(tt)
       xstar <- model.frame(Terms, newdata)
       xrownames <- rownames(xstar)
-      xstar <- unlist(list(xstar), recursive = F)
+      if (one.lam) {
+        xstar <- list(as.matrix(xstar))
+      }
     } else {
       xstar <- newdata
       xrownames <- rownames(do.call(cbind, newdata))
     }
 
     # Define new kernel matrix -------------------------------------------------
-    H.mat <- hMatList(x, kernel, whichPearson, intr, no.int, gamma, xstar)
-    lambda <- object$lambda
-    if (parsm && no.int > 0) {
-      for (j in 1:no.int) {
-        lambda <- c(lambda, lambda[intr[1, j]] * lambda[intr[2, j]])
-      }
-    }
-    H.mat.lam <- Reduce("+", mapply("*", H.mat[1:(p + no.int)],
-                                    lambda[1:(p + no.int)], SIMPLIFY = F))
+    Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, xstar)
+    lambdaExpand(object$lambda, env = environment())
+    Hlam.mat <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
 
     # Calculate fitted values --------------------------------------------------
-    ystar <- as.vector(object$alpha + (H.mat.lam %*% object$w.hat))
+    ystar <- as.vector(object$alpha + (Hlam.mat %*% object$w.hat))
     names(ystar) <- xrownames
   }
   ystar

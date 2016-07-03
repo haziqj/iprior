@@ -1,10 +1,21 @@
-###
-### The iprior EM
-###
-
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, lambda.init = NULL, psi.init = NULL,
                      clean = FALSE, paramprogress = FALSE, force.regEM = FALSE){
+  # This is the main EM algorithm engine.
+  #
+  # Args:
+  #   ipriorKernel Output from kernL() function.
+  #   maxit The maximum number of iterations. Defaults to 10 for debugging, but
+  #     this is fed in from control list.
+  #   stop.crit The tolerance for the difference in log-likelihood value to stop
+  #     the EM.
+  #   report.int The reporting interval for the EM.
+  #   silent Logical, if TRUE then no print report.
+  #   lambda.init, psi.init Initial values for lambda and psi.
+  #   clean Logical, if FALSE then progress of log-likelihood reported.
+  #   paramprogress Logical, if TRUE then progress of parameters reported.
+  #   force.regEM Logical, for debugging of the regular EM routine.
+
   # Declare all variables and functions to be used in this environment ---------
   ipriorEM.env <- environment()
 	list2env(ipriorKernel, ipriorEM.env)

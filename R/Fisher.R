@@ -28,6 +28,9 @@ fisher <- function(object) {
 	  }
 	}
 	Inverse.Fisher <- solve(Fisher)
-	se <- sqrt(c(1 / sum(VarY.inv), diag(Inverse.Fisher)))
+	if (any(diag(Inverse.Fisher) < 0)) {
+	  warning("NaNs S.E. produced due to negative inverse Hessian\nHas the EM converged?", call. = FALSE)
+	}
+	suppressWarnings(se <- sqrt(c(1 / sum(VarY.inv), diag(Inverse.Fisher))))
 	se
 }

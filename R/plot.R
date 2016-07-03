@@ -7,13 +7,13 @@ plot.ipriorMod <- function(x,
 	x <- object$ipriorKernel$x
 	y <- object$ipriorKernel$Y
 	p <- object$ipriorKernel$p
-	whichPearson <- object$ipriorKernel$whichPearson
+	whichPearson <- isPea(object$ipriorKernel$model$kernel)
 	no.plot <- sum(!whichPearson)
 	xnames <- object$ipriorKernel$model$xname
 	yname <- object$ipriorKernel$model$yname
 	yhat <- object$fitted
 	resid <- object$residuals
-	top3 <- order(abs(resid), decreasing=T)[1:3]
+	top3 <- order(abs(resid), decreasing = TRUE)[1:3]
 	# colx <- c(RColorBrewer::brewer.pal(9, "Set1")[-6],
 	#           RColorBrewer::brewer.pal(12, "Paired")[c(2,4,6,8,10,12)],
 	#           RColorBrewer::brewer.pal(8,"Dark2"))
@@ -42,7 +42,8 @@ plot.ipriorMod <- function(x,
 	ctg.vars <- which(whichPearson)
 
 	if ((length(cts.vars) == 1) | (length(ctg.vars) > 0)) {
-		if (length(ctg.vars) == 0) { #plot only continuous variables
+		if (length(ctg.vars) == 0) {
+		  # Plot only continuous variables -----------------------------------------
 			x.cts <- unlist(x[cts.vars], use.names=F)
 			if (length(x.cts) != length(y)) stop("X variable not a vector.")
 			plot1 <- function(z){
@@ -51,13 +52,15 @@ plot.ipriorMod <- function(x,
 				lines(x=x.cts[xorder], y=yhat[xorder], col=colx[1], lwd=1.55)
 			}
 		} else {
-			if (length(ctg.vars) == 1) x.ctg <- x[[ctg.vars]]
+		  # Define categorical variables -------------------------------------------
+		  if (length(ctg.vars) == 1) x.ctg <- as.factor(x[[ctg.vars]])
 			else {
 				x.ctg <- as.data.frame(x[ctg.vars])
 				x.ctg <- interaction(x.ctg)
 				# x.ctg <- x.ctg[,2]
 			}
-			if (length(cts.vars) == 0) { #plot only categorical variables
+			if (length(cts.vars) == 0) {
+			  # Plot only categorical variables --------------------------------------
 				yhat.unq <- unique(yhat)
 				plotlvl <- levels(x.ctg)
 				grp <- as.numeric(x.ctg)
@@ -72,7 +75,8 @@ plot.ipriorMod <- function(x,
 					}
 				}
 			} else {
-				x.cts <- as.numeric(x[[cts.vars]])
+				# Multilevel plots -----------------------------------------------------
+			  x.cts <- as.numeric(x[[cts.vars]])
 				if (length(x.cts) != length(y)) stop("X variable not a vector.")
 				plotlvl <- levels(x.ctg)
 				grp <- as.numeric(x.ctg)
@@ -80,7 +84,6 @@ plot.ipriorMod <- function(x,
 				grp <- as.numeric(factor(grp))
 				if (UseOwnLabels) plotlvl <- unique(grp)
 				plot1 <- function(z) {
-				  print(x.cts)
 					plot(x = x.cts, y = y, type = "n", xlab = xnames[cts.vars],
 					     ylab = yname, main = "Fitted regression curve")
 					for (i in unique(grp)) {

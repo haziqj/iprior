@@ -14,6 +14,7 @@ testXForm <- function(x) {
 }
 
 isOrd <- function(x) {
+  # Tests whether x contains ^ indicating higher order term.
   grepl("\\^", x)
 }
 
@@ -23,29 +24,41 @@ whereOrd <- function(x) {
 }
 
 lenHOrd <- function(x) {
+  # How many higher order terms have been specified?
   length(grep("\\^", x))
 }
 
-### Creation of H.mat list
-hMatList <- function (x, kernel, whichPearson, intr, no.int, gamma, xstar=list(NULL)) {
-  # Helper function for creation of list of H matrices. Used in Kernel_loader.r
-  # and predict.R
-	p <- length(x)
-	if (kernel == "FBM") H.mat <- mapply(fnH3, x=x[!whichPearson], y=xstar[!whichPearson], gamma=gamma, SIMPLIFY=F)
-	else H.mat <- mapply(fnH2, x=x[!whichPearson], y=xstar[!whichPearson], SIMPLIFY=F)
-	tmp <- mapply(fnH1, x=x[whichPearson], y=xstar[whichPearson], SIMPLIFY=F)
-	H.mat <- c(H.mat, tmp)
-	H.mat[c(which(!whichPearson), which(whichPearson))] <- H.mat
-	if (!is.null(intr)) { #add in interactions, if any
-		for(j in 1:no.int) {
-			H.mat[[p+j]] <- H.mat[[ intr[1,j] ]] * H.mat[[ intr[2,j] ]]
-			class(H.mat[[p+j]]) <- paste(class(H.mat[[ intr[1,j] ]]), class(H.mat[[ intr[2,j] ]]), sep=" x ")
-		}
-	}
-	H.mat
+isCan <- function(x) x == "Canonical"
+
+isPea <- function(x) x == "Pearson"
+
+isFBM <- function(x) x == "FBM"
+
+canPeaFBM <- function(x, kernel, gamma, y) {
+  if (isCan(kernel)) res <- fnH2(x, y)
+  if (isPea(kernel)) res <- fnH1(x, y)
+  if (isFBM(kernel)) res <- fnH3(x, y, gamma)
+  res
 }
 
-### Indexer helper function
+hMatList <- function(x, kernel, intr, no.int, gamma,
+                     xstar = vector("list", p)) {
+  # Helper function for creation of list of H matrices. Used in Kernel_loader.r
+  # and predict.R
+  p <- length(x)
+  H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel),
+              gamma = gamma, y = xstar, SIMPLIFY = FALSE)
+  	if (!is.null(intr)) {
+	  # Add in interactions, if any.
+		for (j in 1:no.int) {
+			H[[p + j]] <- H[[intr[1, j]]] * H[[intr[2, j]]]
+			class(H[[p + j]]) <- paste(class(H[[intr[1,j]]]), class(H[[intr[2,j]]]),
+			                           sep = " x ")
+		}
+	}
+	H
+}
+
 indxFn <- function(k) {
   # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
   # ind2 are created in kernL().

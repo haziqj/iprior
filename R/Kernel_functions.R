@@ -138,7 +138,7 @@ fnH1 <- function(x, y=NULL){
 	return(res)
 }
 
-fnH2 <- function(x, y=NULL){
+fnH2 <- function(x, y = NULL){
 	res <- 0
 	if( (ncol(x) > 1) && !is.null(ncol(x)) ){
 		if((ncol(x) != ncol(y)) && !is.null(y)) stop("New data is structurally unsimilar.")
@@ -148,7 +148,7 @@ fnH2 <- function(x, y=NULL){
 	return(res)
 }
 
-fnH3 <- function(x, y=NULL, gamma){
+fnH3 <- function(x, y = NULL, gamma){
 	res <- 0
 	if( (ncol(x) > 1) && !is.null(ncol(x)) ){
 		if((ncol(x) != ncol(y)) && !is.null(y)) stop("New data is structurally unsimilar.")

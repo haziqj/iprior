@@ -33,7 +33,6 @@ kernL.default <- function(y, ..., model = list()) {
   x <- lapply(x, as.matrix)
   N <- length(y)
   p <- length(x)
-  whichPearson <- unlist(lapply(x, function(x) is.factor(x) | is.character(x) ))
 
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
@@ -45,7 +44,25 @@ kernL.default <- function(y, ..., model = list()) {
     warning("Unknown names in model options: ", paste(noNms, collapse = ", "),
             call. = FALSE)
   }
-  mod$kernel <- match.arg(mod$kernel, c("Canonical", "FBM"))
+  # mod$kernel <- match.arg(mod$kernel, c("Canonical", "FBM"))
+
+  # What types of kernels? -----------------------------------------------------
+  if (length(mod$kernel) < p && length(mod$kernel) > 1) {
+    warning(paste0("Incomplete kernel specification (not of length ", p, ")"),
+            call. = FALSE)
+  }
+  kernel <- rep(NA, p)
+  kernel[] <- mod$kernel
+  whichPearson <- unlist(lapply(x, function(x) {is.factor(x) | is.character(x)}))
+  kernel[whichPearson] <- "Pearson"
+  mod$kernel <- kernel
+  check.kern <- any("Canonical" %in% kernel)
+  check.kern <- any(c(check.kern, "FBM" %in% kernel))
+  check.kern <- any(c(check.kern, "Pearson" %in% kernel))
+  if (!check.kern) {
+    stop("kernel should be one of \"Canonical\", \"Pearson\", or \"FBM\".",
+         call. = FALSE)
+  }
 
   # Check for higher order terms -----------------------------------------------
   mod$order <- as.character(mod$order)
@@ -114,7 +131,7 @@ kernL.default <- function(y, ..., model = list()) {
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
 
   # Set up list of H matrices --------------------------------------------------
-  Hl <- hMatList(x, mod$kernel, whichPearson, mod$intr, no.int, mod$Hurst)
+  Hl <- hMatList(x, mod$kernel, mod$intr, no.int, mod$Hurst)
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
@@ -188,8 +205,8 @@ kernL.default <- function(y, ..., model = list()) {
                                          SIMPLIFY = FALSE))
         }
       } else {
-        # CASE: Multiple lambda with no interactions, or with non-parsimonious ---
-        # interactions -----------------------------------------------------------
+        # CASE: Multiple lambda with no interactions, or with non-parsimonious -
+        # interactions ---------------------------------------------------------
         for (k in 1:q) {
           Pl[[k]] <- Hl[[k]]
           Psql[[k]] <- fastSquare(Pl[[k]])
@@ -226,7 +243,6 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   x <- model.frame(Terms, mf)
   y <- model.response(mf)
   yname <- names(attr(tt, "dataClasses"))[1]
-  # xname <- attr(tt, "term.labels")
   xname <- names(x)
   xnl <- length(xname)
 

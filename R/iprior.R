@@ -173,24 +173,22 @@ iprior.ipriorMod <- function(object, control = list(), ...) {
 
 #' @export
 print.ipriorMod <- function(x, ...) {
-  whichPearson <- x$ipriorKernel$whichPearson
+  kernel <- x$ipriorKernel$model$kernel
   cat("\nCall:\n")
   print(x$call)
-  if (x$ipriorKernel$model$kernel == "Canonical") {
-    CanOrFBM <- "Canonical"
+  FBM <- paste0("Fractional Brownian Motion with Hurst coef. ",
+                x$ipriorKernel$model$Hurst)
+  kerneltypes <- c("Pearson", "Canonical", FBM)
+  which.kern <- c("Pearson", "Canonical", "FBM") %in% unique(kernel)
+  #                  "Pearson & Canonical", paste("Pearson &", FBM),
+  #                  paste("Canonical &", FBM),
+  #                  paste("Pearson, Canonical, &", FBM))
+  if (sum(which.kern) == 1) {
+    cat("\nRKHS used:", kerneltypes[which.kern])
+  } else if (sum(which.kern) == 2) {
+    cat("\nRKHS used:", paste(kerneltypes[which.kern], collapse = "&"))
   } else {
-    CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ",
-                       x$ipriorKernel$model$Hurst)
-  }
-  kerneltypes <- c(CanOrFBM, "Pearson", paste(CanOrFBM, "& Pearson"))
-  if (all(x$ipriorKernel$whichPearson)) {
-    cat("\nRKHS used:", kerneltypes[2])
-  } else {
-    if (!all(whichPearson) && !any(whichPearson)) {
-      cat("\nRKHS used:", kerneltypes[1])
-    } else {
-      cat("\nRKHS used:", kerneltypes[3])
-    }
+    cat("\nRKHS used:", paste("Pearson, Canonical, &", FBM))
   }
   if (x$ipriorKernel$q == 1) {
     cat(", with a single scale parameter.\n")
@@ -251,19 +249,18 @@ print.ipriorSummary <- function(x, ...) {
   cat("\nCall:\n")
   print(x$call)
   x.names <- x$xname[1:x$p]
-  xPearson <- x.names[x$whichPearson]
-  xCanOrFBM <- x.names[!x$whichPearson]
-  if (x$kernel == "Canonical") {
-    CanOrFBM <- "Canonical"
-  } else {
-    CanOrFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$Hurst)
-  }
-  printPearson <- paste0("Pearson (", paste(xPearson, collapse = ", "), ")")
-  printCanOrFBM <- paste0(CanOrFBM, " (", paste(xCanOrFBM, collapse = ", "), ")")
+  x.pea <- x.names[isPea(x$kernel)]
+  x.can <- x.names[isCan(x$kernel)]
+  x.fbm <- x.names[isFBM(x$kernel)]
+  printPea <- paste0("Pearson (", paste(x.pea, collapse = ", "), ")")
+  printCan <- paste0("Canonical (", paste(x.can, collapse = ", "), ")")
+  printFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$Hurst,
+                     " (", paste(x.fbm, collapse = ", "), ")")
   cat("\n")
   cat("RKHS used:\n")
-  if (!(length(xCanOrFBM) == 0)) cat(printCanOrFBM, "\n")
-  if (!(length(xPearson) == 0)) cat(printPearson, "\n")
+  if (!(length(x.pea) == 0)) cat(printPea, "\n")
+  if (!(length(x.can) == 0)) cat(printCan, "\n")
+  if (!(length(x.fbm) == 0)) cat(printFBM, "\n")
   if (x$q == 1) {
     cat("with a single scale parameter.\n")
   } else {

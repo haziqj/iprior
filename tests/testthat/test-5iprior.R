@@ -78,7 +78,9 @@ test_that("Successfully fit higher order terms",{
 
   mod <- iprior(stack.loss ~ Air.Flow + I(Air.Flow ^ 2) + ., data = stackloss,
                 model = list(order = c(1, "1^2", 2, 3)),
-                control = list(silent = TRUE))
+                control = list(silent = TRUE,
+                               lambda = c(0.001549418, 0.215, -0.0077),
+                               psi = 0.110104468))
   expect_that(mod, is_a("ipriorMod"))
   expect_equivalent(mod$ipriorKernel$r, 1)
   tmp <- summary(mod)
