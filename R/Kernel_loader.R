@@ -75,6 +75,9 @@ kernL.default <- function(y, ..., model = list()) {
     }
   }
   r <- lenHOrd(mod$order)
+  # TODO: user may add wrong specs to higher order terms, e.g. c(1, 1^2, 10, 200)
+  # Throw warning, and fix by using ord.ind <- whereOrd(mod$order);
+  # mod$order[ord.ind] <- as.character(1:l)
 
   # Set up interactions, p and q -----------------------------------------------
   names(mod)[3] <- "intr"  #rename to something simpler
@@ -177,7 +180,7 @@ kernL.default <- function(y, ..., model = list()) {
       }
 
       if (!is.null(intr) && mod$parsm) {
-        # CASE: Parsimonious interactions only -----------------------------------
+        # CASE: Parsimonious interactions only ---------------------------------
         for (k in z) {
           Hsql[[k]] <- fastSquare(Hl[[k]])
           if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
