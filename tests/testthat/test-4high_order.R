@@ -9,6 +9,8 @@ test_that("Correct kernel specification of higher order non-formula",{
   x4 <- x1 ^ 2
   expect_error(kernL(y = y, x1 = x1, x1sq = x4, model = list(order = 1)))
   expect_error(kernL(y = y, x1 = x1, x1sq = x4, model = list(order = 1:10)))
+  expect_error(kernL(y = y, x1 = x1, x1sq = x4, model = list(order = c(1, "1:2"))))
+  expect_warning(kernL(y = y, x1 = x1, x1sq = x4, model = list(order = c(2,1))))
 
 })
 

@@ -1,8 +1,8 @@
 lambdaExpand <- function(x = lambda, env = ipriorEM.env){
   lambda.tmp <- rep(NA, q)
   for (i in 1:q) {
-    if (isOrd(order[i])) {
-      j.and.pow <- strsplit(order[i], "\\^")[[1]]
+    if (isHOrd(order[i])) {
+      j.and.pow <- splitHOrd(order[i])
       j <- j.and.pow[1]
       pow <- j.and.pow[2]
       lambda.tmp[i] <- x[as.numeric(j)] ^ as.numeric(pow)

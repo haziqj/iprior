@@ -44,11 +44,14 @@ kernL.default <- function(y, ..., model = list()) {
     warning("Unknown names in model options: ", paste(noNms, collapse = ", "),
             call. = FALSE)
   }
-  # mod$kernel <- match.arg(mod$kernel, c("Canonical", "FBM"))
 
   # What types of kernels? -----------------------------------------------------
   if (length(mod$kernel) < p && length(mod$kernel) > 1) {
     warning(paste0("Incomplete kernel specification (not of length ", p, ")"),
+            call. = FALSE)
+  }
+  if (length(mod$kernel) > p && length(mod$kernel) > 1) {
+    warning(paste0("Too many kernel options specification (not of length ", p, ")"),
             call. = FALSE)
   }
   kernel <- rep(NA, p)
@@ -66,7 +69,7 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Check for higher order terms -----------------------------------------------
   mod$order <- as.character(mod$order)
-  hord.check <- all(mod$order == as.character(1:p))
+  suppressWarnings(hord.check <- all(sort(as.numeric(mod$order)) == 1:p))
   if (!hord.check) {
     hord.check1 <- length(mod$order) != p
     hord.check2 <- any(grepl("\\^", mod$order))
@@ -75,11 +78,6 @@ kernL.default <- function(y, ..., model = list()) {
     }
   }
   r <- lenHOrd(mod$order)
-  # TODO: user may add wrong specs to higher order terms, e.g. c(1, 1^2, 10,
-  # 200) Throw warning, and fix by using ord.ind <- whereOrd(mod$order);
-  # mod$order[ord.ind] <- as.character(1:l)
-  # TODO: throw warning if higher order
-  # term kernel not similar to the level 1 term
 
   # Set up interactions, p and q -----------------------------------------------
   names(mod)[3] <- "intr"  #rename to something simpler
@@ -134,6 +132,29 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up names for lambda parameters -----------------------------------------
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
+
+  # The following chunk checks whether the prescriped level 1 terms are --------
+  # in order -------------------------------------------------------------------
+  ord.ind <- whereOrd(mod$order)
+  order.noh <- mod$order[ord.ind]
+  hord.check3 <- any(order.noh != as.character(1:l))
+  hord.check4 <- any(sort(as.numeric(order.noh)) != 1:l)
+  if (hord.check3 | hord.check4) {
+    warning("Incorrect prescription of level 1 terms - automatically fixed.", call. = FALSE)
+  }
+  mod$order[ord.ind] <- as.character(1:l)
+  # Next check if higher order terms' kernels similar to the level 1 terms. Test
+  # when parsm = TRUE.
+  if (r > 0 && mod$parsm) {
+    order.h <- mod$order[-ord.ind]
+    index.h <- which(isHOrd(mod$order))
+    for (i in 1:r) {
+      j <- as.numeric(splitHOrd(order.h[i]))[1]
+      if (mod$kernel[j] != mod$kernel[index.h[i]]) {
+        warning(paste("Kernel for variable", mod$xname[index.h[i]], "not the same as ", mod$xname[j]), call. = FALSE)
+      }
+    }
+  }
 
   # Set up list of H matrices --------------------------------------------------
   Hl <- hMatList(x, mod$kernel, mod$intr, no.int, mod$Hurst)

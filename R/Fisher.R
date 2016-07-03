@@ -6,10 +6,11 @@ fisher <- function(object) {
   Psql <- object$Psql
   Sl <- object$Sl
   VarY.inv <- object$VarY.inv
+  force.regEM <- object$control$force.regEM
   N <- nrow(VarY.inv)
 	l <- length(lambda)
 
-	if (is.null(Psql)) {
+	if (is.null(Psql) | force.regEM) {
     # Fitted using regular EM.
     Fisher <- -optimHess(c(lambda, psi), logLik, object = object,
                         control = list(fnscale = -1))

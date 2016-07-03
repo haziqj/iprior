@@ -13,7 +13,7 @@ testXForm <- function(x) {
   xform
 }
 
-isOrd <- function(x) {
+isHOrd <- function(x) {
   # Tests whether x contains ^ indicating higher order term.
   grepl("\\^", x)
 }
@@ -26,6 +26,11 @@ whereOrd <- function(x) {
 lenHOrd <- function(x) {
   # How many higher order terms have been specified?
   length(grep("\\^", x))
+}
+
+splitHOrd <- function(x) {
+  # Gets the level 1 index and the power it is raised to
+  strsplit(x, "\\^")[[1]]
 }
 
 isCan <- function(x) x == "Canonical"
