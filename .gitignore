@@ -5,3 +5,4 @@ inst/doc
 Rmd
 .RData
 other
+tests/testthat/Rplots.pdf
