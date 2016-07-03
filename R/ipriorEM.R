@@ -2,29 +2,26 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, lambda.init = NULL, psi.init = NULL,
                      clean = FALSE, paramprogress = FALSE, force.regEM = FALSE,
                      force.nlm = TRUE){
-  # This is the main EM algorithm engine.
+  # This is the EM algorithm engine which estimates the I-prior model
+  # parameters.
   #
-  # Args:
-  #   ipriorKernel Output from kernL() function.
-  #   maxit The maximum number of iterations. Defaults to 10 for debugging, but
-  #     this is fed in from control list.
-  #   stop.crit The tolerance for the difference in log-likelihood value to stop
-  #     the EM.
-  #   report.int The reporting interval for the EM.
-  #   silent Logical, if TRUE then no print report.
-  #   lambda.init, psi.init Initial values for lambda and psi.
-  #   clean Logical, if FALSE then progress of log-likelihood reported.
-  #   paramprogress Logical, if TRUE then progress of parameters reported.
-  #   force.regEM Logical, for debugging of the regular EM routine.
+  # Args: ipriorKernel Output from kernL() function. maxit The maximum number of
+  # iterations. Defaults to 10 for debugging, but this is fed in from control
+  # list. stop.crit The tolerance for the difference in log-likelihood value to
+  # stop the EM. report.int The reporting interval for the EM. silent Logical,
+  # if TRUE then no print report. lambda.init, psi.init Initial values for
+  # lambda and psi. clean Logical, if FALSE then progress of log-likelihood
+  # reported. paramprogress Logical, if TRUE then progress of parameters
+  # reported. force.regEM Logical, for debugging of the regular EM routine.
 
   # Declare all variables and functions to be used in this environment ---------
   ipriorEM.env <- environment()
 	list2env(ipriorKernel, ipriorEM.env)
 	list2env(BlockBstuff, ipriorEM.env)
 	list2env(model, ipriorEM.env)
-	environment(BlockB) <- ipriorEM.env
-  environment(lambdaExpand) <- ipriorEM.env
-  environment(lambdaContract) <- ipriorEM.env
+  environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
+	environment(BlockA) <- environment(BlockB) <- environment(BlockC) <- ipriorEM.env
+  environment(lambdaExpand) <- environment(lambdaContract) <- ipriorEM.env
   if (r > 0 | force.regEM) {
     if (force.nlm) {
       environment(ipriorEMnlm) <- ipriorEM.env
@@ -40,7 +37,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
     environment(ipriorEMClosedForm) <- ipriorEM.env
     ipriorEMRoutine <- ipriorEMClosedForm
   }
-
 
 	# Initialise parameters ------------------------------------------------------
 	alpha <- as.numeric(mean(Y))
@@ -64,13 +60,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	if (l == 1) colnames(res.param) <- c("(Intercept)", "lambda", "psi")
 	else colnames(res.param) <- c("(Intercept)", paste0("lambda", 1:l), "psi")
 
-	# Linear solver and inverse --------------------------------------------------
-	linSolvInv <- function(b = NULL){
-		if (is.null(b)) a <- fastVDiag(V, 1/(u + s)) #a C++ alternative
-		else a <- V %*% (diag(1 / (u + s)) %*% (t(V) %*% b) )
-		a
-	}
-
 	# Function to calculate Hlam.mat ---------------------------------------------
 	if (q == 1) {
 		hlamFn <- function(x = lambda, env = ipriorEM.env) {
@@ -84,34 +73,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		}
 	}
 
-	# Block A update function ----------------------------------------------------
-	BlockA <- function(){
-		lambdaExpand()
-		hlamFn()
-		A <- Hlam.mat
-		s <<- 1/psi
-		tmp <- eigenCpp(A)  # a C++ alternative
-		u <<- psi * tmp$val ^ 2
-		V <<- tmp$vec
-		is.VarYneg <<- F; is.VarYneg <<- any(u + s < 0)
-	}
-
-	# Log-likelihood function ----------------------------------------------------
-	logLikEM <- function(){
-		a <- linSolvInv(Y - alpha)
-		logdet <- Re(sum(log((u + s)[u + s > 0])))
-		log.lik <- -(N / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
-		as.numeric(log.lik)
-	}
-
-	### Block C update function
-	BlockC <- function(){
-		VarY.inv <<- linSolvInv()
-		w.hat <<- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
-		W.hat <<- VarY.inv + tcrossprod(w.hat)
-	}
-
-	### Checks and begin iterations
+	# Checks and begin iterations ------------------------------------------------
 	if (report.int == 0)	report.int <- maxit
 	i <- 0
 	check.naught <- 0
@@ -230,10 +192,6 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	} else if (!silent) {
 	  cat("EM NOT CONVERGED!\n")#, "\nNumber of iterations =", i, "\n")
 	}
-
-	# # One last update of Block B (relevant when using ipriorEMOptim) -------------
-	# for (k in 1:l) BlockB(k)
-	# lambdaContract()
 
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
 	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,

@@ -27,6 +27,40 @@ lambdaContract <- function(x = lambda, env = ipriorEM.env) {
   assign("lambda", x[whereOrd(order)], envir = env)
 }
 
+linSolvInv <- function(b = NULL){
+  # Function to solve VarY.inv %*% a = b
+  if (is.null(b)) a <- fastVDiag(V, 1/(u + s)) #a C++ alternative
+  else a <- V %*% (diag(1 / (u + s)) %*% (t(V) %*% b) )
+  a
+}
+
+BlockA <- function(){
+  # Block A update function
+  lambdaExpand()
+  hlamFn()
+  A <- Hlam.mat
+  s <<- 1/psi
+  tmp <- eigenCpp(A)  # a C++ alternative
+  u <<- psi * tmp$val ^ 2
+  V <<- tmp$vec
+  is.VarYneg <<- F; is.VarYneg <<- any(u + s < 0)
+}
+
+BlockC <- function(){
+  # Block C update function
+  VarY.inv <<- linSolvInv()
+  w.hat <<- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
+  W.hat <<- VarY.inv + tcrossprod(w.hat)
+}
+
+logLikEM <- function(){
+  # Function to calculate log-likelihood value within the EM routine
+  a <- linSolvInv(Y - alpha)
+  logdet <- Re(sum(log((u + s)[u + s > 0])))
+  log.lik <- -(N / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
+  as.numeric(log.lik)
+}
+
 alphaUpdate <- function() {
   # DEPRECATED - MLE for alpha is actually mean(Y). This was used to be called
   # in the EM routines below.
