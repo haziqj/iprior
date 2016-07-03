@@ -48,7 +48,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE,
-              force.regEM = FALSE)
+              force.regEM = FALSE, force.nlm = TRUE)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -89,7 +89,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
     ipriorKernel <- kernL(y, ..., model = model)  # pass to kernel loader
   }
   est <- ipriorEM(ipriorKernel, maxit, stop.crit, report, silent, lambda,
-                  psi, clean, paramprogress, force.regEM)
+                  psi, clean, paramprogress, force.regEM, force.nlm)
   est$ipriorKernel <- ipriorKernel
   param <- c(est$alpha, est$lambda, est$psi)
   if (length(param) == 3) {

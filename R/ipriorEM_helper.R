@@ -22,9 +22,23 @@ lambdaContract <- function(x = lambda, env = ipriorEM.env) {
   assign("lambda", x[whereOrd(order)], envir = env)
 }
 
+alphaUpdate <- function() {
+  # DEPRECATED - MLE for alpha is actually mean(Y). This was used to be called
+  # in the EM routines below.
+  tmp.alpha <- crossprod(matrix(1, ncol = 1, nrow = N), Var.Y.inv)
+  alpha <<- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
+}
+
+psiUpdate <- function() {
+  # The common psi update routine in the EM routine below.
+  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
+  T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
+    2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
+  psi <<- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
+}
+
 ipriorEMClosedForm <- function() {
   # Update for lambda ----------------------------------------------------------
-  BlockC()  # obtains Var.Y.inv and updates w.hat and W.hat
   for (k in 1:l) {
     BlockB(k)
     T1 <- sum(Psql[[k]] * W.hat)
@@ -34,17 +48,11 @@ ipriorEMClosedForm <- function() {
   }
 
   # Update for psi -------------------------------------------------------------
-  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
-  T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
-        2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
-  psi <<- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
-
-  # Estimating alpha -----------------------------------------------------------
-  # tmp.alpha <- crossprod(x0, Var.Y.inv)
-  # alpha <- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
+  environment(psiUpdate) <- environment()
+  psiUpdate()
 }
 
-# ipriorEMOptim1 <- function() {
+# ipriorEMOptim <- function() {
 #   BlockC()  # obtains VarY.inv and updates w.hat and W.hat
 #   theta <- c(lambda, psi)
 #   theta.new <- optim(theta, QEstep, method = "L-BFGS-B",
@@ -74,44 +82,33 @@ ipriorEMOptim1 <- function() {
   # lambda present. The optim() routine uses method "Brent" and upper and lower
   # bounds.
 
-  # Obtains VarY.inv and updated w.hat and W.hat -------------------------------
-  BlockC()
-
   # Update for lambda ----------------------------------------------------------
-  assign("lambda.EM.res", optim(lambda, QEstepLambda, method = "Brent",
-                                lower = -1e9,upper = 1e9, Y = Y, alpha = alpha,
-                                psi = psi, W.hat = W.hat, w.hat = w.hat,
-                                lambdaExpand = lambdaExpand, hlamFn = hlamFn,
-                                env = ipriorEM.env, hessian = FALSE),
+  assign("lambda", optim(lambda, QEstepLambda, method = "Brent", lower = -1e9,
+                         upper = 1e9, Y = Y, alpha = alpha, psi = psi,
+                         W.hat = W.hat, w.hat = w.hat,
+                         lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                         env = ipriorEM.env, hessian = FALSE),
          envir = ipriorEM.env)
-  lambda <<- lambda.EM.res$par
 
   # Update for psi -------------------------------------------------------------
-  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
-  T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
-        2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
-  psi <<- sqrt(max(1e-9, as.numeric(sum(diag(W.hat)) / T3)))
+  environment(psiUpdate) <- environment()
+  psiUpdate()
 }
 
 ipriorEMOptim2 <- function() {
   # This is the EM routine when there are higher orders present, and only one
   # lambda present. The optim() routine uses method "Nelder-Mead".
 
-  BlockC()  # obtains VarY.inv and updates w.hat and W.hat
-
   # Update for lambda ----------------------------------------------------------
-  assign("lambda.EM.res", optim(lambda, QEstepLambda, Y = Y, alpha = alpha,
-                                psi = psi, W.hat = W.hat, w.hat = w.hat,
-                                lambdaExpand = lambdaExpand, hlamFn = hlamFn,
-                                env = ipriorEM.env, hessian = FALSE),
+  assign("lambda", optim(lambda, QEstepLambda, Y = Y, alpha = alpha, psi = psi,
+                         W.hat = W.hat, w.hat = w.hat,
+                         lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                         env = ipriorEM.env, hessian = FALSE)$par,
          envir = ipriorEM.env)
-  lambda <<- lambda.EM.res$par
 
-    # Update for psi -------------------------------------------------------------
-  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
-  T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
-        2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
-  psi <<- sqrt(max(1e-9, as.numeric(sum(diag(W.hat)) / T3)))
+  # Update for psi -------------------------------------------------------------
+  environment(psiUpdate) <- environment()
+  psiUpdate()
 }
 
 QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
@@ -126,9 +123,20 @@ QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
   as.numeric(Q)
 }
 
-# TODO: write nlm optimiser
+ipriorEMnlm <- function() {
+  # An alternative minimiser for the E-step using nlm.
 
+  # Update for lambda ----------------------------------------------------------
+  assign("lambda", nlm(QEstepLambda, lambda, Y = Y, alpha = alpha, psi = psi,
+                       W.hat = W.hat, w.hat = w.hat,
+                       lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                       env = ipriorEM.env, hessian = FALSE)$estimate,
+         envir = ipriorEM.env)
 
+  # Update for psi -------------------------------------------------------------
+  environment(psiUpdate) <- environment()
+  psiUpdate()
+}
 
 ###
 ### An internal function of ipriorEM() which does the pretty formatting in the report

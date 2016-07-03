@@ -1,6 +1,7 @@
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, lambda.init = NULL, psi.init = NULL,
-                     clean = FALSE, paramprogress = FALSE, force.regEM = FALSE){
+                     clean = FALSE, paramprogress = FALSE, force.regEM = FALSE,
+                     force.nlm = TRUE){
   # This is the main EM algorithm engine.
   #
   # Args:
@@ -25,7 +26,10 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   environment(lambdaExpand) <- ipriorEM.env
   environment(lambdaContract) <- ipriorEM.env
   if (r > 0 | force.regEM) {
-    if (l > 1) {
+    if (force.nlm) {
+      environment(ipriorEMnlm) <- ipriorEM.env
+      ipriorEMRoutine <- ipriorEMnlm
+    } else if (l > 1) {
       environment(ipriorEMOptim2) <- ipriorEM.env
       ipriorEMRoutine <- ipriorEMOptim2
     } else {
@@ -36,6 +40,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
     environment(ipriorEMClosedForm) <- ipriorEM.env
     ipriorEMRoutine <- ipriorEMClosedForm
   }
+
 
 	# Initialise parameters ------------------------------------------------------
 	alpha <- as.numeric(mean(Y))
@@ -155,7 +160,8 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		log.lik0 <- log.lik1
 
     # Update for parameters lambda and psi -------------------------------------
-    ipriorEMRoutine()
+		BlockC()  # obtains Var.Y.inv and updates w.hat and W.hat
+		ipriorEMRoutine()
 
 		# New value of log-likelihood ----------------------------------------------
 		BlockA()  # performs Hlam.mat update and eigendecomposition
@@ -229,6 +235,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	# for (k in 1:l) BlockB(k)
 	# lambdaContract()
 
+	browser()
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
 	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,
 	     VarY.inv = VarY.inv, w.hat = w.hat, converged = converged,
