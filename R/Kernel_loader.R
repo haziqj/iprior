@@ -319,7 +319,7 @@ kernL.default <- function(y, ..., model = list()) {
   }
 
   if (!mod$silent) close(pb)
-  mod <- mod[-8]  #remove silent control
+  mod <- mod[-match("silent", names(mod))]  #remove silent control
 
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)

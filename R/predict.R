@@ -1,18 +1,31 @@
-#' Predict for iprior models.
+#' Predict for I-prior models.
 #'
-#' Predict for iprior models.
+#' Calculated predicted values of an I-prior model for a set of new data. If no
+#' new data specified, then the fitted values are returned. When not using the
+#' formula interface to fit the model, then the new data supplied for
+#' \code{predict} must be coerced into a list.
 #'
-#' Predict  for iprior models.
-#'
-#' @param object Objects of class \code{iprior}.
-#' @param newdata (Optional) A data frame in which to look for variables with
+#' @param object Objects of class \code{ipriorMod}.
+#' @param newdata (optional) A data frame in which to look for variables with
 #'   which to predict. If omitted, the fitted values are used.
+#'
+#'   Note that when using non-formula to fit, the explanatory variables must be
+#'   supplied in a list, such as \code{newdata = list(x1.new, x2.new, x3.new)}.
 #' @param ... This is not used here.
 #'
 #' @examples
-#' \donttest{mod <- iprior(stack.loss ~ ., data=stackloss)}
-#' \donttest{predict(mod, newdata = data.frame(c(1,2,3)))}
+#' # Non-formula fit
+#' \donttest{mod <- iprior(y = stack.loss,
+#'                         air = stack.x[,1],
+#'                         water = stack.x[,2],
+#'                         acid = stack.x[,3])}
+#' \donttest{predict(mod, newdata = list(air = 58, water = 20, acid = 87))}
 #'
+#' # Formula fit
+#' \donttest{mod.orange <- iprior(circumference ~ . ^ 2, data = Orange[-1, ])}
+#' \donttest{predict(mod.orange, Orange[1, ])}
+#'
+#' @name predict
 #' @export
 predict.ipriorMod <- function(object, newdata = list(), ...) {
   list2env(object$ipriorKernel, environment())
