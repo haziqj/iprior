@@ -46,17 +46,20 @@ iprior <- function(...) {
 #'   = "none"}.} }
 #'
 #' @return An object of class \code{ipriorMod} which is a list of 24 items. The
-#'   more important items are described below.
-#'   \describe{
-#'   \item{\code{alpha, lambda, psi, coefficients, sigma}}{The last attained parameter values after running the EM algorithm. This can also be extracted via \code{coef()}}
-#'   \item{\code{log.lik}}{The last attained log-likelihood value. This can also be extracted via \code{logLik()}.}
-#'   \item{\code{no.iter}}{The number of iterations the EM algorithm ran for.}
-#'   \item{\code{Hlam.mat}}{This is the scaled kernel matrix of dimension \code{n} by \code{n}.}
-#'   \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal distribution of \code{y}.}
-#'   \item{\code{w.hat}}{The vector of posterior mean estimates of the I-prior random effects.}
-#'   \item{\code{fitted.values}}{These are posterior estimates of \code{y}, i.e. the fitted values. This can also be extracted via \code{fitted()} or \code{\link{predict}()}}
-#'   \item{\code{residuals}}{The vector of residuals. This can also be extracted via \code{resid()}.}
-#'   }
+#'   more important items are described below. \describe{ \item{\code{alpha,
+#'   lambda, psi, coefficients, sigma}}{The last attained parameter values after
+#'   running the EM algorithm. This can also be extracted via \code{coef()}}
+#'   \item{\code{log.lik}}{The last attained log-likelihood value. This can also
+#'   be extracted via \code{logLik()}.} \item{\code{no.iter}}{The number of
+#'   iterations the EM algorithm ran for.} \item{\code{Hlam.mat}}{This is the
+#'   scaled kernel matrix of dimension \code{n} by \code{n}.}
+#'   \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal
+#'   distribution of \code{y}.} \item{\code{w.hat}}{The vector of posterior mean
+#'   estimates of the I-prior random effects.} \item{\code{fitted.values}}{These
+#'   are posterior estimates of \code{y}, i.e. the fitted values. This can also
+#'   be extracted via \code{fitted()} or \code{\link{predict}()}}
+#'   \item{\code{residuals}}{The vector of residuals. This can also be extracted
+#'   via \code{resid()}.} }
 #'
 #' @examples
 #' # Formula based input
@@ -141,7 +144,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   mx <- match(c("y", "model", "control"), names(cl), 0L)
   xnamefromcall <- as.character(cl[-mx])[-1]
   ynamefromcall <- as.character(cl[2])
-  check.xname <- grepl("\\..", est$ipriorKernel$model$xname)
+  check.xname <- grepl("\\.\\.", est$ipriorKernel$model$xname)
   check.yname <- est$ipriorKernel$model$yname == "y"
   if (any(check.xname)) {
     est$ipriorKernel$model$xname[check.xname] <- xnamefromcall[check.xname]
@@ -236,7 +239,7 @@ print.ipriorMod <- function(x, ...) {
   if (sum(which.kern) == 1) {
     cat("\nRKHS used:", kerneltypes[which.kern])
   } else if (sum(which.kern) == 2) {
-    cat("\nRKHS used:", paste(kerneltypes[which.kern], collapse = "&"))
+    cat("\nRKHS used:", paste(kerneltypes[which.kern], collapse = " & "))
   } else {
     cat("\nRKHS used:", paste("Pearson, Canonical, &", FBM))
   }

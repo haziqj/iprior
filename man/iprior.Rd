@@ -73,17 +73,20 @@ when not using formula or \code{"y, x"} input.}
 }
 \value{
 An object of class \code{ipriorMod} which is a list of 24 items. The
-  more important items are described below.
-  \describe{
-  \item{\code{alpha, lambda, psi, coefficients, sigma}}{The last attained parameter values after running the EM algorithm. This can also be extracted via \code{coef()}}
-  \item{\code{log.lik}}{The last attained log-likelihood value. This can also be extracted via \code{logLik()}.}
-  \item{\code{no.iter}}{The number of iterations the EM algorithm ran for.}
-  \item{\code{Hlam.mat}}{This is the scaled kernel matrix of dimension \code{n} by \code{n}.}
-  \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal distribution of \code{y}.}
-  \item{\code{w.hat}}{The vector of posterior mean estimates of the I-prior random effects.}
-  \item{\code{fitted.values}}{These are posterior estimates of \code{y}, i.e. the fitted values. This can also be extracted via \code{fitted()} or \code{\link{predict}()}}
-  \item{\code{residuals}}{The vector of residuals. This can also be extracted via \code{resid()}.}
-  }
+  more important items are described below. \describe{ \item{\code{alpha,
+  lambda, psi, coefficients, sigma}}{The last attained parameter values after
+  running the EM algorithm. This can also be extracted via \code{coef()}}
+  \item{\code{log.lik}}{The last attained log-likelihood value. This can also
+  be extracted via \code{logLik()}.} \item{\code{no.iter}}{The number of
+  iterations the EM algorithm ran for.} \item{\code{Hlam.mat}}{This is the
+  scaled kernel matrix of dimension \code{n} by \code{n}.}
+  \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal
+  distribution of \code{y}.} \item{\code{w.hat}}{The vector of posterior mean
+  estimates of the I-prior random effects.} \item{\code{fitted.values}}{These
+  are posterior estimates of \code{y}, i.e. the fitted values. This can also
+  be extracted via \code{fitted()} or \code{\link{predict}()}}
+  \item{\code{residuals}}{The vector of residuals. This can also be extracted
+  via \code{resid()}.} }
 }
 \description{
 A function to perform linear regression using I-priors. The I-prior model is

@@ -53,7 +53,7 @@ A list of 11 items. Some of the more important ones are described
  list corresponds to each variable. If \code{one.lam = TRUE} was called, then
  you should see a single element in this list.} \item{\code{Hl}}{A list of
  the kernel matrices calculated from the explanatory variables according to
- the model options.} \item{\code{N, p, l, r, no.int, q}}{These are,
+ the model options.} \item{\code{n, p, l, r, no.int, q}}{These are,
  respectively, the sample size, the number of explanatory variables, the
  number of unique scale parameters, the number of higher order terms, the
  number of interacting variables, and the number of kernel matrices.}}

@@ -57,14 +57,14 @@ logLikEM <- function(){
   # Function to calculate log-likelihood value within the EM routine
   a <- linSolvInv(Y - alpha)
   logdet <- Re(sum(log((u + s)[u + s > 0])))
-  log.lik <- -(N / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
+  log.lik <- -(n / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
   as.numeric(log.lik)
 }
 
 alphaUpdate <- function() {
   # DEPRECATED - MLE for alpha is actually mean(Y). This was used to be called
   # in the EM routines below.
-  tmp.alpha <- crossprod(matrix(1, ncol = 1, nrow = N), Var.Y.inv)
+  tmp.alpha <- crossprod(matrix(1, ncol = 1, nrow = n), Var.Y.inv)
   alpha <<- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
 }
 
@@ -108,13 +108,13 @@ ipriorEMClosedForm <- function() {
 # }
 #
 # QEstep <- function(theta, Y, alpha, W.hat, w.hat, lambdaExpand, hlamFn, env) {
-#   N <- length(Y)
+#   n <- length(Y)
 #   lambda <- theta[-length(theta)]
 #   psi <- theta[length(theta)]
 #   environment(lambdaExpand) <- environment(hlamFn) <- env
 #   lambdaExpand(lambda, env = environment())
 #   hlamFn(lambda, env = environment())
-#   Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, N)
+#   Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, n)
 #   Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
 #   Q <- Q - 2 * psi * crossprod(Y - alpha, (Hlam.mat %*% w.hat))
 #   as.numeric(Q)
@@ -157,11 +157,11 @@ ipriorEMOptim2 <- function() {
 QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
                          hlamFn, env) {
   # The Q function for the E-step.
-  N <- length(Y)
+  n <- length(Y)
   environment(lambdaExpand) <- environment(hlamFn) <- env
   lambdaExpand(lambda, env = environment())
   hlamFn(lambda, env = environment())
-  Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, N)
+  Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, n)
   Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
   Q <- Q - 2 * psi * crossprod(Y - alpha, (Hlam.mat %*% w.hat))
   as.numeric(Q)

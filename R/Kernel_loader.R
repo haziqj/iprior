@@ -58,7 +58,7 @@
 #'  list corresponds to each variable. If \code{one.lam = TRUE} was called, then
 #'  you should see a single element in this list.} \item{\code{Hl}}{A list of
 #'  the kernel matrices calculated from the explanatory variables according to
-#'  the model options.} \item{\code{N, p, l, r, no.int, q}}{These are,
+#'  the model options.} \item{\code{n, p, l, r, no.int, q}}{These are,
 #'  respectively, the sample size, the number of explanatory variables, the
 #'  number of unique scale parameters, the number of higher order terms, the
 #'  number of interacting variables, and the number of kernel matrices.}}
@@ -103,7 +103,7 @@ kernL.default <- function(y, ..., model = list()) {
   x <- list(...)
   if (testXForm(x)) x <- unlist(x, recursive = FALSE)
   x <- lapply(x, as.matrix)
-  N <- length(y)
+  n <- length(y)
   p <- length(x)
 
   # Model options and checks ---------------------------------------------------
@@ -259,7 +259,7 @@ kernL.default <- function(y, ..., model = list()) {
     if (q == 1) {
       Pl <- Hl
       Psql <- list(fastSquare(Pl[[1]]))
-      Sl <- list(matrix(0, nrow = N, ncol = N))
+      Sl <- list(matrix(0, nrow = n, ncol = n))
       if (!mod$silent) setTxtProgressBar(pb, 1)
     } else {
       # Next, prepare the indices required for indxFn().
@@ -330,7 +330,7 @@ kernL.default <- function(y, ..., model = list()) {
 
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
-  kernelLoaded <- list(Y = y, x = x, Hl = Hl, N = N, p = p, l = l, r = r,
+  kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
                        no.int = no.int, q = q, BlockBstuff = BlockBstuff,
                        model = mod)
   class(kernelLoaded) <- "ipriorKernel"
@@ -396,7 +396,7 @@ print.ipriorKernel <- function(x, ...) {
   # cat(kerneltypes[3], 'RKHS loaded') } if (x$q == 1 | x$model$one.lam) cat(',
   # with a single scale parameter.\n') else cat(', with', x$q, 'scale
   # parameters.\n')
-  cat("Sample size = ", x$N, "\n")
+  cat("Sample size = ", x$n, "\n")
   cat("Number of x variables, p = ", x$p, "\n")
   cat("Number of scale parameters, l = ", x$l, "\n")
   cat("Number of interactions = ", x$no.int, "\n")
