@@ -1,32 +1,46 @@
-###
-### Update for ipriorKernel objects
-###
-
+#' Update an \code{ipriorKernel} object
+#'
+#' Function to add or delete data from a loaded  \code{ipriorKernel} object.
+#' Some complex models can't be fitted using a single formula call to
+#' \code{ipriorKernel}, so having an update function is useful in this regard.
+#'
+#' @param object An \code{ipriorKernel} object.
+#' @param add A list of any new data to be added.
+#' @param delete A character vector of variable names to delete, or a numeric
+#'   vector of positions of the data to be deleted.
+#' @param model Any changes to the list of model options (see
+#'   \code{\link{ipriorKernel}} for the list of options available.)
+#' @param ... Not used.
+#'
+#' @examples
+#' # Single non-formula vs dual formula fit using update
+#'
+#' @name update
 #' @export
 update.ipriorKernel <- function(object, add = list(), delete = NULL,
                                 model = list(), ...) {
-	x <- object$x
+  x <- object$x
 	y <- object$Y
 	mod <- object$model
 	names(mod)[3] <- "interactions"
 	mod[names(model)] <- model
 
 	if (!is.null(delete)) {
-		if(is.character(delete)) delete <- match(delete, names(x))
+		if (is.character(delete)) delete <- match(delete, names(x))
 		x <- x[-delete]
 		model$xname <- model$xname[-delete]
 	}
 
 	if (length(add) != 0) {
-		if(!is.list(add)) add <- list(add)
+		if (!is.list(add)) add <- list(add)
 		x <- c(x, add)
 	}
 
-	ipriorKernel <- kernL(y=y, x, model=mod)
-	assign(deparse(substitute(object)), ipriorKernel, envir=parent.frame())
+	ipriorKernel <- kernL(y = y, x, model = mod)
+	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
 }
 
-### DEPRECATED
+# DEPRECATED -------------------------------------------------------------------
 # # update.iprior <- function(mod, ...){
 	# newcall <- match.call()
 	# cl <- mod$fullcall

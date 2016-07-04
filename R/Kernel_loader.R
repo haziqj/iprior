@@ -42,11 +42,13 @@
 #'
 #'  These options are also available, but are only relevant when calling using
 #'  non-formula: \describe{\item{\code{yname}}{Character vector to set the name
-#'  of the response variable.} \item{\code{xname}}{Character vector to set the
-#'  name of the explanatory variables.} \item{\code{interactions}}{Character
-#'  vector to specify the interaction terms. When using formulas, this is
-#'  specified automatically. Syntax is \code{"a:b"} to indicate variable
-#'  \code{a} interacts with variable \code{b}.}}
+#'  of the response variable. It is set to the object name which contains the
+#'  response variables by default.} \item{\code{xname}}{Character vector to set
+#'  the name of the explanatory variables. This is also set to the object name
+#'  by default.} \item{\code{interactions}}{Character vector to specify the
+#'  interaction terms. When using formulas, this is specified automatically.
+#'  Syntax is \code{"a:b"} to indicate variable \code{a} interacts with variable
+#'  \code{b}.}}
 #'@param formula The formula to fit when using formula interface.
 #'@param data Data frame containing variables when using formula interface.
 #'
@@ -61,8 +63,8 @@
 #'  number of unique scale parameters, the number of higher order terms, the
 #'  number of interacting variables, and the number of kernel matrices.}}
 #'
-#'  The rest of the list are unimportant to the end-user, but they are passed
-#'  to the EM routine via a call to \code{\link{iprior}}.
+#'  The rest of the list are unimportant to the end-user, but they are passed to
+#'  the EM routine via a call to \code{\link{iprior}}.
 #'
 #' @examples
 #' str(ToothGrowth)
