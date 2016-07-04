@@ -1,3 +1,5 @@
+# The current version of the package does not benefit from this update() function
+# currently. Decide to not export this for now.
 #' Update an \code{ipriorKernel} object
 #'
 #' Function to add or delete data from a loaded  \code{ipriorKernel} object.
@@ -13,32 +15,40 @@
 #' @param ... Not used.
 #'
 #' @examples
-#' # Single non-formula vs dual formula fit using update
+#' # Single non-formula vs dual formula fit of squared terms using update
+#' # Non-formula way
+#' mod.single <- kernL(stack.loss, stack.x, stack.x ^ 2,
+#'                     model = list(order = c("1", "1^2")))
+#'
+#' # Equivalent formula way
+#' mod.dual <- kernL(stack.loss ~ ., stackloss)
+#' stack.x2 <- stack.x^2
+#' update(mod.dual, add = list(stack.x2), model = list(order = c("1", "1^2")))
 #'
 #' @name update
 #' @export
-update.ipriorKernel <- function(object, add = list(), delete = NULL,
-                                model = list(), ...) {
-  x <- object$x
-	y <- object$Y
-	mod <- object$model
-	names(mod)[3] <- "interactions"
-	mod[names(model)] <- model
-
-	if (!is.null(delete)) {
-		if (is.character(delete)) delete <- match(delete, names(x))
-		x <- x[-delete]
-		model$xname <- model$xname[-delete]
-	}
-
-	if (length(add) != 0) {
-		if (!is.list(add)) add <- list(add)
-		x <- c(x, add)
-	}
-
-	ipriorKernel <- kernL(y = y, x, model = mod)
-	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
-}
+# update.ipriorKernel <- function(object, add = list(), delete = NULL,
+#                                 model = list(), ...) {
+#   x <- object$x
+# 	y <- object$Y
+# 	mod <- object$model
+# 	names(mod)[3] <- "interactions"
+# 	mod[names(model)] <- model
+#
+# 	if (!is.null(delete)) {
+# 		if (is.character(delete)) delete <- match(delete, names(x))
+# 		x <- x[-delete]
+# 		model$xname <- model$xname[-delete]
+# 	}
+#
+# 	if (length(add) != 0) {
+# 		if (!is.list(add)) add <- list(add)
+# 		x <- c(x, add)
+# 	}
+#
+# 	ipriorKernel <- kernL(y = y, x, model = mod)
+# 	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
+# }
 
 # DEPRECATED -------------------------------------------------------------------
 # # update.iprior <- function(mod, ...){

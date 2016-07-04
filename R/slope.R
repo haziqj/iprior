@@ -1,34 +1,50 @@
-#' Function which returns the Variance of Y and log-likelihood value.
+#' Recover the betas (slopes) of the regression curves
 #'
-#' \code{slope} returns the slopes.
+#' Since an I-prior model does not deal with the betas (slopes or coefficients
+#' of an ordinary linear model), this function calculates the slopes of the
+#' regression curves based on the fitted values. While it is meant for Canonical
+#' RKHS functions, it still works for FBM RKHS, in that the slopes returned
+#' would be the "average" slope, i.e. the slope of the fitted straight line
+#' through the fitted I-prior values. Currently, only models with one
+#' explanatory variable are supported.
 #'
-#' Details.
 #'
-#' @param ipriorMod Object of class "ipriorMod"
 #'
-#' @return What.
+#' @param object Object of class "ipriorMod"
+#'
+#' @return The slopes of the fitted regression curves.
 #'
 #' @examples
-#' mod.iprior <- iprior(stack.loss ~ Air.Flow, data=stackloss)
+#' mod.iprior <- iprior(stack.loss ~ Air.Flow, data = stackloss)
 #' slope(mod.iprior)
 #'
 #' @export
-slope <- function(ipriorMod){
-	if (!is.ipriorMod(ipriorMod)) stop("Input iprior class models only.", call.=F)
+slope <- function(object){
+	if (!is.ipriorMod(object)) {
+	  stop("Input objects of class ipriorMod only.", call. = FALSE)
+	}
 
-	y <- ipriorMod$fitted.values
-	x <- ipriorMod$ipriorKernel$x
-	whichPearson <- ipriorMod$ipriorKernel$whichPearson
+	y <- object$fitted.values
+	x <- object$ipriorKernel$x
+	whichPearson <- isPea(object$ipriorKernel$model$kernel)
+	whichCan <- isCan(object$ipriorKernel$model$kernel)
+	if (sum(whichPearson, whichCan) > 1) {
+	  stop("Functionality not supported yet for more than 2 variables.",
+	       call. = FALSE)
+	}
+	# if (any(isFBM(object$ipriorKernel$kernel))) {
+	#   stop("Functionality is only meant for Canonical kernels.", call. = FALSE)
+	# }
 	dat <- cbind(y, as.data.frame(x))
+	browser()
 	if (any(whichPearson)) {
-		grp <- dat[[which(whichPearson)+1]]
+		grp <- dat[[which(whichPearson) + 1]]
 		dat <- split(dat, grp)
-		res <- sapply(dat, function(x) coef(lm(x[,1]~x[,2]))[2] )
+		res <- sapply(dat, function(x) coef(lm(x[, 1] ~ x[, 2]))[2])
 		names(res) <- levels(grp)
 	} else {
-		res <- coef(lm(dat[,1]~dat[,2]))[2]
+		res <- coef(lm(dat[, 1] ~ dat[, 2]))[2]
 		names(res) <- "slope"
 	}
 	res
 }
-

@@ -2,19 +2,38 @@
 % Please edit documentation in R/progress.R
 \name{progress}
 \alias{progress}
-\title{Progress for fitted \code{ipriorMod} object}
+\title{EM algorithm progression results for fitted \code{ipriorMod} objects}
 \usage{
-progress(x, interval = c("auto", "all", "input any number"))
+progress(object, interval = c("auto", "all", "input any number"))
 }
 \arguments{
-\item{x}{x}
+\item{object}{An object of class \code{ipriorMod}.}
 
-\item{interval}{interval}
+\item{interval}{(optional) One of \code{"auto"}, \code{"all"}, or any number.
+This is an option to control how many EM iterations are displayed. Defaults
+to \code{"auto"}.}
 }
 \description{
-Description.
+A table showing, for eac EM iteration, the log-likelihood values, predicted
+log-likelihood value, the change in log-likelihood value from the previous
+iteration, and the progression, or trace, of the parameters. This table can
+be called even if \code{silent = TRUE} or \code{progress = "none"} was called
+when fitting the \code{ipriorMod} object.
 }
 \details{
-Details.
+This is useful for diagnosing the EM algorithm, and for example, to obtain
+the "traceplot" of the parameters. Note that the zeroth and final iterations
+will always be shown in the table.
+}
+\examples{
+mod <- iprior(len ~ . ^ 2, ToothGrowth, control = list(silent = TRUE))
+progress(mod)
+
+# Works even when progress = "none" option called
+mod <- iprior(len ~ . ^ 2, ToothGrowth, control = list(progress = "none"))
+progress(mod, 50)
+prog <- progress(mod, "all")
+plot(prog$lambda1, type = "l")
+
 }
 

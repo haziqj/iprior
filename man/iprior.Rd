@@ -42,11 +42,13 @@
 
  These options are also available, but are only relevant when calling using
  non-formula: \describe{\item{\code{yname}}{Character vector to set the name
- of the response variable.} \item{\code{xname}}{Character vector to set the
- name of the explanatory variables.} \item{\code{interactions}}{Character
- vector to specify the interaction terms. When using formulas, this is
- specified automatically. Syntax is \code{"a:b"} to indicate variable
- \code{a} interacts with variable \code{b}.}}}
+ of the response variable. It is set to the object name which contains the
+ response variables by default.} \item{\code{xname}}{Character vector to set
+ the name of the explanatory variables. This is also set to the object name
+ by default.} \item{\code{interactions}}{Character vector to specify the
+ interaction terms. When using formulas, this is specified automatically.
+ Syntax is \code{"a:b"} to indicate variable \code{a} interacts with variable
+ \code{b}.}}}
 
 \item{control}{(optional) List of control options for EM algorithm and
 output.}
