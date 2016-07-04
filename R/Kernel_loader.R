@@ -190,8 +190,8 @@ kernL.default <- function(y, ..., model = list()) {
   suppressWarnings(cond1 <- is.null(mod$xname))
   suppressWarnings(cond2 <- any(names(x) == ""))
   suppressWarnings(cond3 <- any(is.na(names(x))))
+  cl <- match.call()
   if (cond1 | cond2 | cond3) {
-    cl <- match.call()
     m <- match(c("y", "model", "control"), names(cl), 0L)
     xnamefromcall <- as.character(cl[-m])[-1]
     mod$xname <- xnamefromcall
@@ -199,6 +199,11 @@ kernL.default <- function(y, ..., model = list()) {
   suppressWarnings(here <- which((names(x) != "") & !is.na(names(x))))
   mod$xname[here] <- names(x)[here]
   names(x) <- mod$xname[1:p]
+
+  # Set up name for y variable -------------------------------------------------
+  ynamefromcall <- as.character(cl[2])
+  check.yname <- mod$yname == "y"
+  if (check.yname) mod$yname <- ynamefromcall
 
   # Set up names for lambda parameters -----------------------------------------
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
