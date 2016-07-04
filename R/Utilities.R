@@ -1,6 +1,6 @@
 triangIndex <- function(k){
   # Function to list row and column index of upper triangular matrix including
-  # diagonals
+  # diagonals.
   w <- 1:k
   cbind(
     row = rep(w, times = length(w):1 ) ,
@@ -77,19 +77,14 @@ hMatList <- function(x, kernel, intr, no.int, gamma,
 indxFn <- function(k) {
   # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
   # ind2 are created in kernL().
-	ind.int1 <- intr[1,]==k; ind.int2 <- intr[2,]==k	#locating var/kernel matrix
-	ind.int <- which(ind.int1 | ind.int2)				#of interactions (out of 1:no.int)
-	k.int <- ind.int+p	#which kernel matrix has interactions involves k
-	k.int.lam <- c(intr[1,][ind.int2], intr[2,][ind.int1])	#which lambdas has interaction with k
-	nok <- (1:p)[-k]	#all variables excluding k
-	k.noint <- which(!(ind.int1 | ind.int2)) + p	#the opposite of k.int
+	ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k	# locating var/kernel matrix
+	ind.int <- which(ind.int1 | ind.int2)  # of interactions (out of 1:no.int)
+	k.int <- ind.int + p	# which kernel matrix has interactions involves k
+	k.int.lam <- c(intr[1, ][ind.int2], intr[2, ][ind.int1])	# which has interaction with k?
+	nok <- (1:p)[-k]	# all variables excluding k
+	k.noint <- which(!(ind.int1 | ind.int2)) + p	# the opposite of k.int
 
-	find.H2 <- function(z){ #this function finds position of H2
-		x <- z[1]; y <- z[2]
-		which( (ind1==x & ind2==y) | (ind2==x & ind1==y) )
-	}
-
-	### P.mat %*% R.mat + R.mat %*% P.mat indices
+	# P.mat %*% R.mat + R.mat %*% P.mat indices ----------------------------------
 	za <- which((ind1 %in% k & ind2 %in% nok) | (ind2 %in% k & ind1 %in% nok))
 	grid.PR <- expand.grid(k.int, nok)
 	zb <- which(	(ind1 %in% grid.PR[,1] & ind2 %in% grid.PR[,2]) |
@@ -97,33 +92,43 @@ indxFn <- function(k) {
 	)
 	grid.PR.lam <- expand.grid(k.int.lam, nok)
 
-	### P.mat %*% U.mat + U.mat %*% P.mat indices
+	# P.mat %*% U.mat + U.mat %*% P.mat indices ----------------------------------
 	grid.PU1 <- expand.grid(k, k.noint)
-	zc <- which(	(ind1 %in% grid.PU1[,1] & ind2 %in% grid.PU1[,2]) |
-					(ind2 %in% grid.PU1[,1] & ind1 %in% grid.PU1[,2])
-	)
+	zc <- which((ind1 %in% grid.PU1[,1] & ind2 %in% grid.PU1[,2]) |
+					    (ind2 %in% grid.PU1[,1] & ind1 %in% grid.PU1[,2]))
 	grid.PU2 <- expand.grid(k.int, k.noint)
-	zd <- apply(grid.PU2, 1, find.H2)
+	zd <- apply(grid.PU2, 1, findH2, ind1 = ind1, ind2 = ind2)
 	grid.PU.lam <- expand.grid(k.int.lam, k.noint)
 
-	### P.mat %*% P.mat indices
+	# P.mat %*% P.mat indices ----------------------------------------------------
 	grid.Psq <- t(combn(c(k, k.int), 2))
-	ze <- apply(grid.Psq, 1, find.H2)
+	ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2 )
 	grid.Psq.lam <- NULL
-	if(length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
+	if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
 
-	list(	k.int=k.int, k.int.lam=k.int.lam,
-			PRU=c(za,zc,zb,zd),
-			PRU.lam1=c(	rep(0, length(nok)+length(k.noint)),
-						grid.PR.lam[,1],
-						grid.PU.lam[,1]	),
-			PRU.lam2=c(nok, k.noint, grid.PR.lam[,2], grid.PU.lam[,2]),
-			Psq=c(k, k.int), Psq.lam=k.int.lam,
-			P2=ze, P2.lam1=grid.Psq.lam[,1], P2.lam2=grid.Psq.lam[,2]
+	list(
+	    k.int     = k.int,
+	    k.int.lam = k.int.lam,
+			PRU       = c(za,zc,zb,zd),
+			PRU.lam1  = c(rep(0, length(nok) + length(k.noint)),
+			            grid.PR.lam[,1],
+			            grid.PU.lam[,1]),
+			PRU.lam2  = c(nok, k.noint, grid.PR.lam[,2], grid.PU.lam[,2]),
+			Psq       = c(k, k.int),
+			Psq.lam   = k.int.lam,
+			P2        = ze,
+			P2.lam1   = grid.Psq.lam[,1],
+			P2.lam2   = grid.Psq.lam[,2]
 	)
 }
 
-### Flatten function
+findH2 <- function(z, ind1, ind2){
+  # This function finds position of H2 (cross-product terms of H). Used in
+  # indxFn()
+  x <- z[1]; y <- z[2]
+  which((ind1 == x & ind2 == y) | (ind2 == x & ind1 == y))
+}
+
 # flatten <- function(x) {
 	# len <- sum(rapply(x, function(x) 1L))
 	# y <- vector("list", len)
@@ -131,7 +136,6 @@ indxFn <- function(k) {
 	# rapply(x, function(x) { i <<- i+1L; y[[i]] <<- x })
 	# y
 # }
-#
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after

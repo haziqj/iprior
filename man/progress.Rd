@@ -14,7 +14,7 @@ This is an option to control how many EM iterations are displayed. Defaults
 to \code{"auto"}.}
 }
 \description{
-A table showing, for eac EM iteration, the log-likelihood values, predicted
+A table showing, for each EM iteration, the log-likelihood values, predicted
 log-likelihood value, the change in log-likelihood value from the previous
 iteration, and the progression, or trace, of the parameters. This table can
 be called even if \code{silent = TRUE} or \code{progress = "none"} was called

@@ -6,19 +6,57 @@ iprior <- function(...) {
 
 #' Fit an I-prior regression model
 #'
-#' Description
+#' A function to perform linear regression using I-priors. The I-prior model is
+#' fitted via maximum likelihood using an EM algorithm.
 #'
-#' Details
+#' The \code{iprior()} function is able to take formula based input and
+#' non-formula. When not using formula, the syntax is as per the default S3
+#' method. That is, the response variable is the vector \code{y}, and any
+#' explanatory variables should follow this, and separated by commas.
+#'
+#' As described \link[kernL]{here}, the model can be loaded first into an
+#' \code{ipriorKernel} object, and then passed to the \code{iprior()} function
+#' to perform the EM algorithm.
+#'
+#' If an \code{ipriorMod} object is input, then the EM starts from the last
+#' obtained parameter values. This is particularly useful for very heavy models,
+#' or models which have not yet converged after reaching the maximum number of
+#' iterations. Running \code{iprior()} just continues the EM algorithm.
+#'
+#' There are several model options available which primarily controls the number
+#' and placement of scale parameters \code{lambda} in the model, although these
+#' are not applicable when running the function on \code{ipriorMod} or
+#' \code{ipriorKernel} objects.
 #'
 #' @inheritParams kernL
 #' @param object This is either an object of class formula (when fitting using
-#'   formula interface), \code{ipriorKernel} or \code{ipriorModel}. When left
-#'   \code{NULL}, then \code{y} must be used, along with the
-#'   covariates/independent variables.
-#' @param control (optional) List of control options for EM algorithm and
-#'   output.
+#'   formula interface), \code{ipriorKernel} or \code{ipriorModel}. This is used
+#'   when not using formula or \code{"y, x"} input.
+#' @param control (optional) A list of control options for the EM algorithm and
+#'   output: \describe{\item{\code{maxit}}{The maximum number of iterations
+#'   until the EM stops. Defaults to \code{50000}} \item{\code{stop.crit}.}{The
+#'   EM stopping criteria, which is the difference in succesive log-likelihood
+#'   values. Defaults to \code{1e-7}.} \item{\code{progress}}{Option for the
+#'   reporting of the EM while the function is running. Choose from one of
+#'   \code{"lite"} (default), \code{"full"} (log-likelihood and parameters
+#'   trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.}
+#'   \item{\code{report}}{The EM reports every \code{report} iterations.
+#'   Defaults to \code{100}.} \item{\code{silent}}{Logical, whether the EM
+#'   report should be printed or not. This is the same as setting \code{progress
+#'   = "none"}.} }
 #'
-#' @return An object of class \code{ipriorMod}.
+#' @return An object of class \code{ipriorMod} which is a list of 24 items. The
+#'   more important items are described below.
+#'   \describe{
+#'   \item{\code{alpha, lambda, psi, coefficients, sigma}}{The last attained parameter values after running the EM algorithm. This can also be extracted via \code{coef()}}
+#'   \item{\code{log.lik}}{The last attained log-likelihood value. This can also be extracted via \code{logLik()}.}
+#'   \item{\code{no.iter}}{The number of iterations the EM algorithm ran for.}
+#'   \item{\code{Hlam.mat}}{This is the scaled kernel matrix of dimension \code{n} by \code{n}.}
+#'   \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal distribution of \code{y}.}
+#'   \item{\code{w.hat}}{The vector of posterior mean estimates of the I-prior random effects.}
+#'   \item{\code{fitted.values}}{These are posterior estimates of \code{y}, i.e. the fitted values. This can also be extracted via \code{fitted()} or \code{\link{predict}()}}
+#'   \item{\code{residuals}}{The vector of residuals. This can also be extracted via \code{resid()}.}
+#'   }
 #'
 #' @examples
 #' # Formula based input
