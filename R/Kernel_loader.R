@@ -1,29 +1,99 @@
-#' Load the kernel matrices for \code{iprior} fit
+#'Load the kernel matrices of an I-prior model
 #'
-#' Description.
+#'Prepare the kernel matrices according to a user available model options list.
+#'This is then passed to the \code{\link{iprior}} function for model fitting.
+#'Both formula and non-formula input are supported.
 #'
-#' Details.
+#'When using non-formula to load the model, the explanatory variables can either
+#'be vectors, matrices or data frames. These need to be entered one by one in
+#'the function call, separated by commas. This is because each entry will have
+#'one scale parameter attached to it. Like the \code{\link{iprior}} function,
+#'grouping the scale parameters can only be done using non-formula input (see
+#'examples).
 #'
-#' @param y Vector of response variables.
-#' @param ... Only for when fitting using non-formula, enter the variables
-#'   (vectors or matrices) separated by commas. No other options applicable
-#'   here.
-#' @param model (optional) List of model options. Not used for
-#'   \code{ipriorKernel} or \code{ipriorModel} objects.
-#' @param formula The formula to fit when using formula interface.
-#' @param data Data frame containing variables when using formula interface.
+#'Sometimes, the model to be fitted can be quite complex and heavy for the EM
+#'algorithm. Loading the data into an \code{ipriorKernel} object does the heavy
+#'matrix matrix operations upfront, and passed on to the EM routine when
+#'\code{\link{iprior}} is called.
 #'
-#' @return an object of class ipriorKernel.
+#'One advantage of having a saved \code{ipriorKernel} object is that we are able
+#'to use any R optimiser and maximise the log-likelihood of the I-prior model in
+#'conjunction with \code{\link{logLik}} or \code{\link{deviance}} functions.
+#'
+#'@param y Vector of response variables.
+#'@param ... Only used for when fitting using non-formula, enter the variables
+#'  (vectors or matrices) separated by commas. No other options applicable here.
+#'@param model List of model options. Not used for \code{ipriorKernel} or
+#'  \code{ipriorModel} objects. Available options are:
+#'  \describe{\item{\code{kernel}}{Vector of character strings of either
+#'  \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
+#'  \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
+#'  type objects.} \item{\code{Hurst}}{The value of the Hurst coefficient when
+#'  using the \code{FBM} kernel. This is a value between 0 and 1. Defaults to
+#'  0.5.}\item{\code{order}}{Character vector of length equal to the number of
+#'  explanatory variables used, indicating specification of higher order scale
+#'  parameters. The syntax is \code{"a^b"}, for parameter \code{a} raised to the
+#'  power \code{b}. For regular order terms, then just input "a".}
+#'  \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to \code{FALSE} to
+#'  assign one scale parameter for all kernel matrices.}
+#'  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
+#'  using the formula call. Should all the variable share the same scale
+#'  parameter?}}
+#'
+#'  These options are also available, but are only relevant when calling using
+#'  non-formula: \describe{\item{\code{yname}}{Character vector to set the name
+#'  of the response variable.} \item{\code{xname}}{Character vector to set the
+#'  name of the explanatory variables.} \item{\code{interactions}}{Character
+#'  vector to specify the interaction terms. When using formulas, this is
+#'  specified automatically. Syntax is \code{"a:b"} to indicate variable
+#'  \code{a} interacts with variable \code{b}.}}
+#'@param formula The formula to fit when using formula interface.
+#'@param data Data frame containing variables when using formula interface.
+#'
+#'@return A list of 11 items. Some of the more important ones are described
+#'  below. \describe{ \item{\code{Y}}{The response variable.}
+#'  \item{\code{x}}{The explanatory variables in list form. Each element of the
+#'  list corresponds to each variable. If \code{one.lam = TRUE} was called, then
+#'  you should see a single element in this list.} \item{\code{Hl}}{A list of
+#'  the kernel matrices calculated from the explanatory variables according to
+#'  the model options.} \item{\code{N, p, l, r, no.int, q}}{These are,
+#'  respectively, the sample size, the number of explanatory variables, the
+#'  number of unique scale parameters, the number of higher order terms, the
+#'  number of interacting variables, and the number of kernel matrices.}}
+#'
+#'  The rest of the list are unimportant to the end-user, but they are passed
+#'  to the EM routine via a call to \code{\link{iprior}}.
 #'
 #' @examples
 #' str(ToothGrowth)
-#' mod <- kernL(y = ToothGrowth$len, supp = ToothGrowth$supp,
-#'              dose = ToothGrowth$dose, model = list(interactions="1:2"))
+#' mod <- kernL(y = ToothGrowth$len,
+#'              supp = ToothGrowth$supp,
+#'              dose = ToothGrowth$dose,
+#'              model = list(interactions="1:2"))
 #' summary(mod)
-#' \dontrun{mod <- kernL(len ~ supp * dose, data = ToothGrowth)  # also accepts
-#' formula}
+#' kernL(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
+#' kernL(len ~ supp * dose, data = ToothGrowth,
+#'       model = list(parsm = TRUE))  # non-parsimonious option
+#' # Choosing different kernels
+#' str(stackloss)
+#' kernL(stack.loss ~ ., data = stackloss,
+#'       model = list(kernel = "FBM"))  # all FBM
+#' kernL(stack.loss ~ ., data = stackloss,
+#'       model = list(kernel = c("Canonical", "FBM", "Canonical"))
 #'
-#' @export
+#' # Specifying higher order terms
+#' kernL(stack.loss ~ Air.Flow + I(Air.Flow^2) + ., data = stackloss,
+#'       model = list(order = c("1", "1^2", "3", "4")))
+#'
+#' # If all scale parameters are the same, then use one.lam = TRUE
+#' kernL(stack.loss ~ ., data = stackloss,
+#'       model = list(one.lam = TRUE))
+#'
+#' # You can rename the variables too
+#' kernL(stack.loss ~ ., data = stackloss,
+#'       model = list(yname = "response", xname = c("air", "water", "acid")))
+#'
+#'@export
 kernL <- function(y, ..., model = list()) UseMethod("kernL")
 
 #' @export
@@ -193,8 +263,8 @@ kernL.default <- function(y, ..., model = list()) {
         pb <- txtProgressBar(min = 0, max = length(c(ind1, z)), style = 3,
                              width = 47)
       }
-      # Prepare the cross-product terms of squared kernel matrices. This is a list
-      # of q_choose_2.
+      # Prepare the cross-product terms of squared kernel matrices. This is a
+      # list of q_choose_2.
       for (j in 1:length(ind1)) {
         H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]] +
           Hl[[ind2[j]]] %*% Hl[[ind1[j]]]
@@ -254,8 +324,8 @@ kernL.default <- function(y, ..., model = list()) {
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
   kernelLoaded <- list(Y = y, x = x, Hl = Hl, N = N, p = p, l = l, r = r,
-                       no.int = no.int, q = q, whichPearson = whichPearson,
-                       BlockBstuff = BlockBstuff, model = mod)
+                       no.int = no.int, q = q, BlockBstuff = BlockBstuff,
+                       model = mod)
   class(kernelLoaded) <- "ipriorKernel"
   kernelLoaded
 }
@@ -279,7 +349,7 @@ kernL.formula <- function(formula, data, model = list(), ...) {
     stop("iprior does not currently work with higher order interactions.")
   }
   tmpf <- attr(tt, "factors")
-  tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  #this obtains 2nd order interactions
+  tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  # this obtains 2nd order interactions
   int2 <- apply(tmpf2, 2, function(x) which(x == 1))
   if (any(tmpo == 2)) interactions <- int2
 

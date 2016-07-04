@@ -20,12 +20,33 @@
 \arguments{
 \item{y}{Vector of response variables.}
 
-\item{...}{Only for when fitting using non-formula, enter the variables
-(vectors or matrices) separated by commas. No other options applicable
-here.}
+\item{...}{Only used for when fitting using non-formula, enter the variables
+(vectors or matrices) separated by commas. No other options applicable here.}
 
-\item{model}{(optional) List of model options. Not used for
-\code{ipriorKernel} or \code{ipriorModel} objects.}
+\item{model}{List of model options. Not used for \code{ipriorKernel} or
+ \code{ipriorModel} objects. Available options are:
+ \describe{\item{\code{kernel}}{Vector of character strings of either
+ \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
+ \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
+ type objects.} \item{\code{Hurst}}{The value of the Hurst coefficient when
+ using the \code{FBM} kernel. This is a value between 0 and 1. Defaults to
+ 0.5.}\item{\code{order}}{Character vector of length equal to the number of
+ explanatory variables used, indicating specification of higher order scale
+ parameters. The syntax is \code{"a^b"}, for parameter \code{a} raised to the
+ power \code{b}. For regular order terms, then just input "a".}
+ \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to \code{FALSE} to
+ assign one scale parameter for all kernel matrices.}
+ \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
+ using the formula call. Should all the variable share the same scale
+ parameter?}}
+
+ These options are also available, but are only relevant when calling using
+ non-formula: \describe{\item{\code{yname}}{Character vector to set the name
+ of the response variable.} \item{\code{xname}}{Character vector to set the
+ name of the explanatory variables.} \item{\code{interactions}}{Character
+ vector to specify the interaction terms. When using formulas, this is
+ specified automatically. Syntax is \code{"a:b"} to indicate variable
+ \code{a} interacts with variable \code{b}.}}}
 
 \item{control}{(optional) List of control options for EM algorithm and
 output.}
