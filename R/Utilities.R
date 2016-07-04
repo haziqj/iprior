@@ -142,3 +142,11 @@ findH2 <- function(z, ind1, ind2){
   # yourself when your package is unloaded.
   library.dynam.unload("iprior", libpath)
 }
+
+# Hacky way to pass R CMD CHECK "no visible binding" note ----------------------
+globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
+                  "V", "Var.Y.inv", "VarY.inv", "W.hat", "Y", "alpha",
+                  "force.nlm", "force.regEM", "hlamFn", "ind1", "ind2", "intr",
+                  "ipriorEM.env", "l", "lambda", "maxit", "model", "n", "nlm",
+                  "no.int", "one.lam", "p", "parsm", "psi", "r", "report", "s",
+                  "stop.crit", "u", "w.hat", "x", "x0"))

@@ -89,7 +89,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, lambda = NULL,
               psi = abs(rnorm(1)), progress = "lite", silent = FALSE,
-              force.regEM = FALSE, force.nlm = TRUE)
+              force.regEM = FALSE, force.nlm = FALSE)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -327,7 +327,7 @@ print.ipriorSummary <- function(x, ...) {
   psi.and.se <- x$psi.and.se
   sigma <- 1/sqrt(psi.and.se[1])
   sesigma <- psi.and.se[2] * sigma ^ 3 / 2
-  printCoefmat(tab, P.value = T, has.Pvalue = T)
+  printCoefmat(tab, P.values = TRUE, has.Pvalue = TRUE)
   cat("\n")
   if (x$converged) {
     cat("EM converged to within", x$stop.crit, "tolerance.")

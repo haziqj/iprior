@@ -1,7 +1,7 @@
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, lambda.init = NULL, psi.init = NULL,
                      clean = FALSE, paramprogress = FALSE, force.regEM = FALSE,
-                     force.nlm = TRUE){
+                     force.nlm = FALSE){
   # This is the EM algorithm engine which estimates the I-prior model
   # parameters.
   #

@@ -39,18 +39,21 @@ BlockA <- function(){
   lambdaExpand()
   hlamFn()
   A <- Hlam.mat
-  s <<- 1/psi
+  assign("s", 1/psi, envir = parent.frame())
   tmp <- eigenCpp(A)  # a C++ alternative
-  u <<- psi * tmp$val ^ 2
-  V <<- tmp$vec
-  is.VarYneg <<- F; is.VarYneg <<- any(u + s < 0)
+  assign("u", psi * tmp$val ^ 2, envir = parent.frame())
+  assign("V", tmp$vec, envir = parent.frame())
+  assign("is.VarYneg", FALSE, envir = parent.frame())
+  assign("is.VarYneg", any(u + s < 0), envir = parent.frame())
 }
 
 BlockC <- function(){
   # Block C update function
-  VarY.inv <<- linSolvInv()
-  w.hat <<- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
-  W.hat <<- VarY.inv + tcrossprod(w.hat)
+  assign("VarY.inv", linSolvInv(), envir = parent.frame())
+  w.hat <- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
+  W.hat <- VarY.inv + tcrossprod(w.hat)
+  assign("w.hat", w.hat, envir = parent.frame())
+  assign("W.hat", W.hat, envir = parent.frame())
 }
 
 logLikEM <- function(){
@@ -61,19 +64,21 @@ logLikEM <- function(){
   as.numeric(log.lik)
 }
 
-alphaUpdate <- function() {
-  # DEPRECATED - MLE for alpha is actually mean(Y). This was used to be called
-  # in the EM routines below.
-  tmp.alpha <- crossprod(matrix(1, ncol = 1, nrow = n), Var.Y.inv)
-  alpha <<- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
-}
+# alphaUpdate <- function() {
+#   # DEPRECATED - MLE for alpha is actually mean(Y). This was used to be called
+#   # in the EM routines below.
+#   tmp.alpha <- crossprod(matrix(1, ncol = 1, nrow = n), Var.Y.inv)
+#   alpha <- as.vector(tcrossprod(Y, tmp.alpha) / tcrossprod(x0, tmp.alpha))
+#   assign("alpha", alpha, envir = parent.frame())
+# }
 
 psiUpdate <- function() {
   # The common psi update routine in the EM routine below.
   Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
   T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
     2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
-  psi <<- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
+  psi <- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
+  assign("psi", psi, envir = parent.frame())
 }
 
 ipriorEMClosedForm <- function() {
@@ -82,17 +87,20 @@ ipriorEMClosedForm <- function() {
   # closed form.
 
   # Update for lambda ----------------------------------------------------------
+  lambda <- rep(NA, l)
   for (k in 1:l) {
     BlockB(k)
     T1 <- sum(Psql[[k]] * W.hat)
     T2 <- 2 * crossprod(Y - alpha, crossprod(Pl[[k]], w.hat)) -
           sum(Sl[[k]] * W.hat)
-    lambda[k] <<- as.vector(T2 / (2 * T1))
+    lambda[k] <- as.vector(T2 / (2 * T1))
   }
+  assign("lambda", lambda, envir = parent.frame())
 
   # Update for psi -------------------------------------------------------------
   environment(psiUpdate) <- environment()
   psiUpdate()
+  assign("psi", psi, envir = parent.frame())
 }
 
 # ipriorEMOptim <- function() {
@@ -103,8 +111,9 @@ ipriorEMClosedForm <- function() {
 #                      Y = Y, alpha = alpha, W.hat = W.hat, w.hat = w.hat,
 #                      lambdaExpand = lambdaExpand, hlamFn = hlamFn,
 #                      env = ipriorEM.env)$par
-#   lambda <<- theta.new[-length(theta.new)]
-#   psi <<- theta.new[length(theta.new)]
+#   assign("lambda", theta.new[-length(theta.new)], envir = parent.frame())
+#   assign("psi", theta.new[length(theta.new)], envir = parent.frame())
+#
 # }
 #
 # QEstep <- function(theta, Y, alpha, W.hat, w.hat, lambdaExpand, hlamFn, env) {
@@ -136,6 +145,7 @@ ipriorEMOptim1 <- function() {
   # Update for psi -------------------------------------------------------------
   environment(psiUpdate) <- environment()
   psiUpdate()
+  assign("psi", psi, envir = parent.frame())
 }
 
 ipriorEMOptim2 <- function() {
@@ -152,6 +162,7 @@ ipriorEMOptim2 <- function() {
   # Update for psi -------------------------------------------------------------
   environment(psiUpdate) <- environment()
   psiUpdate()
+  assign("psi", psi, envir = parent.frame())
 }
 
 QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
@@ -180,6 +191,7 @@ ipriorEMnlm <- function() {
   # Update for psi -------------------------------------------------------------
   environment(psiUpdate) <- environment()
   psiUpdate()
+  assign("psi", psi, envir = parent.frame())
 }
 
 decimalPlaces <- function(x){
