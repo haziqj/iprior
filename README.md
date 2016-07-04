@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
 
->**[v0.5.1](https://github.com/haziqjamil/iprior/releases/tag/v0.5.1) UPDATED: 28/6/16. Two-stage fitting now possible with `kernL()`.**
+>**[v0.6](https://github.com/haziqjamil/iprior/releases/tag/v0.6) UPDATED: 4/7/16. Documentation complete.**
 
 Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy. 
 
