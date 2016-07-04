@@ -1,7 +1,7 @@
 Package: iprior
 Type: Package
 Title: Linear Regression using I-priors
-Version: 0.6
+Version: 1.0.0
 Date: 2016-05-27
 Author: Haziq Jamil
 Maintainer: Haziq Jamil <h.jamil@lse.ac.uk>
