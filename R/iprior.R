@@ -14,7 +14,7 @@ iprior <- function(...) {
 #' method. That is, the response variable is the vector \code{y}, and any
 #' explanatory variables should follow this, and separated by commas.
 #'
-#' As described \link[kernL]{here}, the model can be loaded first into an
+#' As described \link[=kernL]{here}, the model can be loaded first into an
 #' \code{ipriorKernel} object, and then passed to the \code{iprior()} function
 #' to perform the EM algorithm.
 #'

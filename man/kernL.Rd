@@ -89,24 +89,24 @@ mod <- kernL(y = ToothGrowth$len,
              supp = ToothGrowth$supp,
              dose = ToothGrowth$dose,
              model = list(interactions="1:2"))
-summary(mod)
+mod
 kernL(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
 kernL(len ~ supp * dose, data = ToothGrowth,
       model = list(parsm = TRUE))  # non-parsimonious option
+
 # Choosing different kernels
 str(stackloss)
 kernL(stack.loss ~ ., data = stackloss,
       model = list(kernel = "FBM"))  # all FBM
 kernL(stack.loss ~ ., data = stackloss,
-      model = list(kernel = c("Canonical", "FBM", "Canonical"))
+      model = list(kernel = c("Canonical", "FBM", "Canonical")))
 
 # Specifying higher order terms
 kernL(stack.loss ~ Air.Flow + I(Air.Flow^2) + ., data = stackloss,
-      model = list(order = c("1", "1^2", "3", "4")))
+      model = list(order = c("1", "1^2", "2", "3")))
 
 # If all scale parameters are the same, then use one.lam = TRUE
-kernL(stack.loss ~ ., data = stackloss,
-      model = list(one.lam = TRUE))
+kernL(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
 
 # You can rename the variables too
 kernL(stack.loss ~ ., data = stackloss,

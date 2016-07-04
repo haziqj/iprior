@@ -30,19 +30,19 @@ progress <- function(object, interval = c("auto", "all", "input any number")) {
 	if (class(object) != "ipriorMod") {
 	  stop("Input ipriorMod class objectsonly.", call. = FALSE)
 	}
-	if (!x$converged) warning("The EM has not yet converged.", call. = FALSE)
-	rn <- rownames(x$res.loglik)
+	if (!object$converged) warning("The EM has not yet converged.", call. = FALSE)
+	rn <- rownames(object$res.loglik)
 
 	# Parameters -----------------------------------------------------------------
-	res <- x$res.loglik
+	res <- object$res.loglik
 	cn <- c("Log-likelihood", "Pred.log-lik.", "Delta(i,i-1)",
-	        colnames(x$res.param)[-1])
-	res <- cbind(res, x$res.param[, -1])
+	        colnames(object$res.param)[-1])
+	res <- cbind(res, object$res.param[, -1])
 	res <- as.data.frame(res, row.names = rn)
 	colnames(res) <- cn
 
 	# Trim the table -------------------------------------------------------------
-	no.iter <- x$no.iter
+	no.iter <- object$no.iter
 	if (!is.numeric(interval)) interval <- match.arg(interval)
 	if (interval == "auto") interval <- max(no.iter %/% 8, 1)
 	if (interval == "all") interval <- 1

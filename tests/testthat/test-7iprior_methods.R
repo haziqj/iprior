@@ -49,4 +49,11 @@ test_that("Methods for higher order fit",{
 
 })
 
+test_that("Progress function",{
+
+  mod <- iprior(len ~ . ^ 2, ToothGrowth, control = list(progress = "none"))
+  tmp <- progress(mod, 50)
+  expect_that(tmp, is_a("data.frame"))
+
+})
 
