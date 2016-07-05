@@ -208,9 +208,6 @@ kernL.default <- function(y, ..., model = list()) {
   check.yname <- mod$yname == "y"
   if (check.yname) mod$yname <- ynamefromcall
 
-  # Set up names for lambda parameters -----------------------------------------
-  mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
-
   # The following chunk checks whether the prescriped level 1 terms are --------
   # in order -------------------------------------------------------------------
   ord.ind <- whereOrd(mod$order)
@@ -245,6 +242,9 @@ kernL.default <- function(y, ..., model = list()) {
     }
     names(Hl) <- mod$xname
   }
+
+  # Set up names for lambda parameters -----------------------------------------
+  mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
 
   # Set up progress bar --------------------------------------------------------
   if (!mod$silent) pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)
