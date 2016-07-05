@@ -89,15 +89,17 @@ ipriorEMClosedForm <- function() {
   # closed form.
 
   # Update for lambda ----------------------------------------------------------
-  lambda <- rep(NA, l)
+  lambda.tmp <- rep(NA, l)
+
   for (k in 1:l) {
+    lambdaExpand()
     BlockB(k)
     T1 <- sum(Psql[[k]] * W.hat)
     T2 <- 2 * crossprod(Y - alpha, crossprod(Pl[[k]], w.hat)) -
           sum(Sl[[k]] * W.hat)
-    lambda[k] <- as.vector(T2 / (2 * T1))
+    lambda.tmp[k] <- as.vector(T2 / (2 * T1))
   }
-  assign("lambda", lambda, envir = parent.frame())
+  assign("lambda", lambda.tmp, envir = parent.frame())
 
   # Update for psi -------------------------------------------------------------
   environment(psiUpdate) <- environment()

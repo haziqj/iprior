@@ -118,7 +118,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 
 	# The EM algorithm routine ---------------------------------------------------
 	while ((i != maxit) && (abs(log.lik0 - log.lik1) > stop.crit)) {
-		i <- i + 1
+	  i <- i + 1
 		log.lik0 <- log.lik1
 
     # Update for parameters lambda and psi -------------------------------------
