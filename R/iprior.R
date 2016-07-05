@@ -120,7 +120,12 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
     paramprogress <- FALSE
   }
   if (silent_) silent <- silent_
+
+  # Set yname ------------------------------------------------------------------
   cl <- match.call()
+  ynamefromcall <- as.character(cl[2])
+  check.yname <- is.null(model$yname)
+  if (check.yname) model$yname <- ynamefromcall
 
   # Pass to kernel loader and then EM routine ----------------------------------
   if (is.ipriorKernel(y)) {
@@ -140,17 +145,14 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
                       "psi")
   }
 
-  # Fix xname and yname --------------------------------------------------------
+  # Fix xname ------------------------------------------------------------------
   mx <- match(c("y", "model", "control"), names(cl), 0L)
   xnamefromcall <- as.character(cl[-mx])[-1]
-  ynamefromcall <- as.character(cl[2])
   check.xname <- grepl("\\.\\.", est$ipriorKernel$model$xname)
-  check.yname <- est$ipriorKernel$model$yname == "y"
   if (any(check.xname)) {
     est$ipriorKernel$model$xname[check.xname] <- xnamefromcall[check.xname]
     est$ipriorKernel$model$lamnamesx <- est$ipriorKernel$model$xname[whereOrd(est$ipriorKernel$model$order)]
   }
-  if (check.yname) est$ipriorKernel$model$yname <- ynamefromcall
 
   # Calculate fitted values and residuals --------------------------------------
   if (maxit == 0) {

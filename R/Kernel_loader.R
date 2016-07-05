@@ -109,7 +109,7 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
-              parsm = TRUE, one.lam = FALSE, yname = "y", xname = NULL,
+              parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
               silent = TRUE, order = as.character(1:p))
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
@@ -205,7 +205,7 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up name for y variable -------------------------------------------------
   ynamefromcall <- as.character(cl[2])
-  check.yname <- mod$yname == "y"
+  check.yname <- is.null(mod$yname)
   if (check.yname) mod$yname <- ynamefromcall
 
   # The following chunk checks whether the prescriped level 1 terms are --------
