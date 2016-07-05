@@ -139,7 +139,7 @@ ipriorEMOptim1 <- function() {
                          upper = 1e9, Y = Y, alpha = alpha, psi = psi,
                          W.hat = W.hat, w.hat = w.hat,
                          lambdaExpand = lambdaExpand, hlamFn = hlamFn,
-                         env = ipriorEM.env, hessian = FALSE),
+                         env = ipriorEM.env, hessian = FALSE)$par,
          envir = ipriorEM.env)
 
   # Update for psi -------------------------------------------------------------
