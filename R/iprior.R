@@ -207,6 +207,12 @@ iprior.formula <- function(formula, data = parent.frame(), model = list(),
 #' @export
 iprior.ipriorKernel <- function(object, control = list(), ...) {
   est <- iprior.default(y = object, control = control)
+
+  # Fix the call ---------------------------------------------------------------
+  cl <- est$ipriorKernel$call
+  cl[[1L]] <- as.name("iprior")
+  est$call <- cl
+
   est
 }
 

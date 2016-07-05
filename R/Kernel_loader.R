@@ -193,7 +193,7 @@ kernL.default <- function(y, ..., model = list()) {
   suppressWarnings(cond1 <- is.null(mod$xname))
   suppressWarnings(cond2 <- any(names(x) == ""))
   suppressWarnings(cond3 <- any(is.na(names(x))))
-  cl <- match.call()
+  cl <- match.call(); cl[[1L]] <- as.name("kernL")
   if (cond1 | cond2 | cond3) {
     m <- match(c("y", "model", "control"), names(cl), 0L)
     xnamefromcall <- as.character(cl[-m])[-1]
@@ -333,7 +333,7 @@ kernL.default <- function(y, ..., model = list()) {
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
   kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
                        no.int = no.int, q = q, BlockBstuff = BlockBstuff,
-                       model = mod)
+                       model = mod, call = cl)
   class(kernelLoaded) <- "ipriorKernel"
   kernelLoaded
 }
@@ -383,6 +383,14 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   kernelLoaded <- kernL(y = y, x, model = c(model,
                                             list(interactions = interactions,
                                                  yname = yname, xname = xname)))
+
+  # Changing the call to simply kernL ------------------------------------------
+  cl <- match.call()
+  cl[[1L]] <- as.name("kernL")
+  m <- match(c("formula", "data"), names(cl), 0L)
+  cl <- cl[c(1L, m)]
+  kernelLoaded$call <- cl
+  names(kernelLoaded$call)[2] <- "formula"
   kernelLoaded
 }
 
