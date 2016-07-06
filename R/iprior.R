@@ -88,8 +88,8 @@ iprior <- function(...) {
 iprior.default <- function(y, ..., model = list(), control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, lambda = NULL,
-              psi = abs(rnorm(1)), progress = "lite", silent = FALSE,
-              force.regEM = FALSE, force.nlm = FALSE)
+              psi = NULL, sigma = NULL, theta = NULL, progress = "lite",
+              silent = FALSE, force.regEM = FALSE, force.nlm = FALSE)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -120,6 +120,23 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
     paramprogress <- FALSE
   }
   if (silent_) silent <- silent_
+
+  # Check initial values for parameters ----------------------------------------
+  par.check1 <- !is.null(theta) & any(c(!is.null(lambda), !is.null(psi),
+                                        !is.null(sigma)) )
+  if (par.check1) {
+    stop("Starting values stated for both theta and lambda/psi/sigma.",
+         call. = FALSE)
+  }
+  par.check2 <- !is.null(psi) & !is.null(sigma)
+  if (par.check2) {
+    stop("Only one of psi or sigma can be initiated.", call. = FALSE)
+  }
+  if (!is.null(theta)) {
+    psi <- theta[length(theta)]
+    lambda <- theta[-length(theta)]
+  }
+  if (!is.null(sigma)) psi <- 1 / sqrt(sigma)
 
   # Set yname ------------------------------------------------------------------
   cl <- match.call()

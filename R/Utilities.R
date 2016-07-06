@@ -137,6 +137,8 @@ findH2 <- function(z, ind1, ind2){
 	# y
 # }
 
+sigma.ipriorMod <- function(object, ...) object$sigma
+
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
   # yourself when your package is unloaded.
@@ -149,4 +151,4 @@ globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
                   "force.nlm", "force.regEM", "hlamFn", "ind1", "ind2", "intr",
                   "ipriorEM.env", "l", "lambda", "maxit", "model", "n", "nlm",
                   "no.int", "one.lam", "p", "parsm", "psi", "r", "report", "s",
-                  "stop.crit", "u", "w.hat", "x", "x0"))
+                  "stop.crit", "theta", "u", "w.hat", "x", "x0"))
