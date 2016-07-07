@@ -3,3 +3,6 @@
 ^\.travis\.yml$
 ^other$
 ^images$
+^README\.Rmd$
+^LICENSE\.txt$
+^README_files$

@@ -1,5 +1,5 @@
 ---
-title: "An R package for I-prior modelling"
+title: "An R package for I-prior regression"
 author: "Haziq Jamil"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

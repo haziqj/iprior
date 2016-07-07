@@ -1,3 +1,5 @@
+R/iprior: An R package for I-prior regression
+================
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
 
@@ -63,10 +65,9 @@ We can fit a multiple regression model on the dataset, regressing `stack.loss` a
 mod.iprior <- iprior(stack.loss ~ ., data = stackloss)
 ```
 
-    ## Iteration 0:    Log-likelihood = -123.23823 .......
-    ## Iteration 100:  Log-likelihood = -56.412645 ........
-    ## Iteration 200:  Log-likelihood = -56.348286 .......
-    ## Iteration 298:  Log-likelihood = -56.347910 
+    ## Iteration 0:    Log-likelihood = -251.89954 .......
+    ## Iteration 100:  Log-likelihood = -56.347915 ..
+    ## Iteration 124:  Log-likelihood = -56.347910 
     ## EM complete.
 
 The `iprior` package estimates the model by an EM algorithm, and by default prints reports for every 100 iterations completed. Several options are available to tweak this by supplying a list of control options (see the package help files for more details).
@@ -97,7 +98,7 @@ summary(mod.iprior)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## EM converged to within 1e-07 tolerance. No. of iterations: 298
+    ## EM converged to within 1e-07 tolerance. No. of iterations: 124
     ## Standard deviation of errors: 3.075 with S.E.: 0.5046
     ## T2 statistic: 1.835 on ??? degrees of freedom.
     ## Log-likelihood value: -56.34791
@@ -106,7 +107,7 @@ The object `mod.iprior` is of class `iprior` and contains a bunch of things of i
 
 To compare the I-prior model against a regular linear regression model, we could look at the fitted versus residual plot.
 
-<img src="README_files/figure-markdown_github/plot1-1.png" style="display: block; margin: auto;" />
+![](README_files/figure-markdown_github/plot1-1.png)
 
 Example 2: Multilevel modelling
 -------------------------------
@@ -131,8 +132,8 @@ We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with t
 (mod.iprior <- iprior(mathach ~ ses + schoolid + ses:schoolid, data = hsbsmall))
 ```
 
-    ## Iteration 0:    Log-likelihood = -5447.9452 .....
-    ## Iteration 72:   Log-likelihood = -2137.7988 
+    ## Iteration 0:    Log-likelihood = -17005.314 .....
+    ## Iteration 71:   Log-likelihood = -2137.7988 
     ## EM complete.
 
     ## 
@@ -144,7 +145,7 @@ We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with t
     ## 
     ## Parameter estimates:
     ## (Intercept)     lambda1     lambda2         psi 
-    ## 13.68325416  0.41779340  0.13231510  0.02804771
+    ## 13.68325416  0.41778423  0.13231546  0.02804771
 
 On a technical note, the vector space for functions over the set of nominal-type variables (such as `schoolid`) is called the *Pearson* RKHS.
 
@@ -154,7 +155,7 @@ A plot of fitted lines, one for each school, is produced using the `plot()` func
 plot(mod.iprior, plots = "fitted")
 ```
 
-<img src="README_files/figure-markdown_github/plot2-1.png" style="display: block; margin: auto;" />
+![](README_files/figure-markdown_github/plot2-1.png)
 
 Example 3: One-dimensional smoothing
 ------------------------------------
@@ -197,7 +198,7 @@ summary(mod.iprior)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## EM converged to within 1e-07 tolerance. No. of iterations: 498
+    ## EM converged to within 1e-07 tolerance. No. of iterations: 499
     ## Standard deviation of errors: 1.694 with S.E.: 0.1354
     ## T2 statistic: 16.05 on ??? degrees of freedom.
     ## Log-likelihood value: -222.8153
@@ -206,4 +207,4 @@ summary(mod.iprior)
 plot(mod.iprior, plots = "fitted")
 ```
 
-<img src="README_files/figure-markdown_github/mod3-1.png" style="display: block; margin: auto;" />
+![](README_files/figure-markdown_github/mod3-1.png)

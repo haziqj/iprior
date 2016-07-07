@@ -1,10 +1,10 @@
 ---
+title: "R/iprior: An R package for I-prior regression"
 output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width = 6.5, fig.height = 4.33, 
-                      fig.align = "center")
+knitr::opts_chunk$set(echo = TRUE)
 library(iprior)
 ```
 
