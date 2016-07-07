@@ -20,4 +20,15 @@ test_that("Warn when using one.lam = TRUE", {
 
 })
 
+test_that("Automatic and manual are the same", {
 
+  mod1 <- kernL(len ~ ., data = ToothGrowth,
+                model = list(one.lam = TRUE))
+  toot <- ToothGrowth
+  toot$supp <- as.numeric(ToothGrowth$supp)
+  suppressWarnings(mod2 <- kernL(len ~ ., data = toot,
+                   model = list(one.lam = TRUE,
+                                kernel = c("Pearson", "Canonical"))))
+  expect_equivalent(mod1$Hl, mod2$Hl)
+
+})
