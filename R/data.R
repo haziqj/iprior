@@ -1,48 +1,44 @@
 #' Simulated data to illustrate one-dimensional smoothing
 #'
-#' Description.
+#' Data generated from a mixed Gaussian density function \eqn{f(x) = 0.65 N(2,1)
+#' + 0.35 N(7, 1.5^2)}, where \eqn{N(x, y)} is the density function for a Normal
+#' distribution with mean \eqn{x} and variance \eqn{y}.
 #'
-#' Details.
+#' @format A data frame with 53940 rows and 10 variables: \describe{
+#'   \item{\item{\code{y}}{Response variable} \code{x}}{Explanatory variable}  }
 #'
-#' @format A data frame with 53940 rows and 10 variables:
-#' \describe{
-#'   \item{\code{x}}{x}
-#'   \item{\code{y}}{y}
-#' }
-#'
-#'#' @examples
+#' @examples
 #' data(simdat)
 #' str(simdat)
 "datfbm"
 
 #' Random slopes model simulated data
 #'
-#' Description.
-#'
-#' Details.
+#' A simulated dataset to illustrate multilevel modelling using I-priors.
 #'
 #' @format A data frame with 53940 rows and 10 variables:
 #' \describe{
-#'   \item{x}{x}
-#'   \item{y}{y}
-#'   \item{grp}{grp}
+#'   \item{\code{y}}{Response variable}
+#'   \item{\code{x}}{Explanatory variable}
+#'   \item{\code{grp}}{Factor, indicating the group of that observation.}
 #' }
 #'
-#'#' @examples
+#' @examples
 #' data(simdat)
 #' str(simdat)
 "simdat"
 
 #' High school and beyond dataset
 #'
-#' Description.
-#'
-#' Details.
+#' A national longitudinal survey of of students from public and private high
+#' schools in the United States, with information such as students' cognitive
+#' and non-cognitive skills, high school experiences, work experiences and
+#' future plans collected.
 #'
 #' @format A data frame of 7185 observations on 3 variables. \describe{
 #'   \item{\code{mathach}}{Math achievement.} \item{\code{ses}}{Socio-Economic
 #'   status.} \item{\code{schoolid}}{Categorical variable indicating the school
-#'   the student went to. Treated as \code{factor}.} }
+#'   the student went to. Treated as \code{\link{factor}}.} }
 #'
 #' @source \href{http://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/7896}{High
 #'   School and Beyond, 1980: A Longitudinal Survey of Students in the United
@@ -64,7 +60,7 @@
 #'
 #' Smaller subset of \code{hsb}.
 #'
-#' Details.
+#' A random subset of size 16 out of the original 160 groups.
 #'
 #' @format A data frame of 661 observations on 3 variables. \describe{
 #'   \item{\code{mathach}}{Math achievement.} \item{\code{ses}}{Socio-Economic
