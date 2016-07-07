@@ -1,16 +1,52 @@
+#' Reproducing kernels for the I-prior package
+#'
+#' The three kernel functions used in this package are the Canonical kernel
+#' \code{fnH2}, Fractional Brownian Motion (FBM) kernel \code{fnH3} (with a
+#' default Hurst coefficient of 0.5), and the Pearson kernel \code{fnH1}.
+#'
+#' The Pearson kernel is used for nominal-type variables, and in R,
+#' \code{\link{factor}}-type objects are treated with the Pearson kernel
+#' automatically. The other two kernel types are for continuous variables, with
+#' the Canonical kernel used for "straight-line" effects and the FBM for
+#' smoothing effects. The smoothness is controlled somewhat by the Hurst
+#' coefficient.
+#'
+#' @param x,y A vector, matrix or data frame. \code{x} and \code{y} must have
+#'   similar dimensions.
+#' @param gamma The Hurst coefficient when using the FBM kernel.
+#'
+#' @return A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
+#'   or \code{"Pearson"} whose \code{[i, j]} entries are \eqn{h(}\code{y[i]},
+#'   \code{x[j]}\eqn{)}, with \eqn{h} being the kernel function. The matrix has
+#'   dimensions \code{m} by \code{n} according to the lengths of \code{y} and
+#'   \code{x} which has lengtsh \code{m} and \code{n} respectively. When a
+#'   single vector argument \code{x} is supplied, then \code{y} is taken to be
+#'   equal to \code{x}, and a symmetric \code{n} by \code{n} matrix is returned.
+#'
+#'   If \code{x} is a matrix or data frame with \code{p} columns, then the
+#'   kernel matrix returned is \code{fnH(x[, 1]) + ... + fnH(x[, p])}.
+#'
+#' @seealso The
+#'   \href{https://en.wikipedia.org/wiki/Fractional_Brownian_motion}{Wikipedia}
+#'   page on the Fractional Brownian Motion.
+#'
+#' @name kernel
+#' @aliases Canonical FBM Pearson
+NULL
+
 fn.H1 <- function(x, y = NULL) {
   # Pearson kernel.
   # Args: x,y vector of type "factor"
 	ytmp <- y
 	if (is.null(ytmp)) y <- x
 	if (any(is.numeric(x), is.numeric(y))) {
-	  warning("Non-factor type vector used with Pearson kernel.", call.=F)
+	  warning("Non-factor type vector used with Pearson kernel.", call. = FALSE)
 	}
 	# Combine x and y, unfactorise them and work with numbers --------------------
 	x <- factor(x); y <- factor(y)
 	z <- unlist(list(x,y))  # simply doing c(x,y) messes with the factors
 	z <- as.numeric(z)
-	x <- z[1:length(x)]; y <- z[(length(x)+1):length(z)]
+	x <- z[1:length(x)]; y <- z[(length(x) + 1):length(z)]
 	if (any(is.na(match(y,x)))) {
 	  stop("The vector y contains elements not belonging to x.")
 	}
@@ -18,9 +54,10 @@ fn.H1 <- function(x, y = NULL) {
 
 	unqy <- sort(unique(y))
 	unqx <- sort(unique(x))
-	tmpx <- lapply(unqx, function (k) which(x == k))
-	tmpy <- lapply(unqy, function (k) which(y == k))
-	tmp <- lapply(1:length(unqy), function (k) expand.grid(tmpy[[k]], tmpx[[unqy[k]]]) )
+	tmpx <- lapply(unqx, function(k) which(x == k))
+	tmpy <- lapply(unqy, function(k) which(y == k))
+	tmp <- lapply(1:length(unqy),
+	              function(k) expand.grid(tmpy[[k]], tmpx[[unqy[k]]]))
 	# Side note: can avoid for loop below by combining the list tmp using
 	# do.call(rbind, tmp) or the faster data.table option
 	# as.matrix(data.table::rbindlist(tmp)) but tests found that this is actually
@@ -131,8 +168,11 @@ fn.H3a <- function(x, y = NULL, gamma = NULL){ #takes in vector of covariates
 }
 
 # The following three functions are able to take matrices instead of vector
-# inputs. This is required for the one.lam = TRUE option
+# inputs. This is required for the one.lam = TRUE option. These functions are
+# exported
 
+#' @rdname kernel
+#' @export
 fnH1 <- function(x, y = NULL){
 	res <- 0
 	if ((ncol(x) > 1) && !is.null(ncol(x))) {
@@ -145,6 +185,8 @@ fnH1 <- function(x, y = NULL){
 	return(res)
 }
 
+#' @rdname kernel
+#' @export
 fnH2 <- function(x, y = NULL){
 	res <- 0
 	if ((ncol(x) > 1) && !is.null(ncol(x))) {
@@ -157,7 +199,9 @@ fnH2 <- function(x, y = NULL){
 	return(res)
 }
 
-fnH3 <- function(x, y = NULL, gamma){
+#' @rdname kernel
+#' @export
+fnH3 <- function(x, y = NULL, gamma = 0.5){
 	res <- 0
 	if ((ncol(x) > 1) && !is.null(ncol(x))) {
 		if ((ncol(x) != ncol(y)) && !is.null(y)) {
