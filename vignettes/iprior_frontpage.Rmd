@@ -98,7 +98,7 @@ data(hsbsmall)
 str(hsbsmall)
 ```
 
-This dataset contains the variables `mathach`, a measure of mathematics achievement; `ses`, the socioeconomic status of the students based on parental education, occupation and income; and `schoolid`, the school identifier for the students. The original dataset contains 160 groups with varying number of observations per group (n=7185 in total). However, this smaller set contains only 16 randomly selected schools, such that the total sample size is n=661. This was mainly done for computational reasons to illustrate this example.
+This dataset contains the variables `mathach`, a measure of mathematics achievement; `ses`, the socioeconomic status of the students based on parental education, occupation and income; and `schoolid`, the school identifier for the students. The original dataset contains 160 groups with varying number of observations per group (`n = 7185` in total). However, this smaller set contains only 16 randomly selected schools, such that the total sample size is `n = 661`. This was mainly done for computational reasons to illustrate this example.
 
 We fit an I-prior model, with the aim of predicting `mathach` from `ses`, with the assumption that students' `ses` varied by `schoolid`. This achieved by adding an interaction term between the two variables.
 
