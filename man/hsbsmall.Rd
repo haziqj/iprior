@@ -15,7 +15,7 @@ hsbsmall
 Smaller subset of \code{hsb}.
 }
 \details{
-Details.
+A random subset of size 16 out of the original 160 groups.
 }
 \examples{
 data(hsbsmall)

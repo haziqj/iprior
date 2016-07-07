@@ -6,22 +6,19 @@
 \title{Random slopes model simulated data}
 \format{A data frame with 53940 rows and 10 variables:
 \describe{
-  \item{x}{x}
-  \item{y}{y}
-  \item{grp}{grp}
-}
-
-#' @examples
-data(simdat)
-str(simdat)}
+  \item{\code{y}}{Response variable}
+  \item{\code{x}}{Explanatory variable}
+  \item{\code{grp}}{Factor, indicating the group of that observation.}
+}}
 \usage{
 simdat
 }
 \description{
-Description.
+A simulated dataset to illustrate multilevel modelling using I-priors.
 }
-\details{
-Details.
+\examples{
+data(simdat)
+str(simdat)
 }
 \keyword{datasets}
 

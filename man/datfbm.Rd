@@ -6,21 +6,20 @@
 \title{Simulated data to illustrate one-dimensional smoothing}
 \format{A data frame with 53940 rows and 10 variables:
 \describe{
-  \item{\code{x}}{x}
-  \item{\code{y}}{y}
-}
-
-#' @examples
-data(simdat)
-str(simdat)}
+  \item{\code{y}}{Response variable}
+  \item{\code{x}}{Explanatory variable}
+}}
 \usage{
 datfbm
 }
 \description{
-Description.
+Data generated from a mixed Gaussian density function \eqn{f(x) = 0.65 N(2,1)
++ 0.35 N(7, 1.5^2)}, where \eqn{N(x, y)} is the density function for a Normal
+distribution with mean \eqn{x} and variance \eqn{y}.
 }
-\details{
-Details.
+\examples{
+data(simdat)
+str(simdat)
 }
 \keyword{datasets}
 

@@ -4,8 +4,11 @@
 #' + 0.35 N(7, 1.5^2)}, where \eqn{N(x, y)} is the density function for a Normal
 #' distribution with mean \eqn{x} and variance \eqn{y}.
 #'
-#' @format A data frame with 53940 rows and 10 variables: \describe{
-#'   \item{\item{\code{y}}{Response variable} \code{x}}{Explanatory variable}  }
+#' @format A data frame with 53940 rows and 10 variables:
+#' \describe{
+#'   \item{\code{y}}{Response variable}
+#'   \item{\code{x}}{Explanatory variable}
+#' }
 #'
 #' @examples
 #' data(simdat)

@@ -7,7 +7,7 @@
 \format{A data frame of 7185 observations on 3 variables. \describe{
   \item{\code{mathach}}{Math achievement.} \item{\code{ses}}{Socio-Economic
   status.} \item{\code{schoolid}}{Categorical variable indicating the school
-  the student went to. Treated as \code{factor}.} }}
+  the student went to. Treated as \code{\link{factor}}.} }}
 \source{
 \href{http://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/7896}{High
   School and Beyond, 1980: A Longitudinal Survey of Students in the United
@@ -17,10 +17,10 @@
 hsb
 }
 \description{
-Description.
-}
-\details{
-Details.
+A national longitudinal survey of of students from public and private high
+schools in the United States, with information such as students' cognitive
+and non-cognitive skills, high school experiences, work experiences and
+future plans collected.
 }
 \examples{
 data(hsb)
