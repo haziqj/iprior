@@ -32,8 +32,6 @@ lambdaExpand <- function(x = lambda, env = ipriorEM.env){
     }
     else lambda.tmp[i] <- x[as.numeric(order[i])]
   }
-  assign("lambda", lambda.tmp, envir = env)
-  intr <- intr
   if (parsm && no.int > 0) {
     for (j in 1:no.int) {
       add.lam <- lambda.tmp[intr[1, j]] * lambda.tmp[intr[2, j]]

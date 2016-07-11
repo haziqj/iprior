@@ -157,6 +157,7 @@ findH2 <- function(z, ind1, ind2){
 	# y
 # }
 
+#' @export
 sigma.ipriorMod <- function(object, ...) object$sigma
 
 .onUnload <- function(libpath) {
