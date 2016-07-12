@@ -198,6 +198,7 @@ sigma.ipriorMod <- function(object, ...) object$sigma
 globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
                   "V", "Var.Y.inv", "VarY.inv", "W.hat", "Y", "alpha",
                   "force.nlm", "force.regEM", "hlamFn", "ind1", "ind2", "intr",
-                  "ipriorEM.env", "l", "lambda", "maxit", "model", "n", "nlm",
-                  "no.int", "one.lam", "p", "parsm", "psi", "r", "report", "s",
-                  "stop.crit", "theta", "u", "w.hat", "x", "x0"))
+                  "intr.3plus", "ipriorEM.env", "l", "lambda", "maxit", "model",
+                  "n", "nlm", "no.int", "no.int.3plus", "one.lam", "p", "parsm",
+                  "psi", "r", "report", "s", "stop.crit", "theta", "u", "w.hat",
+                  "x", "x0"))

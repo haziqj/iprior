@@ -32,11 +32,12 @@
 #' of the I-prior model. Thus, an ideal implementation is a combination of EM
 #' and direct optimisation.
 #'
-#' First, the EM algorithm is performed for a maximum of five iterations. The
-#' parameters are then passed to \code{optim()} and the negative log-likelihood
-#' is minimised. The method used for optim is \code{"L-BFGS-B"}, as the
-#' \code{psi} parameter of the I-prior model needs to be contrained to be
-#' greater than zero.
+#' First, the EM algorithm is performed for a maximum of three iterations. This
+#' can be changed by passing a different \code{maxit} value to the list of
+#' control options. The parameters are then passed to \code{optim()} and the
+#' negative log-likelihood is minimised. The method used for optim is
+#' \code{"L-BFGS-B"}, as the \code{psi} parameter of the I-prior model needs to
+#' be contrained to be greater than zero.
 #'
 #' @param object An object of class \code{ipriorKernel}.
 #' @param control A list of controls for the initial EM algorithm fit. Refer to
@@ -52,7 +53,7 @@
 #' summary(mod.iprior)
 #'
 #' @export
-ipriorOptim <- function(object, control = list(maxit = 5, report = 1)) {
+ipriorOptim <- function(object, control = list(maxit = 3, report = 1)) {
   if (!is.ipriorKernel(object)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }

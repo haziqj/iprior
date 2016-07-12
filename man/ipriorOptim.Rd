@@ -5,7 +5,7 @@
 \title{Estimate an I-prior model using a combination of EM algorithm and direct
 optimisation}
 \usage{
-ipriorOptim(object, control = list())
+ipriorOptim(object, control = list(maxit = 3, report = 1))
 }
 \arguments{
 \item{object}{An object of class \code{ipriorKernel}.}
@@ -29,11 +29,12 @@ ill-conditioned variance parameter due to the nature of the parameterisation
 of the I-prior model. Thus, an ideal implementation is a combination of EM
 and direct optimisation.
 
-First, the EM algorithm is performed for a maximum of five iterations. The
-parameters are then passed to \code{optim()} and the negative log-likelihood
-is minimised. The method used for optim is \code{"L-BFGS-B"}, as the
-\code{psi} parameter of the I-prior model needs to be contrained to be
-greater than zero.
+First, the EM algorithm is performed for a maximum of three iterations. This
+can be changed by passing a different \code{maxit} value to the list of
+control options. The parameters are then passed to \code{optim()} and the
+negative log-likelihood is minimised. The method used for optim is
+\code{"L-BFGS-B"}, as the \code{psi} parameter of the I-prior model needs to
+be contrained to be greater than zero.
 }
 \examples{
 (mod <- kernL(stack.loss ~ ., stackloss))
