@@ -76,21 +76,49 @@ canPeaFBM <- function(x, kernel, gamma, y) {
   res
 }
 
-hMatList <- function(x, kernel, intr, no.int, gamma,
+whereInt <- function(x) {
+  tmp <- x > 0
+  x[tmp] <- which(x > 0)
+  x[!tmp] <- 0
+  x
+}
+
+whichIntr3Plus <- function(x) {
+  sapply(strsplit(x, ""), function(x) length(x) > 3)
+}
+
+addZeroesIntr3Plus <- function(x) {
+  p <- max(sapply(strsplit(x, ":"), length))
+  sapply(strsplit(x, ":"), function(x) {
+    p_ <- length(x)
+    if (p_ < p) as.numeric(c(x, rep(0, p - p_)))
+    else as.numeric(x)
+  })
+}
+
+hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus,
                      xstar = vector("list", p)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
   # and predict.R
   p <- length(x)
   H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel),
               gamma = gamma, y = xstar, SIMPLIFY = FALSE)
-  	if (!is.null(intr)) {
+  if (!is.null(intr)) {
 	  # Add in interactions, if any.
 		for (j in 1:no.int) {
 			H[[p + j]] <- H[[intr[1, j]]] * H[[intr[2, j]]]
 			class(H[[p + j]]) <- paste(class(H[[intr[1,j]]]), class(H[[intr[2,j]]]),
 			                           sep = " x ")
 		}
-	}
+  }
+  if (!is.null(intr.3plus) & length(intr.3plus) > 0) {
+    no.int.3plus <- ncol(intr.3plus)
+    for (j in 1:no.int.3plus) {
+      H[[p + j + no.int]] <- Reduce("*", H[intr.3plus[, j]])
+      intr.3plus.class <- sapply(H[intr.3plus[, j]], class)
+      class(H[[p + j + no.int]]) <- paste(intr.3plus.class, collapse = " x ")
+    }
+  }
 	H
 }
 

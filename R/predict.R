@@ -71,7 +71,7 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
     }
 
     # Define new kernel matrix -------------------------------------------------
-    Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, xstar)
+    Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, intr.3plus, xstar)
     lambdaExpand(object$lambda, env = environment())
     Hlam.mat <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
 

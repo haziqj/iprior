@@ -42,7 +42,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
 	environment(BlockA) <- environment(BlockB) <- environment(BlockC) <- ipriorEM.env
   environment(lambdaExpand) <- environment(lambdaContract) <- ipriorEM.env
-  if (r > 0 | force.regEM) {
+  if (r > 0 | force.regEM | no.int.3plus > 0) {
     if (force.nlm) {
       environment(ipriorEMnlm) <- ipriorEM.env
       ipriorEMRoutine <- ipriorEMnlm

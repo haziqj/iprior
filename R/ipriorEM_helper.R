@@ -38,6 +38,11 @@ lambdaExpand <- function(x = lambda, env = ipriorEM.env){
       lambda.tmp[p + j] <- add.lam
     }
   }
+  if (no.int.3plus > 0) {
+    for (j in 1:no.int.3plus) {
+      lambda.tmp[p + j + no.int] <- Reduce("*", lambda.tmp[intr.3plus[, j]])
+    }
+  }
   assign("lambda", lambda.tmp, envir = env)
 }
 

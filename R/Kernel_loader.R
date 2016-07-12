@@ -130,7 +130,7 @@ kernL.default <- function(y, ..., model = list()) {
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
-              silent = TRUE, order = as.character(1:p))
+              silent = TRUE, order = as.character(1:p), intr.3plus = NULL)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -183,9 +183,17 @@ kernL.default <- function(y, ..., model = list()) {
       if (!intr.check1 | !intr.check2) {
         stop("Incorrect prescription of interactions.", call. = FALSE)
       }
+      ind.intr.3plus <- whichIntr3Plus(mod$intr)
+      mod$intr.3plus <- mod$intr[ind.intr.3plus]
+      mod$intr <- mod$intr[!ind.intr.3plus]
       mod$intr <- sapply(strsplit(mod$intr, ":"), as.numeric)
     }
-    no.int <- ncol(mod$intr)
+    if (length(mod$intr) == 0) {
+      mod[match("intr", names(mod))] <- list(NULL)
+      no.int <- 0
+    } else {
+      no.int <- ncol(mod$intr)
+    }
   } else {
     # No interactions
     no.int <- 0L
@@ -206,6 +214,15 @@ kernL.default <- function(y, ..., model = list()) {
   # r = Number of higher order terms
   # q = Length of expanded lambda = p + no.int
   # h = length(H.mat)
+
+  # More interactions ----------------------------------------------------------
+  no.int.3plus <- 0
+  if (!is.null(mod$intr.3plus) & length(mod$intr.3plus) > 0) {
+    if (!is.matrix(mod$intr.3plus)) {
+      mod$intr.3plus <- addZeroesIntr3Plus(mod$intr.3plus)
+    }
+    no.int.3plus <- ncol(mod$intr.3plus)
+  }
 
   # Set up names for x variables -----------------------------------------------
   if (is.null(mod$xname)) mod$xname <- names(x)
@@ -252,7 +269,7 @@ kernL.default <- function(y, ..., model = list()) {
   }
 
   # Set up list of H matrices --------------------------------------------------
-  Hl <- hMatList(x, mod$kernel, mod$intr, no.int, mod$Hurst)
+  Hl <- hMatList(x, mod$kernel, mod$intr, no.int, mod$Hurst, mod$intr.3plus)
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
@@ -260,8 +277,14 @@ kernL.default <- function(y, ..., model = list()) {
       mod$xname <- c(mod$xname, paste(mod$xname[mod$intr[1, i]],
                                       mod$xname[mod$intr[2, i]], sep = ":"))
     }
-    names(Hl) <- mod$xname
   }
+  if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr.3plus)) {
+    for (i in 1:no.int.3plus) {
+      mod$xname <- c(mod$xname, paste(mod$xname[mod$intr.3plus[, i]],
+                                      collapse = ":"))
+    }
+  }
+  names(Hl) <- mod$xname
 
   # Set up names for lambda parameters -----------------------------------------
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
@@ -275,9 +298,9 @@ kernL.default <- function(y, ..., model = list()) {
   environment(indxFn) <- environment()
   H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
   BlockB <- function(k) NULL
-  if (r == 0) {
+  if (r == 0L & no.int.3plus == 0L) {
     # No need to do all the below Block B stuff if higher order terms involved.
-    if (q == 1) {
+    if (q == 1L) {
       Pl <- Hl
       Psql <- list(fastSquare(Pl[[1]]))
       Sl <- list(matrix(0, nrow = n, ncol = n))
@@ -352,8 +375,9 @@ kernL.default <- function(y, ..., model = list()) {
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
   kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
-                       no.int = no.int, q = q, BlockBstuff = BlockBstuff,
-                       model = mod, call = cl)
+                       no.int = no.int, q = q,
+                       BlockBstuff = BlockBstuff, model = mod, call = cl,
+                       no.int.3plus = no.int.3plus)
   class(kernelLoaded) <- "ipriorKernel"
   kernelLoaded
 }
@@ -373,13 +397,19 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   # For interactions -----------------------------------------------------------
   interactions <- NULL
   tmpo <- attr(tt, "order")
-  if (any(tmpo > 2)) {
-    stop("iprior does not currently work with higher order interactions.")
-  }
+  # if (any(tmpo > 2)) {
+  #   stop("iprior does not currently work with higher order interactions.")
+  # }
   tmpf <- attr(tt, "factors")
   tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  # this obtains 2nd order interactions
   int2 <- apply(tmpf2, 2, function(x) which(x == 1))
   if (any(tmpo == 2)) interactions <- int2
+
+  # > 2-way interactions -------------------------------------------------------
+  intr.3plus <- NULL
+  tmpf3 <- as.matrix(tmpf[-1, tmpo > 2])
+  int3 <- apply(tmpf3, 2, whereInt)
+  if (any(tmpo > 2)) intr.3plus <- int3
 
   # Deal with one.lam option ---------------------------------------------------
   one.lam <- FALSE
@@ -402,6 +432,7 @@ kernL.formula <- function(formula, data, model = list(), ...) {
 
   kernelLoaded <- kernL(y = y, x, model = c(model,
                                             list(interactions = interactions,
+                                                 intr.3plus = intr.3plus,
                                                  yname = yname, xname = xname)))
 
   # Changing the call to simply kernL ------------------------------------------
@@ -428,7 +459,7 @@ print.ipriorKernel <- function(x, ...) {
   cat("Sample size = ", x$n, "\n")
   cat("Number of x variables, p = ", x$p, "\n")
   cat("Number of scale parameters, l = ", x$l, "\n")
-  cat("Number of interactions = ", x$no.int, "\n")
+  cat("Number of interactions = ", x$no.int + x$no.int.3plus, "\n")
   cat("\nInfo on H matrix:\n\n")
   str(x$Hl)
   cat("\n")
