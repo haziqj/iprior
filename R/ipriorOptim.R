@@ -52,13 +52,13 @@
 #' summary(mod.iprior)
 #'
 #' @export
-ipriorOptim <- function(object, control = list()) {
+ipriorOptim <- function(object, control = list(maxit = 5, report = 1)) {
   if (!is.ipriorKernel(object)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }
 
-  control$maxit <- 5
-  control$report <- 1
+  # control$maxit <- 5
+  # control$report <- 1
   mod.iprior <- iprior(object, control = control)
   silent <- mod.iprior$control$silent
 
@@ -74,5 +74,6 @@ ipriorOptim <- function(object, control = list()) {
                                                                maxit = 1,
                                                                theta = theta)))
   if (!silent) cat("DONE.\n")
+  mod.iprior$optim.converged <- TRUE
   mod.iprior
 }

@@ -336,7 +336,8 @@ summary.ipriorMod <- function(object, ...) {
               q = object$ipriorKernel$q, p = object$ipriorKernel$p,
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
-              xname = xname, no.int = object$ipriorKernel$no.int)
+              xname = xname, no.int = object$ipriorKernel$no.int,
+              optim.converged = object$optim.converged)
   class(res) <- "ipriorSummary"
   res
 }
@@ -374,12 +375,16 @@ print.ipriorSummary <- function(x, ...) {
   sesigma <- psi.and.se[2] * sigma ^ 3 / 2
   printCoefmat(tab, P.values = TRUE, has.Pvalue = TRUE)
   cat("\n")
-  if (x$converged) {
-    cat("EM converged to within", x$stop.crit, "tolerance.")
+  if (!is.null(x$optim.converged)) {
+    cat("Routine converged via EM and direct optimisation.")
   } else {
-    cat("EM failed to converge.")
+    if (x$converged) {
+      cat("EM converged to within", x$stop.crit, "tolerance.")
+    } else {
+      cat("EM failed to converge.")
+    }
+    cat(" No. of iterations:", x$no.iter)
   }
-  cat(" No. of iterations:", x$no.iter)
   cat("\nStandard deviation of errors:", signif(sigma, digits = 4),
       "with S.E.:", round(sesigma, digits = 4))
   cat("\nT2 statistic:", signif(x$T2, digits = 4), "on ??? degrees of freedom.")
