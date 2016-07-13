@@ -130,7 +130,8 @@ kernL.default <- function(y, ..., model = list()) {
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
-              silent = TRUE, order = as.character(1:p), intr.3plus = NULL)
+              silent = TRUE, order = as.character(1:p), intr.3plus = NULL,
+              delete = NULL)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -209,8 +210,8 @@ kernL.default <- function(y, ..., model = list()) {
     l <- p - r
   }
   # For clarity, the definitions of p, q, r, and l are
-  # p = Number of H matrices in H.mat minus interactions = l + r
-  # l = Number of unique lambdas (= q when parsm = TRUE)
+  # p = Number of x variables used
+  # l = Number of unique lambdas (= q when parsm = FALSE)
   # r = Number of higher order terms
   # q = Length of expanded lambda = p + no.int
   # h = length(H.mat)
@@ -288,6 +289,20 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up names for lambda parameters -----------------------------------------
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
+
+  # A delete option, mainly to delete unwanted first order terms but keep ------
+  # interactions ---------------------------------------------------------------
+  if (!is.null(mod$delete)) {
+    Hl <- Hl[-mod$delete]
+    h <- length(Hl)
+    q <- q - length(mod$delete)
+    if (!mod$parsm) {
+      l <- q
+      mod$order <- as.character(1:l)
+    } else {
+      l <- p - r
+    }
+  }
 
   # Set up progress bar --------------------------------------------------------
   if (!mod$silent) pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)

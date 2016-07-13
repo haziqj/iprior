@@ -288,7 +288,7 @@ print.ipriorMod <- function(x, ...) {
   } else {
     cat("\nRKHS used:", paste("Pearson, Canonical, &", FBM))
   }
-  if (x$ipriorKernel$q == 1) {
+  if (x$ipriorKernel$l == 1) {
     cat(", with a single scale parameter.\n")
   } else {
     cat(", with multiple scale parameters.\n")
@@ -333,7 +333,7 @@ summary.ipriorMod <- function(object, ...) {
               no.iter = object$no.iter, converged = object$converged,
               stop.crit = object$control$stop.crit,
               one.lam = object$ipriorKernel$model$one.lam, T2 = object$T2,
-              q = object$ipriorKernel$q, p = object$ipriorKernel$p,
+              l = object$ipriorKernel$l, p = object$ipriorKernel$p,
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
               xname = xname, no.int = object$ipriorKernel$no.int,
@@ -360,7 +360,7 @@ print.ipriorSummary <- function(x, ...) {
   if (!(length(x.pea) == 0)) cat(printPea, "\n")
   if (!(length(x.can) == 0)) cat(printCan, "\n")
   if (!(length(x.fbm) == 0)) cat(printFBM, "\n")
-  if (x$q == 1) {
+  if (x$l == 1) {
     cat("with a single scale parameter.\n")
   } else {
     cat("with multiple scale parameters.\n")

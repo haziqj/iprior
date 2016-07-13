@@ -50,8 +50,9 @@ progress <- function(object, interval = c("auto", "all", "input any number")) {
 	if (class(object) != "ipriorMod") {
 	  stop("Input ipriorMod class objectsonly.", call. = FALSE)
 	}
+  if (!is.null(object$optim.converged)) stop("I-prior model estimated using ipriorOptim - no progress report generated.", call. = FALSE)
 	if (!object$converged) warning("The EM has not yet converged.", call. = FALSE)
-	rn <- rownames(object$res.loglik)
+  rn <- rownames(object$res.loglik)
 
 	# Parameters -----------------------------------------------------------------
 	res <- object$res.loglik
