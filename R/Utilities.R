@@ -194,6 +194,14 @@ sigma.ipriorMod <- function(object, ...) object$sigma
   library.dynam.unload("iprior", libpath)
 }
 
+#' @export
+ipriorColPal <- function(x) {
+  colx <- c(RColorBrewer::brewer.pal(9, "Set1")[-9],
+            RColorBrewer::brewer.pal(8, "Dark2"))
+  colx[6] <- RColorBrewer::brewer.pal(8, "Set2")[6]
+  colx[x]
+}
+
 # Hacky way to pass R CMD CHECK "no visible binding" note ----------------------
 globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
                   "V", "Var.Y.inv", "VarY.inv", "W.hat", "Y", "alpha",
