@@ -194,6 +194,15 @@ sigma.ipriorMod <- function(object, ...) object$sigma
   library.dynam.unload("iprior", libpath)
 }
 
+#' Colour palette for \code{iprior} plots
+#'
+#' This is the colour palette used by the \code{iprior} package. It is based off
+#' \code{RColorBrewer::brewer.pal}'s Set 1, Set 2 and Dark 2 palettes.
+#'
+#' @param x (optional) A vector of maximum length 16.
+#'
+#' @return The colour palette indexed by \code{x}.
+#'
 #' @export
 ipriorColPal <- function(x) {
   colx <- c(RColorBrewer::brewer.pal(9, "Set1")[-9],

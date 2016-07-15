@@ -55,7 +55,7 @@ lambdaContract <- function(x = lambda, env = ipriorEM.env) {
 linSolvInv <- function(b = NULL){
   # Function to solve VarY %*% a = b,
   # where VarY = V %*% diag(1 / (u + s)) %*% V
-  if (is.null(b)) a <- fastVDiag(V, 1/(u + s))  # a C++ alternative
+  if (is.null(b)) a <- fastVDiag(V, 1 / (u + s))  # a C++ alternative
   else a <- V %*% (diag(1 / (u + s)) %*% (t(V) %*% b) )
   a
 }

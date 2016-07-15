@@ -190,8 +190,16 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		}
 	}
 
+	# Need the w.hat if maxit is zero --------------------------------------------
+	if (maxit == 0L) {
+	  VarY.inv <- linSolvInv()
+	  tmp1 <-  psi * Hlam.mat
+	  tmp2 <- VarY.inv %*% matrix(Y - alpha, ncol = 1)
+	  w.hat <- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
+	}
+
 	# Final report ---------------------------------------------------------------
-	if (!silent && check.naught != 0) {
+	if (!silent && check.naught != 0L) {
 		if (clean) {
 		  cat("\n", format(paste0("Iteration " , i, ":"), width = 16, just = "left"),
 		      "Log-likelihood = ", ipriorEMprettyLoglik(log.lik1), " ", sep = "")

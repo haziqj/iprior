@@ -192,11 +192,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   }
 
   # Calculate fitted values and residuals --------------------------------------
-  if (maxit == 0) {
-    Y.hat <- rep(est$alpha, nrow(est$Hlam.mat))
-  } else {
-    Y.hat <- est$alpha + as.vector(crossprod(est$Hlam.mat, est$w.hat))
-  }
+  Y.hat <- est$alpha + as.vector(crossprod(est$Hlam.mat, est$w.hat))
   est$fitted.values <- Y.hat
   est$residuals     <- ipriorKernel$Y - Y.hat
   names(est$fitted.values) <- names(est$residuals) <- names(ipriorKernel$Y)
