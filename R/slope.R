@@ -56,7 +56,6 @@ slope <- function(object){
 	#   stop("Functionality is only meant for Canonical kernels.", call. = FALSE)
 	# }
 	dat <- cbind(y, as.data.frame(x))
-	browser()
 	if (any(whichPearson)) {
 		grp <- dat[[which(whichPearson) + 1]]
 		dat <- split(dat, grp)
