@@ -2,15 +2,14 @@ Package: iprior
 Type: Package
 Title: Linear Regression using I-priors
 Version: 0.6.1
-Date: 2016-07-07
+Date: 2016-08-18
 Author: Haziq Jamil
-Maintainer: Haziq Jamil <h.jamil@lse.ac.uk>
+Maintainer: Haziq Jamil <haziq.jamil@gmail.com>
 Description: Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished], this package performs linear regression modelling using I-priors in R. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy. While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests. This package supports both formula and non-formula based input, and most S3 methods for lm are applicable. Estimation is mainly done via an EM algorithm, but there is flexibility in using any R optimiser to maximise the log-likelihood computed by the iprior kernel loader.
 Imports:
   methods,
   RColorBrewer,
   Rcpp (>= 0.12.5),
-  RcppEigen (>= 0.3.2.8.1)
 LinkingTo: Rcpp, RcppEigen
 License: GPL (>= 3.0)
 Suggests:

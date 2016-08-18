@@ -4,3 +4,5 @@
 ^other$
 ^images$
 ^LICENSE\.txt$
+^NEWS\.md$
+^cran-comments\.md$
