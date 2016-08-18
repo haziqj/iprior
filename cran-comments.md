@@ -30,4 +30,4 @@ There were 2 NOTEs:
   'Linear Regression using I-priors'
   'Linear Regression using I-Priors'
 
-  *This is my first submission. Wicher Bergsma is the name of a colleague whose paper I have cited in the Description field. iprior and lm are R functions which I have mentioned in the Description field. 'I-prior' is a proper noun which has already been correcly capitalised.*
+  *This is my first submission. Wicher Bergsma is the name of a colleague whose paper I have cited in the Description field. 'I-prior' is a proper noun which has already been correcly capitalised.*
