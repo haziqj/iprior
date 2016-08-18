@@ -19,15 +19,9 @@ There were 2 NOTEs:
   Maintainer: 'Haziq Jamil <haziq.jamil@gmail.com>'
   
   New submission
-  
-  Possibly mis-spelled words in DESCRIPTION:
-    Bergsma (8:101)
-    Wicher (8:94)
-    iprior (8:834)
-    lm (8:671)
     
   The Title field should be in title case, current version then in title case: 
   'Linear Regression using I-priors'
   'Linear Regression using I-Priors'
 
-  *This is my first submission. Wicher Bergsma is the name of a colleague whose paper I have cited in the Description field. 'I-prior' is a proper noun which has already been correcly capitalised.*
+  *This is my first submission. 'I-prior' is a proper noun which has already been correcly capitalised.*
