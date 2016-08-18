@@ -1,6 +1,5 @@
 # Rcpp and RcppEigen stuff -----------------------------------------------------
 #' @useDynLib iprior
-#' @import RcppEigen
 #' @importFrom Rcpp evalCpp
 #'
 # iprior package imports -------------------------------------------------------

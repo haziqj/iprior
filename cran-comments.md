@@ -6,13 +6,26 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
-There was 1 NOTE:
+There were 2 NOTEs:
 
-* This NOTE appears only with linux systems (i.e., it does not appear with OS X or win-builder):
-  
-  checking installed package size ... NOTE
+* checking installed package size ... NOTE
   installed size is  8.2Mb
   sub-directories of 1Mb or more:
     libs   7.7Mb 
+  
+  This NOTE appears only with linux systems (i.e., it does not appear with OS X or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.
 
-  The size is due to a .so file resulting from the usage of RcppEigen.
+* checking CRAN incoming feasibility ... NOTE
+  Maintainer: 'Haziq Jamil <haziq.jamil@gmail.com>'
+  
+  New submission
+  
+  Possibly mis-spelled words in DESCRIPTION:
+    Bergsma (8:101)
+    Wicher (8:94)
+    iprior (8:834)
+    lm (8:671)
+    
+  The Title field should be in title case, current version then in title case: 
+  'Linear Regression using I-priors'
+  'Linear Regression using I-Priors'

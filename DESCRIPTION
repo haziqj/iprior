@@ -9,8 +9,7 @@ Description: Based on the manuscript entitled "Objective Bayes regression using 
 Imports:
   methods,
   RColorBrewer,
-  Rcpp (>= 0.12.6),
-  RcppEigen (>= 0.3.2.8.1)
+  Rcpp (>= 0.12.6)
 LinkingTo: Rcpp, RcppEigen
 License: GPL (>= 3.0)
 Suggests:
