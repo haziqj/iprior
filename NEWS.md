@@ -1,3 +1,7 @@
+# v0.6.1
+
+* Several bug fixes and cleanups makes this a CRAN-ready release.
+
 # v0.6
 
 * Added documentation for the package.
