@@ -29,20 +29,6 @@ R/iprior makes use of several C++ code, so as a prerequisite, you must have a wo
 * On Mac, install Xcode from the app store.
 * On Linux, `sudo apt-get install r-base-dev` or similar.
 
-Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
-
-```{r devtool_install, eval=FALSE}
-install.packages("devtools")
-library(devtools)
-```
-
-Then, run the following code to install and attach the `iprior` package.
-
-```{r iprior_install, eval=FALSE}
-install_github("haziqjamil/iprior")
-library(iprior)
-```
-
 ## Syntax
 
 To fit an I-prior model to `mod` regressing `y` against `x`, where these are contained in the data frame `dat`, the following syntax are equivalent.
@@ -52,7 +38,7 @@ mod <- iprior(y ~ x, data = dat)  # formula based input
 mod <- iprior(y = dat$y, x = dat$x)  # non-formula based input
 ```
 
-The call to `iprior()` can be accompanied by model options in the form of `model = list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control = list()`. Find the full list of options by typing `?iprior` in R.
+The call to `iprior()` can be accompanied by model options in the form of `model = list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control = list()`. Find the full list of options by typing `?iprior` in R, or visiting [this wiki page](https://github.com/haziqjamil/iprior/wiki/Features-of-iprior).
 
 ## Example 1: Multiple linear regression
 
