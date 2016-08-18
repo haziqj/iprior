@@ -13,7 +13,7 @@ There were 2 NOTEs:
   sub-directories of 1Mb or more:
     libs   7.7Mb 
   
-  This NOTE appears only with linux systems (i.e., it does not appear with OS X or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.
+  *This NOTE appears only with linux systems (i.e., it does not appear with OS X or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.*
 
 * checking CRAN incoming feasibility ... NOTE
   Maintainer: 'Haziq Jamil <haziq.jamil@gmail.com>'
@@ -29,3 +29,5 @@ There were 2 NOTEs:
   The Title field should be in title case, current version then in title case: 
   'Linear Regression using I-priors'
   'Linear Regression using I-Priors'
+
+  *This is my first submission. Wicher Bergsma is the name of a colleague whose paper I have cited in the Description field. iprior and lm are R functions which I have mentioned in the Description field. 'I-prior' is a proper noun which has already been correcly capitalised.*
