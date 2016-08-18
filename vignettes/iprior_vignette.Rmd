@@ -1,7 +1,7 @@
 ---
 title: "An R package for I-prior regression"
 author: "Haziq Jamil"
-date: "`r Sys.Date()`"
+date: "2016-08-19"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{An R package for I-prior modelling}
