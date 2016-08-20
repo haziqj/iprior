@@ -18,7 +18,14 @@ R/iprior makes use of several C++ code, so as a prerequisite, you must have a wo
 -   On Mac, install Xcode from the app store.
 -   On Linux, `sudo apt-get install r-base-dev` or similar.
 
-Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
+Install R/iprior by downloading the latest CRAN release.
+
+```r
+install.packages("iprior")
+library(iprior)
+```
+
+If you wish to install the latest developmental release, then you can do so by getting it from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
 
 ``` r
 install.packages("devtools")
