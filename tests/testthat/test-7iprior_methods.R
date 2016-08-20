@@ -57,3 +57,10 @@ test_that("Progress function",{
 
 })
 
+test_that("sigma method",{
+
+  mod <- iprior(stack.loss ~ ., data = stackloss, control = list(silent = TRUE,
+                                                                 maxit = 1))
+  expect_that(sigma(mod), is_a("numeric"))
+
+})

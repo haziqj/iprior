@@ -185,8 +185,28 @@ findH2 <- function(z, ind1, ind2){
 	# y
 # }
 
+if (getRversion() < "3.3.0") {
+  sigma <- function(object, ...) UseMethod("sigma")
+}
+
+#' Obtain the standard deviation of the residuals 'sigma'
+#'
+#' Extract the standard deviation of the residuals. For I-prior models, this is
+#' \code{sigma = 1 / sqrt(psi)}.
+#'
+#' This basically obtains \code{object$sigma}. For \code{R (>= 3.3.0)} then
+#' \code{sigma} is an S3 method with the default method coming from the
+#' \code{stats} package.
+#'
+#' @param object An object of class \code{ipriorMod}.
+#' @param ... This is not used here.
+#'
+#' @rawNamespace if (getRversion() >= "3.3.0") importFrom(stats,sigma)
+#' @rawNamespace if (getRversion() < "3.3.0") export(sigma)
+#' @name sigma
 #' @export
 sigma.ipriorMod <- function(object, ...) object$sigma
+
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after

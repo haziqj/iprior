@@ -1,3 +1,7 @@
+# v0.6.1.9000
+
+* Fix for the installation error (#26) on old R releases (prior to 3.3.0). This error was caused by the generic S3 method `sigma()` not being available from the `stats` package prior to R v3.3.0. 
+
 # v0.6.1
 
 * Several bug fixes and cleanups makes this a CRAN-ready release.
@@ -26,7 +30,7 @@
 # v0.4.5
  
 * Added the 'predicted log-likelihood feature' in the EM reporting.
-* WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n>1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue #20.
+* WARNING: The I-prior package is currently not optimised for large datasets yet. You might encounter debilitating slowness for `n > 1000`. This is mainly due to the matrix multiplication and data storing process when the EM initialises. See issue #20.
  
 # v0.4.4
 
