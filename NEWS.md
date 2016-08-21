@@ -1,4 +1,4 @@
-# v0.6.1.9000
+# v0.6.2
 
 * Fix for the installation error (#26) on old R releases (prior to 3.3.0). This error was caused by the generic S3 method `sigma()` not being available from the `stats` package prior to R v3.3.0. 
 
