@@ -1,6 +1,8 @@
 # R/iprior: An R package for I-prior regression
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
+[![CRAN Status Badge](http://www.r-pkg.org/badges/version/iprior)](http://cran.r-project.org/package=iprior)
+[![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](http://cran.rstudio.com/web/packages/iprior/index.html)
 
 Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy.
 
@@ -16,7 +18,14 @@ R/iprior makes use of several C++ code, so as a prerequisite, you must have a wo
 -   On Mac, install Xcode from the app store.
 -   On Linux, `sudo apt-get install r-base-dev` or similar.
 
-Install R/iprior from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
+Install R/iprior by downloading the latest CRAN release.
+
+```r
+install.packages("iprior")
+library(iprior)
+```
+
+If you wish to install the latest developmental release, then you can do so by getting it from this GitHub repository. To do this, you must first install the [devtools](https://github.com/hadley/devtools) package.
 
 ``` r
 install.packages("devtools")
