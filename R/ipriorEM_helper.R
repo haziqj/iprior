@@ -119,9 +119,9 @@ ipriorEMClosedForm <- function() {
     lambdaExpand()
     BlockB(k)
     T1 <- sum(Psql[[k]] * W.hat)
-    T2 <- 2 * crossprod(Y - alpha, crossprod(Pl[[k]], w.hat)) -
-          sum(Sl[[k]] * W.hat)
-    lambda.tmp[k] <- as.vector(T2 / (2 * T1))
+    T2 <- crossprod(Y - alpha, crossprod(Pl[[k]], w.hat)) -
+          (1 / 2) * sum(Sl[[k]] * W.hat)
+    lambda.tmp[k] <- as.vector(T2 / T1)
   }
   assign("lambda", lambda.tmp, envir = parent.frame())
 
