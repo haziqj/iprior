@@ -150,6 +150,7 @@ kernL.default <- function(y, ..., model = list()) {
   }
   kernel <- rep(NA, p)
   suppressWarnings(kernel[] <- mod$kernel)
+  # The next two lines ensure that the Pearson kernel is used for factors
   whichPearson <- unlist(lapply(x, function(x) {is.factor(x) | is.character(x)}))
   kernel[whichPearson] <- "Pearson"
   mod$kernel <- kernel

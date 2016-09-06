@@ -1,6 +1,7 @@
-# v0.6.2.9000
+# v0.6.2.9001
 
 * Changed some code to match JSS paper.
+* Commented on the line where Pearson kernels are always used for factor-type variables. Should this always be the case?
 
 # v0.6.2
 
