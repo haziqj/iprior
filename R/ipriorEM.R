@@ -19,9 +19,9 @@
 ################################################################################
 
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
-                     silent = FALSE, lambda.init = NULL, psi.init = NULL,
-                     clean = FALSE, paramprogress = FALSE, force.regEM = FALSE,
-                     force.nlm = FALSE){
+                     silent = FALSE, alpha = NULL, lambda.init = NULL,
+                     psi.init = NULL, clean = FALSE, paramprogress = FALSE,
+                     force.regEM = FALSE, force.nlm = FALSE){
   # This is the EM algorithm engine which estimates the I-prior model
   # parameters.
   #
@@ -59,7 +59,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   }
 
 	# Initialise parameters ------------------------------------------------------
-	alpha <- as.numeric(mean(Y))
+  if (is.null(alpha)) alpha <- as.numeric(mean(Y))
 	if (is.null(psi.init)) psi <- abs(rnorm(1)) else psi <- psi.init
 	if (is.null(lambda.init)) lambda <- abs(rnorm(l, sd = 0.1))
 	else{

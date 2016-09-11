@@ -1,7 +1,8 @@
-# v0.6.2.9001
+# v0.6.2.9002
 
 * Changed some code to match JSS paper.
 * Commented on the line where Pearson kernels are always used for factor-type variables. Should this always be the case?
+* Added control option to set intercept at a fixed value.
 
 # v0.6.2
 
