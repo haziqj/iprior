@@ -55,7 +55,7 @@ slope <- function(object){
 	# if (any(isFBM(object$ipriorKernel$kernel))) {
 	#   stop("Functionality is only meant for Canonical kernels.", call. = FALSE)
 	# }
-	dat <- cbind(y, as.data.frame(x))
+	dat <- cbind(y, as.data.frame(x[[1]]))
 	if (any(whichPearson)) {
 		grp <- dat[[which(whichPearson) + 1]]
 		dat <- split(dat, grp)

@@ -6,7 +6,7 @@
 #' @param object An object of class \code{ipriorKernel}.
 #' @param method One of \code{c("ipriorOptim", "iprior")} for model fitting of
 #'   the final I-prior model.
-#' @param control Only option available is \code{silent} (logical) for now.
+#' @param silent (logical) Run the optimisation silently or not.
 #'
 #' @return An \code{ipriorMod} object.
 #' @export
@@ -25,8 +25,9 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
   }
   method <- match.arg(method,  c("ipriorOptim", "iprior"))
 
-  res <- optimise(fbmOptimDeviance, c(0, 1), object = object, silent = silent)
-  update(object, round(res$min, 5))
+  res <- stats::optimise(fbmOptimDeviance, c(0, 1),
+                         object = object, silent = silent)
+  update.ipriorKernel(object, round(res$min, 5))
 
   if (!silent) cat("Optimum Hurst coefficient found.\n")
   if (!silent) cat("\nPreparing iprior output... ")
@@ -46,9 +47,9 @@ fbmOptimDeviance <- function(gamma, object, silent = FALSE) {
   # Returns deviance of an ipriorKernel object for a particular Hurst coefficient
   # gamma. Used to find optimum value of gamma in fbmOptim().
   if (!silent) cat("Hurst = ", gamma, "\n")
-  update(object, gamma)
+  update.ipriorKernel(object, gamma)
   mod.fit <- ipriorOptim(object, control = list(silent = TRUE))
-  return(deviance(mod.fit))
+  return(deviance.ipriorMod(mod.fit))
 }
 
 # mod <- kernL(y ~., datfbm, model = list(kernel = "FBM"))
