@@ -1,8 +1,10 @@
-# v0.6.2.9002
+# v0.6.2.9003
 
 * Changed some code to match JSS paper.
 * Commented on the line where Pearson kernels are always used for factor-type variables. Should this always be the case?
 * Added control option to set intercept at a fixed value.
+* Added (hidden) options for `str()` when printing `ipriorKernel` objects.
+* Added function to find optimum Hurst coefficient for fitting FBM I-prior models.
 
 # v0.6.2
 

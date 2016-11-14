@@ -67,3 +67,11 @@ test_that("iprior and optim wrapper",{
   expect_that(mod.fit, is_a("ipriorMod"))
 
 })
+
+test_that("FBM optim wrapper",{
+
+  mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
+  mod.fit <- fbmOptim(mod, silent = TRUE)
+  expect_that(mod.fit, is_a("ipriorMod"))
+
+})

@@ -15,7 +15,7 @@
 #' mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
 #' (mod.iprior <- fbmOptim(mod))
 fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
-                     control = list(silent = FALSE)) {
+                     silent = FALSE) {
   if (!is.ipriorKernel(object)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }
@@ -23,10 +23,9 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
     stop("This only works if at least one of the kernels is FBM.",
          call. = FALSE)
   }
-  method <- match.arg(method,  c("iprior", "ipriorOptim"))
-  silent <- control$silent
+  method <- match.arg(method,  c("ipriorOptim", "iprior"))
 
-  res <- optimise(fbmOptimDeviance, c(0, 1), object = object)
+  res <- optimise(fbmOptimDeviance, c(0, 1), object = object, silent = silent)
   update(object, round(res$min, 5))
 
   if (!silent) cat("Optimum Hurst coefficient found.\n")
@@ -43,10 +42,10 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
   mod.fit
 }
 
-fbmOptimDeviance <- function(gamma, object) {
+fbmOptimDeviance <- function(gamma, object, silent = FALSE) {
   # Returns deviance of an ipriorKernel object for a particular Hurst coefficient
   # gamma. Used to find optimum value of gamma in fbmOptim().
-  cat("Hurst = ", gamma, "\n")
+  if (!silent) cat("Hurst = ", gamma, "\n")
   update(object, gamma)
   mod.fit <- ipriorOptim(object, control = list(silent = TRUE))
   return(deviance(mod.fit))

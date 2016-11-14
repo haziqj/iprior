@@ -4,8 +4,7 @@
 \alias{fbmOptim}
 \title{Find the Hurst coefficient of a FBM I-prior model}
 \usage{
-fbmOptim(object, method = c("ipriorOptim", "iprior"), control = list(silent
-  = FALSE))
+fbmOptim(object, method = c("ipriorOptim", "iprior"), silent = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{ipriorKernel}.}
