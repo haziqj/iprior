@@ -32,6 +32,8 @@ is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
+is.ipriorX <- function(x) inherits(x, "ipriorX")
+
 testXForm <- function(x) {
   # Tests whether object x is a data frame fitted using formula interface.
   xform <- FALSE

@@ -121,9 +121,11 @@ kernL <- function(y, ..., model = list()) UseMethod("kernL")
 
 #' @export
 kernL.default <- function(y, ..., model = list()) {
-  x <- list(...)
+  x <- list(...)  # don't list if updating ipriorKernel
+  if (length(x) == 1 && is.ipriorX(x[[1]])) x <- unlist(x, recursive = FALSE)
   if (testXForm(x)) x <- unlist(x, recursive = FALSE)
   x <- lapply(x, as.matrix)
+  class(x) <- "ipriorX"
   n <- length(y)
   p <- length(x)
 
@@ -477,6 +479,6 @@ print.ipriorKernel <- function(x, ...) {
   cat("Number of scale parameters, l = ", x$l, "\n")
   cat("Number of interactions = ", x$no.int + x$no.int.3plus, "\n")
   cat("\nInfo on H matrix:\n\n")
-  str(x$Hl)
+  str(x$Hl, ...)
   cat("\n")
 }

@@ -20,55 +20,47 @@
 
 # The current version of the package does not benefit from this update() function
 # currently. Decide to not export this for now.
-#' Update an \code{ipriorKernel} object
-#'
-#' Function to add or delete data from a loaded  \code{ipriorKernel} object.
-#' Some complex models can't be fitted using a single formula call to
-#' \code{ipriorKernel}, so having an update function is useful in this regard.
-#'
-#' @param object An \code{ipriorKernel} object.
-#' @param add A list of any new data to be added.
-#' @param delete A character vector of variable names to delete, or a numeric
-#'   vector of positions of the data to be deleted.
-#' @param model Any changes to the list of model options (see
-#'   \code{\link{ipriorKernel}} for the list of options available.)
-#' @param ... Not used.
-#'
-#' @examples
-#' # Single non-formula vs dual formula fit of squared terms using update
-#' # Non-formula way
-#' mod.single <- kernL(stack.loss, stack.x, stack.x ^ 2,
-#'                     model = list(order = c("1", "1^2")))
-#'
-#' # Equivalent formula way
-#' mod.dual <- kernL(stack.loss ~ ., stackloss)
-#' stack.x2 <- stack.x^2
-#' update(mod.dual, add = list(stack.x2), model = list(order = c("1", "1^2")))
-#'
-#' @name update
-#' @export
-# update.ipriorKernel <- function(object, add = list(), delete = NULL,
-#                                 model = list(), ...) {
-#   x <- object$x
-# 	y <- object$Y
-# 	mod <- object$model
-# 	names(mod)[3] <- "interactions"
-# 	mod[names(model)] <- model
 #
-# 	if (!is.null(delete)) {
-# 		if (is.character(delete)) delete <- match(delete, names(x))
-# 		x <- x[-delete]
-# 		model$xname <- model$xname[-delete]
-# 	}
+# 14/11/2016: Need an update() function to update the Hurst coefficient of an
+# ipriorKernel object for use in fbmOptim(). No need to export, this is just an
+# internal function.
+
+# Update an \code{ipriorKernel} object
 #
-# 	if (length(add) != 0) {
-# 		if (!is.list(add)) add <- list(add)
-# 		x <- c(x, add)
-# 	}
+# Function to add or delete data from a loaded  \code{ipriorKernel} object.
+# Some complex models can't be fitted using a single formula call to
+# \code{ipriorKernel}, so having an update function is useful in this regard.
 #
-# 	ipriorKernel <- kernL(y = y, x, model = mod)
-# 	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
-# }
+# @param object An \code{ipriorKernel} object.
+# @param add A list of any new data to be added.
+# @param delete A character vector of variable names to delete, or a numeric
+#  vector of positions of the data to be deleted.
+# @param model Any changes to the list of model options (see
+#   \code{\link{ipriorKernel}} for the list of options available.)
+# @param ... Not used.
+#
+# @examples
+# # Single non-formula vs dual formula fit of squared terms using update
+# # Non-formula way
+# mod.single <- kernL(stack.loss, stack.x, stack.x ^ 2,
+#                     model = list(order = c("1", "1^2")))
+#
+# # Equivalent formula way
+# mod.dual <- kernL(stack.loss ~ ., stackloss)
+# stack.x2 <- stack.x^2
+# update(mod.dual, add = list(stack.x2), model = list(order = c("1", "1^2")))
+#
+# @name update
+# @export
+update.ipriorKernel <- function(object, new.Hurst, ...) {
+  # Only to update the Hurst coefficient (for now at least...)
+  x <- object$x
+  y <- object$Y
+	mod <- object$model
+	mod$Hurst <- new.Hurst
+  suppressWarnings(ipriorKernel <- kernL(y = y, x, model = mod))
+	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
+}
 
 # DEPRECATED -------------------------------------------------------------------
 # # update.iprior <- function(mod, ...){
