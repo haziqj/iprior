@@ -12,7 +12,7 @@ fbmOptim(object, method = c("ipriorOptim", "iprior"), silent = FALSE)
 \item{method}{One of \code{c("ipriorOptim", "iprior")} for model fitting of
 the final I-prior model.}
 
-\item{control}{Only option available is \code{silent} (logical) for now.}
+\item{silent}{(logical) Run the optimisation silently or not.}
 }
 \value{
 An \code{ipriorMod} object.
