@@ -48,19 +48,23 @@ slope <- function(object){
 	x <- object$ipriorKernel$x
 	whichPearson <- isPea(object$ipriorKernel$model$kernel)
 	whichCan <- isCan(object$ipriorKernel$model$kernel)
-	if (sum(whichPearson, whichCan) > 1) {
+	if (sum(whichPearson, whichCan) > 2) {
 	  stop("Functionality not supported yet for more than 2 variables.",
 	       call. = FALSE)
 	}
 	# if (any(isFBM(object$ipriorKernel$kernel))) {
 	#   stop("Functionality is only meant for Canonical kernels.", call. = FALSE)
 	# }
-	dat <- cbind(y, as.data.frame(x[[1]]))
+	class(x) <- NULL
+	dat <- data.frame(y = y, x)
 	if (any(whichPearson)) {
-		grp <- dat[[which(whichPearson) + 1]]
-		dat <- split(dat, grp)
-		res <- sapply(dat, function(x) coef(lm(x[, 1] ~ x[, 2]))[2])
+	  wherePea <- which(whichPearson) + 1
+		grp <- dat[[wherePea]]
+		dat <- split(dat[-wherePea], grp)
+		res <- sapply(dat, function(x) coef(lm(y ~ ., data = x))[2])
 		names(res) <- levels(grp)
+		if (!any(whichCan)) warning("No slopes available for non-Canonical kernel.",
+		                           call. = FALSE)
 	} else {
 		res <- coef(lm(dat[, 1] ~ dat[, 2]))[2]
 		names(res) <- "slope"
