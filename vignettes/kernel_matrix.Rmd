@@ -1,8 +1,12 @@
 ---
 title: "Manual for the kernel matrix list"
 author: "Haziq Jamil"
-date: "10/1/2017"
-output: html_document
+date: "2017-01-10"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An R package for I-prior modelling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
