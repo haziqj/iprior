@@ -1,7 +1,7 @@
 # R/iprior: An R package for I-prior regression
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
-[![CRAN Status Badge](http://www.r-pkg.org/badges/version/iprior)](http://cran.r-project.org/package=iprior)
+[![CRAN Status Badge](http://www.r-pkg.org/badges/version/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 
 Based on the manuscript entitled "Objective Bayes regression using I-priors" by Wicher Bergsma [2016, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. I-priors are a class of such priors based on the principle of maximum entropy.

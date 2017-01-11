@@ -10,8 +10,9 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
+library(knitr)
+library(iprior)
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
-devtools::load_all("/Users/haziqjamil/Desktop/GitHub/iprior")
 ```
 
 ## Introduction
