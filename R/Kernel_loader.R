@@ -335,8 +335,9 @@ kernL.default <- function(y, ..., model = list()) {
       # Prepare the cross-product terms of squared kernel matrices. This is a
       # list of q_choose_2.
       for (j in 1:length(ind1)) {
-        H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]] +
-          Hl[[ind2[j]]] %*% Hl[[ind1[j]]]
+        tmp.H2 <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+          # + Hl[[ind2[j]]] %*% Hl[[ind1[j]]]  # old way. they're symmetric!
+        H2l[[j]] <- tmp.H2 + t(tmp.H2)
         pb.count <- pb.count + 1
         if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
@@ -350,6 +351,8 @@ kernL.default <- function(y, ..., model = list()) {
           if (!mod$silent) setTxtProgressBar(pb, pb.count)
         }
         BlockB <- function(k) {
+          # Calculate Psql instead of directly P %*% P because this way
+          # is < O(n^3).
           indB <- ind[[k]]
           lambda.P <- c(1, lambda[indB$k.int.lam])
           Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,

@@ -135,31 +135,29 @@ indxFn <- function(k) {
 	k.noint <- which(!(ind.int1 | ind.int2)) + p	# the opposite of k.int
 
 	# P.mat %*% R.mat + R.mat %*% P.mat indices ----------------------------------
-	za <- which((ind1 %in% k & ind2 %in% nok) | (ind2 %in% k & ind1 %in% nok))
-	grid.PR <- expand.grid(k.int, nok)
-	zb <- which(	(ind1 %in% grid.PR[,1] & ind2 %in% grid.PR[,2]) |
-					(ind2 %in% grid.PR[,1] & ind1 %in% grid.PR[,2])
-	)
+	grid.PR1 <- expand.grid(k, nok)
+	za <- apply(grid.PR1, 1, findH2, ind1 = ind1, ind2 = ind2)
+	grid.PR2 <- expand.grid(k.int, nok)
+	zb <- apply(grid.PR2, 1, findH2, ind1 = ind1, ind2 = ind2)
 	grid.PR.lam <- expand.grid(k.int.lam, nok)
 
 	# P.mat %*% U.mat + U.mat %*% P.mat indices ----------------------------------
 	grid.PU1 <- expand.grid(k, k.noint)
-	zc <- which((ind1 %in% grid.PU1[,1] & ind2 %in% grid.PU1[,2]) |
-					    (ind2 %in% grid.PU1[,1] & ind1 %in% grid.PU1[,2]))
+	zc <- apply(grid.PU1, 1, findH2, ind1 = ind1, ind2 = ind2)
 	grid.PU2 <- expand.grid(k.int, k.noint)
 	zd <- apply(grid.PU2, 1, findH2, ind1 = ind1, ind2 = ind2)
 	grid.PU.lam <- expand.grid(k.int.lam, k.noint)
 
 	# P.mat %*% P.mat indices ----------------------------------------------------
 	grid.Psq <- t(combn(c(k, k.int), 2))
-	ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2 )
+	ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2)
 	grid.Psq.lam <- NULL
 	if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
 
 	list(
 	    k.int     = k.int,
 	    k.int.lam = k.int.lam,
-			PRU       = c(za,zc,zb,zd),
+			PRU       = c(za, zc, zb, zd),
 			PRU.lam1  = c(rep(0, length(nok) + length(k.noint)),
 			            grid.PR.lam[,1],
 			            grid.PU.lam[,1]),
@@ -174,7 +172,7 @@ indxFn <- function(k) {
 
 findH2 <- function(z, ind1, ind2){
   # This function finds position of H2 (cross-product terms of H). Used in
-  # indxFn()
+  # indxFn(). z is a dataframe created from expand.grid().
   x <- z[1]; y <- z[2]
   which((ind1 == x & ind2 == y) | (ind2 == x & ind1 == y))
 }
