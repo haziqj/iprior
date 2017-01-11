@@ -115,6 +115,9 @@
 #' kernL(stack.loss ~ ., data = stackloss,
 #'       model = list(yname = "response", xname = c("air", "water", "acid")))
 #'
+#' # Sometimes the print output is too long, can use str() options here
+#' print(mod, strict.width = "cut", width = 50)
+#'
 #' @name kernL
 #' @export
 kernL <- function(y, ..., model = list()) UseMethod("kernL")
