@@ -8,7 +8,7 @@ r_github_packages:
   - haziqjamil/iprior
 
 script:
-  - travis_wait 60 R CMD check --as-cran --use-valgrind
+  - travis_wait 60 R CMD check iprior_0.6.3.tar.gz --as-cran --use-valgrind
 
 # r_check_args: '--as-cran --use-valgrind'
 
