@@ -6,14 +6,7 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
-There were 2 NOTEs:
-
-* checking CRAN incoming feasibility ... NOTE
-  Maintainer: ‘Haziq Jamil <haziq.jamil@gmail.com>’
-
-  Days since last update: 2
-
-  *Fixed failed installation under R-oldrelease.*
+There were 1 NOTE:
 
 * checking installed package size ... NOTE
   installed size is  8.2Mb
@@ -21,3 +14,6 @@ There were 2 NOTEs:
     libs   7.7Mb 
   
   *This NOTE appears only with linux systems (i.e., it does not appear with OS X or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.*
+
+## Downstream dependencies
+There are currently no downstream dependencies for this package.
