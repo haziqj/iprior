@@ -3,3 +3,14 @@
 language: r
 cache: packages
 sudo: false
+r_check_args: '--use-valgrind'
+
+addons:
+  apt:
+    packages:
+      - valgrind
+
+before_install:
+  - "head ~/.valgrindrc || echo '~/.valgrindrc does not exist'"
+  - echo VALGRIND_OPTS: $VALGRIND_OPTS
+  - cat ./valgrindrc >> ~/.valgrindrc
