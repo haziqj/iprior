@@ -2,7 +2,10 @@
 
 language: r
 cache: packages
-sudo: false
+sudo: required
+
+r_github_packages:
+  - haziqjamil/iprior
 
 script:
   - travis_wait 60 R CMD check --as-cran --use-valgrind
