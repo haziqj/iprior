@@ -9,7 +9,7 @@ There were no ERRORs or WARNINGs.
 There were 1 NOTE:
 
 * checking installed package size ... NOTE
-  installed size is  8.2Mb
+  installed size is  8.3Mb
   sub-directories of 1Mb or more:
     libs   7.7Mb 
   
