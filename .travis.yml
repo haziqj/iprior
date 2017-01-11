@@ -3,14 +3,13 @@
 language: r
 cache: packages
 sudo: false
-r_check_args: '--use-valgrind'
+
+r_check_args: '--as-cran --use-valgrind'
 
 addons:
   apt:
     packages:
       - valgrind
 
-before_install:
-  - "head ~/.valgrindrc || echo '~/.valgrindrc does not exist'"
-  - echo VALGRIND_OPTS: $VALGRIND_OPTS
-  - cat ./valgrindrc >> ~/.valgrindrc
+env:
+  - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
