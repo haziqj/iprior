@@ -1,22 +1,19 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: r
+
 cache: packages
-sudo: required
 
-r_github_packages:
-  - haziqjamil/iprior
+sudo: false
 
-script:
-  - travis_wait 60 R CMD check iprior_0.6.3.tar.gz --as-cran --use-valgrind
-
+r_check_args: '--as-cran'
 # r_check_args: '--as-cran --use-valgrind'
 
-addons:
-  apt:
-    packages:
-      - valgrind
+# addons:
+#   apt:
+#     packages:
+#       - valgrind
 
-env:
-  - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
+# env:
+#   - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
   
