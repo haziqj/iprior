@@ -69,7 +69,7 @@ isCan <- function(x) x == "Canonical"
 
 isPea <- function(x) x == "Pearson"
 
-isFBM <- function(x) x == "FBM"
+isFBM <- function(x) grepl("FBM", x)
 
 canPeaFBM <- function(x, kernel, gamma, y) {
   if (isCan(kernel)) res <- fnH2(x, y)
@@ -98,13 +98,38 @@ addZeroesIntr3Plus <- function(x) {
   })
 }
 
+splitKernel <- function(kernel) {
+  # Helper function to split the FBMs from the Hurst coefficients, if any
+  paste(lapply(strsplit(kernel, ","), function(x) x[1]))
+}
+
+splitHurst <- function(kernel) {
+  # Helper function to split the FBMs from the Hurst coefficients, if any
+  suppressWarnings(
+    tmp <- as.numeric(paste(lapply(strsplit(kernel, ","), function(x) x[2])))
+  )
+  tmp[is.na(tmp)] <- 0.5
+  tmp
+}
+
 hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus,
                      xstar = vector("list", p)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
   # and predict.R
   p <- length(x)
-  H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel),
-              gamma = gamma, y = xstar, SIMPLIFY = FALSE)
+
+  # Check how many Hurst coefficients are provided -----------------------------
+  # if (length(gamma) < sum(isFBM(kernel))) {
+  #   warning("Number of Hurst coefficients supplied is less than the number of FBM kernels used.", call. = FALSE)
+  # }
+  # if (length(gamma) > p) {
+  #   stop("Number of Hurst coefficients supplied is more than the number of FBM kernels used.", call. = FALSE)
+  # }
+
+  suppressWarnings(
+    H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel),
+                gamma = gamma, y = xstar, SIMPLIFY = FALSE)
+  )
   if (!is.null(intr)) {
 	  # Add in interactions, if any.
 		for (j in 1:no.int) {

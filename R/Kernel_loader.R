@@ -133,7 +133,7 @@ kernL.default <- function(y, ..., model = list()) {
   p <- length(x)
 
   # Model options and checks ---------------------------------------------------
-  mod <- list(kernel = "Canonical", Hurst = 0.5, interactions = NULL,
+  mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
               silent = TRUE, order = as.character(1:p), intr.3plus = NULL,
               delete = NULL)
@@ -153,19 +153,19 @@ kernL.default <- function(y, ..., model = list()) {
     warning(paste0("Too many kernel options specification (not of length ", p, ")"),
             call. = FALSE)
   }
-  kernel <- rep(NA, p)
-  suppressWarnings(kernel[] <- mod$kernel)
+  mod$Hurst <- kernel <- rep(NA, p)
+  suppressWarnings(kernel[] <- splitKernel(mod$kernel))
   # The next two lines ensure that the Pearson kernel is used for factors
   whichPearson <- unlist(lapply(x, function(x) {is.factor(x) | is.character(x)}))
   kernel[whichPearson] <- "Pearson"
-  mod$kernel <- kernel
-  check.kern <- any("Canonical" %in% kernel)
-  check.kern <- any(c(check.kern, "FBM" %in% kernel))
-  check.kern <- any(c(check.kern, "Pearson" %in% kernel))
-  if (!check.kern) {
+  check.kern <- match(kernel, c("FBM", "Canonical", "Pearson"))
+  if (any(is.na(check.kern))) {
     stop("kernel should be one of \"Canonical\", \"Pearson\", or \"FBM\".",
          call. = FALSE)
   }
+  if (any(!is.na(mod$Hurst))) warning("Hurst option deprecated. Use model option \"kernel = \"FBM,Hurst\" instead.", call. = FALSE)
+  mod$Hurst[] <- splitHurst(mod$kernel)
+  mod$kernel <- kernel
 
   # Check for higher order terms -----------------------------------------------
   mod$order <- as.character(mod$order)
