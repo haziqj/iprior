@@ -361,16 +361,6 @@ print.ipriorSummary <- function(x, ...) {
   x.pea <- x.names[isPea(x$kernel)]
   x.can <- x.names[isCan(x$kernel)]
   x.fbm <- x.names[isFBM(x$kernel)]
-  Hurst <- x$Hurst[isFBM(x$kernel)]
-  un.Hurst <- unique(Hurst)
-  uH <- length(un.Hurst)
-  printFBM <- list(NULL)
-  for (i in 1:uH) {
-    printFBM[[i]] <- paste0("Fractional Brownian Motion with Hurst coef. ",
-                            un.Hurst[i], " (", paste(x.fbm[Hurst == un.Hurst[i]],
-                                                     collapse = ", "), ")")
-  }
-  printFBM <- paste(printFBM, collapse = "\n")
   printPea <- paste0("Pearson (", paste(x.pea, collapse = ", "), ")")
   printCan <- paste0("Canonical (", paste(x.can, collapse = ", "), ")")
 
@@ -378,7 +368,19 @@ print.ipriorSummary <- function(x, ...) {
   cat("RKHS used:\n")
   if (!(length(x.pea) == 0)) cat(printPea, "\n")
   if (!(length(x.can) == 0)) cat(printCan, "\n")
-  if (!(length(x.fbm) == 0)) cat(printFBM, "\n")
+  if (!(length(x.fbm) == 0)) {
+    Hurst <- x$Hurst[isFBM(x$kernel)]
+    un.Hurst <- unique(Hurst)
+    uH <- length(un.Hurst)
+    printFBM <- list(NULL)
+    for (i in 1:uH) {
+      printFBM[[i]] <- paste0("Fractional Brownian Motion with Hurst coef. ",
+                              un.Hurst[i], " (", paste(x.fbm[Hurst == un.Hurst[i]],
+                                                       collapse = ", "), ")")
+    }
+    printFBM <- paste(printFBM, collapse = "\n")
+    cat(printFBM, "\n")
+  }
   if (x$l == 1) {
     cat("with a single scale parameter.\n")
   } else {
