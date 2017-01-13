@@ -408,7 +408,7 @@ print.ipriorSummary <- function(x, ...) {
   }
   cat("\nStandard deviation of errors:", signif(sigma, digits = 4),
       "with S.E.:", round(sesigma, digits = 4))
-  cat("\nT2 statistic:", signif(x$T2, digits = 4), "on ??? degrees of freedom.")
+  # cat("\nT2 statistic:", signif(x$T2, digits = 4), "on ??? degrees of freedom.")
   cat("\nLog-likelihood value:", x$log.lik, "\n")
   cat("\n")
 }

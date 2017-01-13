@@ -6,6 +6,7 @@
 * Added (hidden) options for `str()` when printing `ipriorKernel` objects.
 * Added function to find optimum Hurst coefficient for fitting FBM I-prior models.
 * Wrote vignette manual guide which details how to calculate the matrices required for the closed form estimate of `lambda`.
+* Removed the T2 statistic from the `summary()` output for now.
 
 # v0.6.2
 
