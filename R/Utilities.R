@@ -108,7 +108,7 @@ splitHurst <- function(kernel) {
   suppressWarnings(
     tmp <- as.numeric(paste(lapply(strsplit(kernel, ","), function(x) x[2])))
   )
-  tmp[is.na(tmp)] <- 0.5
+  # tmp[is.na(tmp)] <- 0.5
   tmp
 }
 

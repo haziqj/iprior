@@ -54,16 +54,23 @@ iprior <- function(...) {
 #'   when not using formula or \code{"y, x"} input.
 #' @param control (optional) A list of control options for the EM algorithm and
 #'   output: \describe{\item{\code{maxit}}{The maximum number of iterations
-#'   until the EM stops. Defaults to \code{50000}} \item{\code{stop.crit}.}{The
+#'   until the EM stops. Defaults to \code{50000}.} \item{\code{stop.crit}.}{The
 #'   EM stopping criteria, which is the difference in succesive log-likelihood
 #'   values. Defaults to \code{1e-7}.} \item{\code{progress}}{Option for the
 #'   reporting of the EM while the function is running. Choose from one of
 #'   \code{"lite"} (default), \code{"full"} (log-likelihood and parameters
-#'   trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.}
-#'   \item{\code{report}}{The EM reports every \code{report} iterations.
-#'   Defaults to \code{100}.} \item{\code{silent}}{Logical, whether the EM
-#'   report should be printed or not. This is the same as setting \code{progress
-#'   = "none"}.} }
+#'   trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.
+#'   Visit the
+#'   \href{https://github.com/haziqjamil/iprior/wiki/The-predicted-log-likelihood-feature}{Wiki}
+#'   page for more information.} \item{\code{report}}{The EM reports every
+#'   \code{report} iterations. Defaults to \code{100}.}
+#'   \item{\code{silent}}{Logical, whether the EM report should be printed or
+#'   not. This is the same as setting \code{progress = "none"}.}
+#'   \item{\code{lambda, psi, sigma}}{These are options to set the initial
+#'   values of the parameters. For convenience, the user may choose to input one
+#'   of \code{psi} or \code{sigma}, but not both, since \code{psi = 1 / sigma ^
+#'   2}.} \item{\code{intercept}}{It is possible to set a fixed value for the
+#'   intercept (not recommended).}}
 #'
 #' @return An object of class \code{ipriorMod} which is a list of 24 items. The
 #'   more important items are described below. \describe{ \item{\code{alpha,
@@ -269,10 +276,16 @@ iprior.ipriorMod <- function(object, control = list(), ...) {
 #' @export
 print.ipriorMod <- function(x, ...) {
   kernel <- x$ipriorKernel$model$kernel
+  Hurst <- x$ipriorKernel$model$Hurst
   cat("\nCall:\n")
   print(x$call)
-  FBM <- paste0("Fractional Brownian Motion with Hurst coef. ",
-                x$ipriorKernel$model$Hurst)
+  if (length(unique(Hurst)) > 1) {
+    FBM <- "Fractional Brownian Motion with multiple Hurst coef."
+  } else {
+    FBM <- paste0("Fractional Brownian Motion with Hurst coef. ",
+                  unique(Hurst))
+  }
+
   kerneltypes <- c("Pearson", "Canonical", FBM)
   which.kern <- c("Pearson", "Canonical", "FBM") %in% unique(kernel)
   #                  "Pearson & Canonical", paste("Pearson &", FBM),
@@ -348,10 +361,19 @@ print.ipriorSummary <- function(x, ...) {
   x.pea <- x.names[isPea(x$kernel)]
   x.can <- x.names[isCan(x$kernel)]
   x.fbm <- x.names[isFBM(x$kernel)]
+  Hurst <- x$Hurst[isFBM(x$kernel)]
+  un.Hurst <- unique(Hurst)
+  uH <- length(un.Hurst)
+  printFBM <- list(NULL)
+  for (i in 1:uH) {
+    printFBM[[i]] <- paste0("Fractional Brownian Motion with Hurst coef. ",
+                            un.Hurst[i], " (", paste(x.fbm[Hurst == un.Hurst[i]],
+                                                     collapse = ", "), ")")
+  }
+  printFBM <- paste(printFBM, collapse = "\n")
   printPea <- paste0("Pearson (", paste(x.pea, collapse = ", "), ")")
   printCan <- paste0("Canonical (", paste(x.can, collapse = ", "), ")")
-  printFBM <- paste0("Fractional Brownian Motion with Hurst coef. ", x$Hurst,
-                     " (", paste(x.fbm, collapse = ", "), ")")
+
   cat("\n")
   cat("RKHS used:\n")
   if (!(length(x.pea) == 0)) cat(printPea, "\n")

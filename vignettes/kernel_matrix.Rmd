@@ -4,20 +4,20 @@ author: "Haziq Jamil"
 date: "2017-01-10"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{An R package for I-prior modelling}
+  %\VignetteIndexEntry{Manual for the kernel matrix list}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-library(knitr)
-library(iprior)
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(iprior)
 ```
 
 ## Introduction
 
-Adapted from Jamil \& Bergsma (2016). The M-step involving the scale parameters $\boldsymbol\lambda$ in the EM algorithm for I-prior models can be found in closed-form in the following situations:
+<!-- Adapted from Jamil \& Bergsma (2017).  -->
+The M-step involving the scale parameters $\boldsymbol\lambda$ in the EM algorithm for I-prior models can be found in closed-form in the following situations:
 
 1. A single scale parameter `lambda` being used.
 2. Non-parsimonious methods for higher-order terms and interactions.

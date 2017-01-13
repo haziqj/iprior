@@ -31,6 +31,8 @@
 #' smoothing effects. The smoothness is controlled somewhat by the Hurst
 #' coefficient.
 #'
+#' More information is available from the \href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
+#'
 #' @param x,y A vector, matrix or data frame. \code{x} and \code{y} must have
 #'   similar dimensions.
 #' @param gamma The Hurst coefficient when using the FBM kernel.

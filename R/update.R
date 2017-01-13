@@ -57,7 +57,8 @@ update.ipriorKernel <- function(object, new.Hurst, ...) {
   x <- object$x
   y <- object$Y
 	mod <- object$model
-	mod$kernel[isFBM(mod$kernel)] <- paste("FBM", new.Hurst, sep = ",")
+	# mod$kernel[isFBM(mod$kernel)] <- paste("FBM", new.Hurst, sep = ",")
+	mod$Hurst <- new.Hurst
   suppressWarnings(ipriorKernel <- kernL(y = y, x, model = mod))
 	assign(deparse(substitute(object)), ipriorKernel, envir = parent.frame())
 }

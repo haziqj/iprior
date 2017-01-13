@@ -46,6 +46,8 @@ automatically. The other two kernel types are for continuous variables, with
 the Canonical kernel used for "straight-line" effects and the FBM for
 smoothing effects. The smoothness is controlled somewhat by the Hurst
 coefficient.
+
+More information is available from the \href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
 }
 \seealso{
 The

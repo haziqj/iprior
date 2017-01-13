@@ -153,7 +153,7 @@ kernL.default <- function(y, ..., model = list()) {
     warning(paste0("Too many kernel options specification (not of length ", p, ")"),
             call. = FALSE)
   }
-  mod$Hurst <- kernel <- rep(NA, p)
+  Hurst <- kernel <- rep(NA, p)
   suppressWarnings(kernel[] <- splitKernel(mod$kernel))
   # The next two lines ensure that the Pearson kernel is used for factors
   whichPearson <- unlist(lapply(x, function(x) {is.factor(x) | is.character(x)}))
@@ -163,8 +163,14 @@ kernL.default <- function(y, ..., model = list()) {
     stop("kernel should be one of \"Canonical\", \"Pearson\", or \"FBM\".",
          call. = FALSE)
   }
-  if (any(!is.na(mod$Hurst))) warning("Hurst option deprecated. Use model option \"kernel = \"FBM,Hurst\" instead.", call. = FALSE)
-  mod$Hurst[] <- splitHurst(mod$kernel)
+  suppressWarnings(Hurst[] <- splitHurst(mod$kernel))
+  if (!is.null(mod$Hurst)) {
+    # User has set a single Hurst coefficient for all FBM kernels
+    suppressWarnings(Hurst[] <- mod$Hurst)
+    if (any(!is.na(Hurst))) warning("Overriding Hurst setting.", call. = FALSE)
+  }
+  Hurst[is.na(Hurst)] <- 0.5
+  mod$Hurst <- Hurst
   mod$kernel <- kernel
 
   # Check for higher order terms -----------------------------------------------

@@ -3,6 +3,10 @@
 #' From an \code{ipriorKernel} object, a golden section search of (0,1) is
 #' performed using \code{optimize()}.
 #'
+#' Currently, \code{fbmOptim()} will only search for a single optimum Hurst
+#' coefficient. If the model specified has multiple Hurst coefficients, this
+#' will be overridden with the single optimal Hurst value.
+#'
 #' @param object An object of class \code{ipriorKernel}.
 #' @param method One of \code{c("ipriorOptim", "iprior")} for model fitting of
 #'   the final I-prior model.
@@ -23,6 +27,13 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
     stop("This only works if at least one of the kernels is FBM.",
          call. = FALSE)
   }
+  Hurst <- object$model$Hurst[isFBM(object$model$kernel)]
+  un.Hurst <- unique(Hurst)
+  if (length(un.Hurst) > 1) {
+    warning("Currently, fbmOptim() will search for a single optimum Hurst coefficient.",
+         call. = FALSE)
+  }
+
   method <- match.arg(method,  c("ipriorOptim", "iprior"))
 
   res <- stats::optimise(fbmOptimDeviance, c(0, 1),

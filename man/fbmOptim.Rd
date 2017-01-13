@@ -21,6 +21,11 @@ An \code{ipriorMod} object.
 From an \code{ipriorKernel} object, a golden section search of (0,1) is
 performed using \code{optimize()}.
 }
+\details{
+Currently, \code{fbmOptim()} will only search for a single optimum Hurst
+coefficient. If the model specified has multiple Hurst coefficients, this
+will be overridden with the single optimal Hurst value.
+}
 \examples{
 mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
 (mod.iprior <- fbmOptim(mod))

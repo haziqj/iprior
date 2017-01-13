@@ -52,16 +52,23 @@
 
 \item{control}{(optional) A list of control options for the EM algorithm and
 output: \describe{\item{\code{maxit}}{The maximum number of iterations
-until the EM stops. Defaults to \code{50000}} \item{\code{stop.crit}.}{The
+until the EM stops. Defaults to \code{50000}.} \item{\code{stop.crit}.}{The
 EM stopping criteria, which is the difference in succesive log-likelihood
 values. Defaults to \code{1e-7}.} \item{\code{progress}}{Option for the
 reporting of the EM while the function is running. Choose from one of
 \code{"lite"} (default), \code{"full"} (log-likelihood and parameters
-trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.}
-\item{\code{report}}{The EM reports every \code{report} iterations.
-Defaults to \code{100}.} \item{\code{silent}}{Logical, whether the EM
-report should be printed or not. This is the same as setting \code{progress
-= "none"}.} }}
+trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.
+Visit the
+\href{https://github.com/haziqjamil/iprior/wiki/The-predicted-log-likelihood-feature}{Wiki}
+page for more information.} \item{\code{report}}{The EM reports every
+\code{report} iterations. Defaults to \code{100}.}
+\item{\code{silent}}{Logical, whether the EM report should be printed or
+not. This is the same as setting \code{progress = "none"}.}
+\item{\code{lambda, psi, sigma}}{These are options to set the initial
+values of the parameters. For convenience, the user may choose to input one
+of \code{psi} or \code{sigma}, but not both, since \code{psi = 1 / sigma ^
+2}.} \item{\code{intercept}}{It is possible to set a fixed value for the
+intercept (not recommended).}}}
 
 \item{formula}{The formula to fit when using formula interface.}
 
