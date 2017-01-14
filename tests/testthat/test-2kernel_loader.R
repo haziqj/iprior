@@ -49,3 +49,18 @@ test_that("Incorrect specification of interactions",{
                water = stackloss$Water.Temp, model = list(interactions = "12")))
 
 })
+
+test_that("Overriding Hurst coefficient warning",{
+
+  mod1 <- kernL(stack.loss ~ ., stackloss, model = list(kernel = "FBM,0.1"))
+  mod2 <- kernL(stack.loss ~ ., stackloss, model = list(kernel = "FBM",
+                                                        Hurst = 0.1))
+  expect_equivalent(mod1$Hl, mod2$Hl)
+  expect_warning(
+    mod3 <- kernL(stack.loss ~ ., stackloss,
+                  model = list(kernel = "FBM,0.9", Hurst = 0.1))
+
+  )
+
+})
+

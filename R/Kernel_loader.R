@@ -48,14 +48,16 @@
 #'  \describe{\item{\code{kernel}}{Vector of character strings of either
 #'  \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
 #'  \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
-#'  type objects.} \item{\code{Hurst}}{The value of the Hurst coefficient when
-#'  using the \code{FBM} kernel. This is a value between 0 and 1. Defaults to
-#'  0.5.}\item{\code{order}}{Character vector of length equal to the number of
-#'  explanatory variables used, indicating specification of higher order scale
-#'  parameters. The syntax is \code{"a^b"}, for parameter \code{a} raised to the
-#'  power \code{b}. For regular order terms, then just input "a".}
-#'  \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to \code{FALSE} to
-#'  assign one scale parameter for all kernel matrices.}
+#'  type objects. To specify a Hurst coefficient, use \code{"FBM,<value>"};
+#'  otherwise the default of 0.5 is used. Alternatively, see \code{Hurst} option
+#'  below.} \item{\code{Hurst}}{Set the value of the Hurst coefficient for all
+#'  \code{FBM} kernels used, rather than one by one. This is a value between 0
+#'  and 1, and defaults to 0.5.}\item{\code{order}}{Character vector of length
+#'  equal to the number of explanatory variables used, indicating specification
+#'  of higher order scale parameters. The syntax is \code{"a^b"}, for parameter
+#'  \code{a} raised to the power \code{b}. For regular order terms, then just
+#'  input "a".} \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to
+#'  \code{FALSE} to assign one scale parameter for all kernel matrices.}
 #'  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
 #'  using the formula call. Should all the variable share the same scale
 #'  parameter?}}
@@ -118,8 +120,8 @@
 #' # Sometimes the print output is too long, can use str() options here
 #' print(mod, strict.width = "cut", width = 50)
 #'
-#' @name kernL
-#' @export
+#'@name kernL
+#'@export
 kernL <- function(y, ..., model = list()) UseMethod("kernL")
 
 #' @export
@@ -166,8 +168,10 @@ kernL.default <- function(y, ..., model = list()) {
   suppressWarnings(Hurst[] <- splitHurst(mod$kernel))
   if (!is.null(mod$Hurst)) {
     # User has set a single Hurst coefficient for all FBM kernels
+    if (any(!is.na(Hurst))) {
+      warning("Overriding Hurst setting.", call. = FALSE)
+    }
     suppressWarnings(Hurst[] <- mod$Hurst)
-    if (any(!is.na(Hurst))) warning("Overriding Hurst setting.", call. = FALSE)
   }
   Hurst[is.na(Hurst)] <- 0.5
   mod$Hurst <- Hurst

@@ -1,3 +1,8 @@
+# v0.6.3.9000
+
+* Fixed "override warning" bug in kernel loader when multiple Hurst coefficients used.
+* Updated documentation for `iprior()` and `kernL()`.
+
 # v0.6.3
 
 * Changed some code to match JSS paper.

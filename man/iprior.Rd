@@ -28,14 +28,16 @@
  \describe{\item{\code{kernel}}{Vector of character strings of either
  \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
  \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
- type objects.} \item{\code{Hurst}}{The value of the Hurst coefficient when
- using the \code{FBM} kernel. This is a value between 0 and 1. Defaults to
- 0.5.}\item{\code{order}}{Character vector of length equal to the number of
- explanatory variables used, indicating specification of higher order scale
- parameters. The syntax is \code{"a^b"}, for parameter \code{a} raised to the
- power \code{b}. For regular order terms, then just input "a".}
- \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to \code{FALSE} to
- assign one scale parameter for all kernel matrices.}
+ type objects. To specify a Hurst coefficient, use \code{"FBM,<value>"};
+ otherwise the default of 0.5 is used. Alternatively, see \code{Hurst} option
+ below.} \item{\code{Hurst}}{Set the value of the Hurst coefficient for all
+ \code{FBM} kernels used, rather than one by one. This is a value between 0
+ and 1, and defaults to 0.5.}\item{\code{order}}{Character vector of length
+ equal to the number of explanatory variables used, indicating specification
+ of higher order scale parameters. The syntax is \code{"a^b"}, for parameter
+ \code{a} raised to the power \code{b}. For regular order terms, then just
+ input "a".} \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to
+ \code{FALSE} to assign one scale parameter for all kernel matrices.}
  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
  using the formula call. Should all the variable share the same scale
  parameter?}}
@@ -148,6 +150,11 @@ mod.toothnf <- iprior(y = ToothGrowth$len,
 # Sets a single scale parameter for all variables
 modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
 modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
+
+# Example of using the FBM kernel for smoothing models
+mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM"))  # Hurst = 0.5 (default)
+mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM,0.75"))  # custom Hurst
+mod.fit <- iprior(mod)  # fit the model using EM
 
 }
 
