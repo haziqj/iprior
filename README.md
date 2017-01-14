@@ -35,9 +35,11 @@ library(devtools)
 Then, run the following code to install and attach the `iprior` package.
 
 ``` r
-install_github("haziqjamil/iprior")
+install_github("haziqjamil/iprior", build_vignettes = TRUE)
 library(iprior)
 ```
+
+*Note: The option `build_vignettes = TRUE` builds the package vignettes for viewing, but takes slightly longer. Set `build_vignettes = FALSE`, or remove this option entirely, to skip building the vignettes.*
 
 ## Syntax
 
@@ -50,6 +52,6 @@ mod <- iprior(y = dat$y, x = dat$x)  # non-formula based input
 
 The call to `iprior()` can be accompanied by model options in the form of `model = list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control = list()`. Find the full list of options by typing `?iprior` in R.
 
-## Examples
+## Resources
 
-Visit the the [wiki](https://github.com/haziqjamil/iprior/wiki/Vignette-examples) page for some usage examples.
+View the package vignettes by typing `browseVignettes("iprior")` in R. Also, visit the the [wiki](https://github.com/haziqjamil/iprior/wiki/Vignette-examples) page for some usage examples and other topics of discussions.
