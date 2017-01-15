@@ -1,6 +1,6 @@
 Package: iprior
 Title: Linear Regression using I-Priors
-Version: 0.6.3.9000
+Version: 0.6.3.9001
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
