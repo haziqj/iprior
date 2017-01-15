@@ -9,7 +9,8 @@
 * Commented on the line where Pearson kernels are always used for factor-type variables. Should this always be the case?
 * Added control option to set intercept at a fixed value.
 * Added (hidden) options for `str()` when printing `ipriorKernel` objects.
-* Added function to find optimum Hurst coefficient for fitting FBM I-prior models.
+* Added  `fbmOptim()` function to find optimum Hurst coefficient for fitting FBM I-prior models.
+* Added new way to specify Hurst coefficient using the syntax `kernel = "FBM,<value>$`.
 * Wrote vignette manual guide which details how to calculate the matrices required for the closed form estimate of `lambda`.
 * Removed the T2 statistic from the `summary()` output for now.
 
