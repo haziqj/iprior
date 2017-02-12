@@ -10,6 +10,10 @@
 #' @param object An object of class \code{ipriorKernel}.
 #' @param method One of \code{c("ipriorOptim", "iprior")} for model fitting of
 #'   the final I-prior model.
+#' @param maxit If \code{method} is \code{ipriorOptim}, then this controls the
+#'   number of initial EM steps before running a direction optimisation in
+#'   \code{optim}. Defaults to 3 steps.
+#' @param interval It is possible to search within a specific range of values other than \code{c(0, 1)}.
 #' @param silent (logical) Run the optimisation silently or not.
 #'
 #' @return An \code{ipriorMod} object.
@@ -19,7 +23,7 @@
 #' mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
 #' (mod.iprior <- fbmOptim(mod))
 fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
-                     silent = FALSE) {
+                     maxit = 3, interval = c(0, 1), silent = FALSE) {
   if (!is.ipriorKernel(object)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }
@@ -36,8 +40,8 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
 
   method <- match.arg(method,  c("ipriorOptim", "iprior"))
 
-  res <- stats::optimise(fbmOptimDeviance, c(0, 1),
-                         object = object, silent = silent)
+  res <- stats::optimise(fbmOptimDeviance, interval,
+                         object = object, silent = silent, maxit = maxit)
   update.ipriorKernel(object, round(res$min, 5))
 
   if (!silent) cat("Optimum Hurst coefficient found.\n")
@@ -54,13 +58,15 @@ fbmOptim <- function(object, method = c("ipriorOptim", "iprior"),
   mod.fit
 }
 
-fbmOptimDeviance <- function(gamma, object, silent = FALSE) {
+fbmOptimDeviance <- function(gamma, object, maxit, silent = FALSE) {
   # Returns deviance of an ipriorKernel object for a particular Hurst coefficient
   # gamma. Used to find optimum value of gamma in fbmOptim().
-  if (!silent) cat("Hurst = ", gamma, "\n")
+  if (!silent) cat("Hurst = ", ipriorEMprettyLoglik(gamma, 5, 7))
   update.ipriorKernel(object, gamma)
-  mod.fit <- ipriorOptim(object, control = list(silent = TRUE))
-  return(deviance.ipriorMod(mod.fit))
+  mod.fit <- ipriorOptim(object, control = list(silent = TRUE, maxit = maxit))
+  deviprior <- deviance.ipriorMod(mod.fit)
+  if (!silent) cat(", Log-lik = ", ipriorEMprettyLoglik(-2 * deviprior), "\n")
+  return(deviprior)
 }
 
 # mod <- kernL(y ~., datfbm, model = list(kernel = "FBM"))

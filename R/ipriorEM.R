@@ -22,7 +22,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, alpha = NULL, lambda.init = NULL,
                      psi.init = NULL, clean = FALSE, paramprogress = FALSE,
                      force.regEM = FALSE, force.nlm = FALSE,
-                     not.finalEM = FALSE, getHlam = FALSE, getVarY = FALSE){
+                     getHlam = FALSE, getVarY = FALSE){
   # This is the EM algorithm engine which estimates the I-prior model
   # parameters.
   #
@@ -34,9 +34,8 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   # lambda and psi. clean Logical, if FALSE then progress of log-likelihood
   # reported. paramprogress Logical, if TRUE then progress of parameters
   # reported. force.regEM Logical, for debugging of the regular EM routine.
-  # not.FinalEM logical to bypass calculation of s.e.. getHlam and getVarY
-  # logical, used to save the Hlam/VarY.inv matrix and return as part of
-  # Hlam()/varyinv() function
+  # getHlam and getVarY logical, used to save the Hlam/VarY.inv matrix and
+  # return as part of Hlam()/varyinv() function
 
   # Declare all variables and functions to be used in this environment ---------
   ipriorEM.env <- environment()
@@ -207,11 +206,11 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	if (getHlam) return(Hlam.mat)
 	if (getVarY) return(VarY.inv)
 
-	# Calculate standard errors --------------------------------------------------
-	se <- NULL
-	if (!not.finalEM) {
-	  se <- fisherNew()  # makes use of the logLik() on the ipriorKernel
-	}
+	# # Calculate standard errors --------------------------------------------------
+	# se <- NULL
+	# if (!not.finalEM) {
+	#   se <- fisherNew()  # makes use of the logLik() on the ipriorKernel
+	# }
 
 	# Calculate fitted value -----------------------------------------------------
 	Y.hat <- alpha + as.vector(crossprod(Hlam.mat, w.hat))
@@ -241,7 +240,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 
 
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
-	     no.iter = i, se = se, fitted.values = Y.hat,
+	     no.iter = i, fitted.values = Y.hat,
 	     # Psql = Psql, Sl = Sl, VarY.inv = VarY.inv, Hlam.mat = Hlam.mat,
 	     w.hat = w.hat, converged = converged,
 	     res.loglik = res.loglik, res.param = res.param)

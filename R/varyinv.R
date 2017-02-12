@@ -42,7 +42,7 @@ varyinv.ipriorMod <- function(object, theta = NULL) {
       psi <- theta[length(theta)]
     }
     ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init = lambda,
-             psi.init = psi, clean = TRUE, not.finalEM = TRUE, getVarY = TRUE)
+             psi.init = psi, clean = TRUE, getVarY = TRUE)
   })
   tmp
 }
@@ -53,8 +53,7 @@ varyinv.ipriorKernel <- function(object, theta = NULL) {
   lambda <- theta[-length(theta)]
   psi <- theta[length(theta)]
   tmp <- ipriorEM(object, maxit = 0, silent = TRUE, lambda.init = lambda,
-                  psi.init = psi, clean = TRUE, not.finalEM = TRUE,
-                  getVarY = TRUE)
+                  psi.init = psi, clean = TRUE, getVarY = TRUE)
   tmp
 }
 

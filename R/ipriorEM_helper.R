@@ -289,11 +289,11 @@ ipriorEMprettyIter <- function(x, iter){
   cat(Iter, tmp, "")
 }
 
-ipriorEMprettyLoglik <- function(x){
+ipriorEMprettyLoglik <- function(x, dig = 8, wid = 10){
   # Used in ipriorEM.R to make the log-likelihood reporting prettier.
-  tmp <- prettyNum(x, digits = 8, width = 10)
-  miss <- 10 - nchar(gsub(" ", "", tmp))
-  tmp <- format(x, digits = 8, width = 10, nsmall = decimalPlaces(tmp) + miss)
+  tmp <- prettyNum(x, digits = dig, width = wid)
+  miss <- wid - nchar(gsub(" ", "", tmp))
+  tmp <- format(x, digits = dig, width = wid, nsmall = decimalPlaces(tmp) + miss)
   # One more time --------------------------------------------------------------
   # dig <- 10 - nchar(gsub(" ", "", tmp))
   # tmp <- format(tmp, digits = 8, width = 10, nsmall = 5)

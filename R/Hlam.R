@@ -38,7 +38,7 @@ Hlam.ipriorMod <- function(object, lambda = NULL) {
   tmp <- with(
     object,
     ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init = lambda,
-             psi.init = psi, clean = TRUE, not.finalEM = TRUE, getHlam = TRUE)
+             psi.init = psi, clean = TRUE, getHlam = TRUE)
   )
   class(tmp) <- NULL
   tmp
@@ -48,8 +48,7 @@ Hlam.ipriorMod <- function(object, lambda = NULL) {
 #' @export
 Hlam.ipriorKernel <- function(object, lambda = NULL) {
   tmp <- ipriorEM(object, maxit = 0, silent = TRUE, lambda.init = lambda,
-                  psi.init = NULL, clean = TRUE, not.finalEM = TRUE,
-                  getHlam = TRUE)
+                  psi.init = NULL, clean = TRUE, getHlam = TRUE)
   class(tmp) <- NULL
   tmp
 }

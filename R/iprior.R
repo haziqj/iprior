@@ -122,7 +122,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, intercept = NULL,
               lambda = NULL, psi = NULL, sigma = NULL, theta = NULL,
               progress = "lite", silent = FALSE, force.regEM = FALSE,
-              force.nlm = FALSE, not.finalEM = FALSE)
+              force.nlm = FALSE)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -315,8 +315,7 @@ print.ipriorMod <- function(x, ...) {
 #' @export
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
-  se <- object$se
-  if (is.null(se)) se <- fisher(object)  # when force.regEM = TRUE
+  se <- fisher(object)
 
   # Z values to compare against (standard) Normal distribution -----------------
   zval <- coef(object)/se

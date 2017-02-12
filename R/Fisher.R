@@ -20,12 +20,13 @@
 
 fisher <- function(object) {
 	# Calculates iprior parameters (lambda, psi) standard errors from the inverse
-	# observed Fisher matrix. Used as helper function in summary().
+	# observed Fisher matrix. Used as helper function in summary(). object is an
+	# ipriorMod class object.
   lambda <- object$lambda
   psi <- object$psi
-  Psql <- object$Psql
-  Sl <- object$Sl
-  VarY.inv <- object$VarY.inv
+  Psql <- object$ipriorKernel$BlockBstuff$Psql
+  Sl <- object$ipriorKernel$BlockBstuff$Sl
+  VarY.inv <- varyinv(object)
   force.regEM <- object$control$force.regEM
   N <- nrow(VarY.inv)
 	l <- length(lambda)
@@ -82,7 +83,7 @@ fisherNew <- function() {
         Fisher[i, j] <- sum(dVarY[[i]] * dVarY[[j]]) / 2
       }
     }
-    Inverse.Fisher <- solve(Fisher)
+    Inverse.Fisher <- solve(Fisher + diag(1e-9, l + 1))
     if (any(diag(Inverse.Fisher) < 0)) {
       warning("NaNs S.E. produced due to negative inverse Hessian\nHas the EM converged?", call. = FALSE)
     }
