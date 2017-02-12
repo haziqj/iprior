@@ -4,13 +4,20 @@
 \alias{fbmOptim}
 \title{Find the Hurst coefficient of a FBM I-prior model}
 \usage{
-fbmOptim(object, method = c("ipriorOptim", "iprior"), silent = FALSE)
+fbmOptim(object, method = c("ipriorOptim", "iprior"), maxit = 3,
+  interval = c(0, 1), silent = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{ipriorKernel}.}
 
 \item{method}{One of \code{c("ipriorOptim", "iprior")} for model fitting of
 the final I-prior model.}
+
+\item{maxit}{If \code{method} is \code{ipriorOptim}, then this controls the
+number of initial EM steps before running a direction optimisation in
+\code{optim}. Defaults to 3 steps.}
+
+\item{interval}{It is possible to search within a specific range of values other than \code{c(0, 1)}.}
 
 \item{silent}{(logical) Run the optimisation silently or not.}
 }
