@@ -122,7 +122,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, intercept = NULL,
               lambda = NULL, psi = NULL, sigma = NULL, theta = NULL,
               progress = "lite", silent = FALSE, force.regEM = FALSE,
-              force.nlm = FALSE)
+              force.nlm = FALSE, not.finalEM = FALSE)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -205,9 +205,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   }
 
   # Calculate fitted values and residuals --------------------------------------
-  Y.hat <- est$alpha + as.vector(crossprod(est$Hlam.mat, est$w.hat))
-  est$fitted.values <- Y.hat
-  est$residuals     <- ipriorKernel$Y - Y.hat
+  est$residuals     <- ipriorKernel$Y - est$fitted.values
   names(est$fitted.values) <- names(est$residuals) <- names(ipriorKernel$Y)
 
   # Changing the call to simply iprior -----------------------------------------
@@ -317,7 +315,8 @@ print.ipriorMod <- function(x, ...) {
 #' @export
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
-  se <- fisher(object)
+  se <- object$se
+  if (is.null(se)) se <- fisher(object)  # when force.regEM = TRUE
 
   # Z values to compare against (standard) Normal distribution -----------------
   zval <- coef(object)/se

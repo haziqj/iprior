@@ -18,7 +18,18 @@
 #
 ################################################################################
 
-lambdaExpand <- function(x = lambda, env = ipriorEM.env){
+hlamFnSingle <- function(x = lambda, env = ipriorEM.env) {
+  # Calculate Hlam.mat when single lambda used. Used in ipriorEM.R
+  assign("Hlam.mat", x[1] * Pl[[1]], envir = env)
+}
+
+hlamFnMult <- function(x = lambda, env = ipriorEM.env) {
+  # Calculate Hlam.mat. Used in ipriorEM.R
+  assign("Hlam.mat", Reduce("+", mapply("*", Hl[1:q], x[1:q],
+                                        SIMPLIFY = FALSE)), envir = env)
+}
+
+lambdaExpand <- function(x = lambda, env = ipriorEM.env) {
   # Expands lambda from length l to correct size q = p + no.int, first by
   # expanding the higher order terms (if any), and then by adding the
   # interaction lambdas after that.
@@ -63,7 +74,7 @@ linSolvInv <- function(b = NULL){
 BlockA <- function(){
   # Block A update function
   lambdaExpand()
-  hlamFn()
+  hlamFn()  # this is assigned in ipriorEM.env
   A <- Hlam.mat
   assign("s", 1/psi, envir = parent.frame())
   tmp <- eigenCpp(A)  # a C++ alternative

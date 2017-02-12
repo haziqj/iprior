@@ -1,7 +1,8 @@
-# v0.6.3.9001
+# v0.6.3.9002
 
 * Fixed "override warning" bug in kernel loader when multiple Hurst coefficients used.
 * Updated documentation for `iprior()` and `kernL()`.
+* Trimmed down the size of `ipriorMod` objects by not saving `Psql`, `Sl`, `Hlam.mat`, and `VarY.inv`. Although these are no longer stored within an `ipriorMod` object, they can still be retrieved via the functions `Hlam()` and `varyinv()`.
 
 # v0.6.3
 

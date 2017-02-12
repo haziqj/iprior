@@ -60,6 +60,7 @@ ipriorOptim <- function(object, control = list(maxit = 3, report = 1)) {
 
   if (is.null(control$maxit)) control$maxit <- 3
   if (is.null(control$report)) control$report <- 1
+  control$not.finalEM <- TRUE
   mod.iprior <- iprior(object, control = control)
   silent <- mod.iprior$control$silent
 

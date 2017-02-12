@@ -55,3 +55,38 @@ fisher <- function(object) {
 	suppressWarnings(se <- sqrt(c(1 / sum(VarY.inv), diag(Inverse.Fisher))))
 	se
 }
+
+fisherNew <- function() {
+  # Calculates iprior parameters (lambda, psi) standard errors from the inverse
+  # observed Fisher matrix. Used as helper function in the iprior EM algorithm
+  # itself. This used to be separate from the EM algorithm to save time, but it
+  # required the storage of VarY.inv, Psql and Sl which can be very large
+  # matrices.
+  N <- nrow(VarY.inv)
+  l <- length(lambda)
+
+  if (is.null(Sl) | force.regEM) {
+    # Fitted using regular EM. Cannot calculate se here. se are calculated in
+    # summary() function instead.
+    se <- NULL
+  } else {
+    # Fitted using closed-form EM.
+    dVarY <- NULL
+    for (i in 1:l) {
+      dVarY[[i]] <- VarY.inv %*% (psi * (2 * lambda[i] * Psql[[i]] + Sl[[i]]))
+    }
+    dVarY[[l + 1]] <- diag(1 / psi, N) - (2 / psi ^ 2) * VarY.inv
+    Fisher <- matrix(0, nrow = l + 1, ncol = l + 1)
+    for (i in 1:(l + 1)) {
+      for (j in 1:(l + 1)) {
+        Fisher[i, j] <- sum(dVarY[[i]] * dVarY[[j]]) / 2
+      }
+    }
+    Inverse.Fisher <- solve(Fisher)
+    if (any(diag(Inverse.Fisher) < 0)) {
+      warning("NaNs S.E. produced due to negative inverse Hessian\nHas the EM converged?", call. = FALSE)
+    }
+    suppressWarnings(se <- sqrt(c(1 / sum(VarY.inv), diag(Inverse.Fisher))))
+  }
+  se
+}

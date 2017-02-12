@@ -21,7 +21,8 @@
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, alpha = NULL, lambda.init = NULL,
                      psi.init = NULL, clean = FALSE, paramprogress = FALSE,
-                     force.regEM = FALSE, force.nlm = FALSE){
+                     force.regEM = FALSE, force.nlm = FALSE,
+                     not.finalEM = FALSE, getHlam = FALSE, getVarY = FALSE){
   # This is the EM algorithm engine which estimates the I-prior model
   # parameters.
   #
@@ -33,6 +34,9 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   # lambda and psi. clean Logical, if FALSE then progress of log-likelihood
   # reported. paramprogress Logical, if TRUE then progress of parameters
   # reported. force.regEM Logical, for debugging of the regular EM routine.
+  # not.FinalEM logical to bypass calculation of s.e.. getHlam and getVarY
+  # logical, used to save the Hlam/VarY.inv matrix and return as part of
+  # Hlam()/varyinv() function
 
   # Declare all variables and functions to be used in this environment ---------
   ipriorEM.env <- environment()
@@ -42,6 +46,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
   environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
 	environment(BlockA) <- environment(BlockB) <- environment(BlockC) <- ipriorEM.env
   environment(lambdaExpand) <- environment(lambdaContract) <- ipriorEM.env
+  environment(fisherNew) <- ipriorEM.env
   if (r > 0 | force.regEM | no.int.3plus > 0) {
     if (force.nlm) {
       environment(ipriorEMnlm) <- ipriorEM.env
@@ -87,7 +92,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		}
 	}
 	else {
-	  hlamFn <- function(x = lambda, env = ipriorEM.env){
+	  hlamFn <- function(x = lambda, env = ipriorEM.env) {
 			assign("Hlam.mat", Reduce("+", mapply("*", Hl[1:q], x[1:q],
 			                                      SIMPLIFY = FALSE)), envir = env)
 		}
@@ -198,6 +203,19 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	  w.hat <- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
 	}
 
+	# Do you just need Hlam or VarY.inv? -----------------------------------------
+	if (getHlam) return(Hlam.mat)
+	if (getVarY) return(VarY.inv)
+
+	# Calculate standard errors --------------------------------------------------
+	se <- NULL
+	if (!not.finalEM) {
+	  se <- fisherNew()  # makes use of the logLik() on the ipriorKernel
+	}
+
+	# Calculate fitted value -----------------------------------------------------
+	Y.hat <- alpha + as.vector(crossprod(Hlam.mat, w.hat))
+
 	# Final report ---------------------------------------------------------------
 	if (!silent && check.naught != 0L) {
 		if (clean) {
@@ -221,8 +239,10 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	  cat("EM NOT CONVERGED!\n")#, "\nNumber of iterations =", i, "\n")
 	}
 
+
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
-	     no.iter = i, Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,
-	     VarY.inv = VarY.inv, w.hat = w.hat, converged = converged,
+	     no.iter = i, se = se, fitted.values = Y.hat,
+	     # Psql = Psql, Sl = Sl, VarY.inv = VarY.inv, Hlam.mat = Hlam.mat,
+	     w.hat = w.hat, converged = converged,
 	     res.loglik = res.loglik, res.param = res.param)
 }
