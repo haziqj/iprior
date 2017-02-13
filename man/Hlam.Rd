@@ -15,12 +15,29 @@ Hlam(object, lambda = NULL)
 \arguments{
 \item{object}{An object of class \code{ipriorMod} or \code{ipriorKernel}.}
 
-\item{lambda}{Values of the scale parameters.}
+\item{lambda}{(optional) Values of the scale parameters.}
 }
 \description{
-Extract the scaled kernel matrix \deqn{\mathbf H_\lambda}.
+Extract the scaled kernel matrix \eqn{\mathbf H_\lambda} of an
+\code{ipriorMod} or \code{ipriorKernel} object.
 }
 \details{
-For \code{ipriorKernel} objects, random values for \code{lambda} are used.
+The maximum likelihood values for \code{lambda} are used by default for
+fitted I-prior models. For \code{ipriorKernel} objects, random values for
+\code{lambda} are used.
+}
+\examples{
+# Extracting from an ipriorMod object
+mod.fit <- iprior(stack.loss ~ ., stackloss)
+H.mat1 <- Hlam(mod.fit)
+str(H.mat1)
+
+# Extracting from an ipriorKernel object at a specified lambda value
+mod <- mod.fit$ipriorKernel
+H.mat2 <- Hlam(mod, mod.fit$lambda)
+
+# They are both equal
+all.equal(H.mat1, H.mat2)
+
 }
 

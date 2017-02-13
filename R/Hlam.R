@@ -20,12 +20,28 @@
 
 #' Extract the scaled kernel matrix
 #'
-#' Extract the scaled kernel matrix \deqn{\mathbf H_\lambda}.
+#' Extract the scaled kernel matrix \eqn{\mathbf H_\lambda} of an
+#' \code{ipriorMod} or \code{ipriorKernel} object.
 #'
-#' For \code{ipriorKernel} objects, random values for \code{lambda} are used.
+#' The maximum likelihood values for \code{lambda} are used by default for
+#' fitted I-prior models. For \code{ipriorKernel} objects, random values for
+#' \code{lambda} are used.
 #'
 #' @param object An object of class \code{ipriorMod} or \code{ipriorKernel}.
-#' @param lambda Values of the scale parameters.
+#' @param lambda (optional) Values of the scale parameters.
+#'
+#' @examples
+#' # Extracting from an ipriorMod object
+#' mod.fit <- iprior(stack.loss ~ ., stackloss)
+#' H.mat1 <- Hlam(mod.fit)
+#' str(H.mat1)
+#'
+#' # Extracting from an ipriorKernel object at a specified lambda value
+#' mod <- mod.fit$ipriorKernel
+#' H.mat2 <- Hlam(mod, mod.fit$lambda)
+#'
+#' # They are both equal
+#' all.equal(H.mat1, H.mat2)
 #'
 #' @export
 Hlam <- function(object, lambda = NULL) {

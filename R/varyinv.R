@@ -18,23 +18,12 @@
 #
 ################################################################################
 
-#' Extract the variance of the responses
-#'
-#' Extract the variance of the responses of an I-prior model.
-#'
-#' For \code{ipriorKernel} objects, random values for \code{theta} are used.
-#'
-#' @param object An object of class \code{ipriorMod} or \code{ipriorKernel}.
-#' @param theta (optional) Evaluates the log-likelihood at \code{theta} which is
-#'   of the form \code{theta = c(lambda, psi)}.
-#'
-#' @export
 varyinv <- function(object, theta = NULL) {
+  # Calculate the inverse variance of Y from ipriorMod and ipriorKernel objects.
+  # Used in fisher() function.
   UseMethod("varyinv")
 }
 
-#' @name varyinv
-#' @export
 varyinv.ipriorMod <- function(object, theta = NULL) {
   tmp <- with(object, {
     if (!is.null(theta)) {
@@ -47,8 +36,6 @@ varyinv.ipriorMod <- function(object, theta = NULL) {
   tmp
 }
 
-#' @name varyinv
-#' @export
 varyinv.ipriorKernel <- function(object, theta = NULL) {
   lambda <- theta[-length(theta)]
   psi <- theta[length(theta)]
@@ -56,14 +43,3 @@ varyinv.ipriorKernel <- function(object, theta = NULL) {
                   psi.init = psi, clean = TRUE, getVarY = TRUE)
   tmp
 }
-
-
-
-
-
-
-
-
-
-
-
