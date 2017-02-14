@@ -2,7 +2,7 @@
 
 * Fixed "override warning" bug in kernel loader when multiple Hurst coefficients used.
 * Updated documentation for `iprior()` and `kernL()`.
-* Trimmed down the size of `ipriorMod` objects by not saving `Psql`, `Sl`, `Hlam.mat`, and `VarY.inv`. Although these are no longer stored within an `ipriorMod` object, they can still be retrieved via the functions `Hlam()` and `varyinv()`.
+* Trimmed down the size of `ipriorMod` objects by not saving `Psql`, `Sl`, `Hlam.mat`, and `VarY.inv`. Although these are no longer stored within an `ipriorMod` object, they can still be retrieved via the functions `Hlam()` and `vary()`.
 * Fixed a bug with `ipriorOptim()` or `fbmOptim()` whereby standard errors could not be calculated.
 * Added new features to `fbmOptim()`: Ability to specify an interval to search for, and also the maximum number of iterations for the initial EM step.
 
