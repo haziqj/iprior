@@ -113,7 +113,9 @@ iprior <- function(...) {
 #' # Example of using the FBM kernel for smoothing models
 #' mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM"))  # Hurst = 0.5 (default)
 #' mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM,0.75"))  # custom Hurst
-#' mod.fit <- iprior(mod)  # fit the model using EM
+#'
+#' # Fit the model using EM starting at a specific parameter value
+#' mod.fit <- iprior(mod, control = list(lambda = 8.41, psi = 0.33))
 #'
 #' @name iprior
 #' @export
