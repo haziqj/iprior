@@ -1,3 +1,7 @@
+# v0.6.4.9000
+
+* Updated documentation.
+
 # v0.6.4
 
 * Fixed "override warning" bug in kernel loader when multiple Hurst coefficients used.

@@ -64,8 +64,8 @@ iprior <- function(...) {
 #'   \href{https://github.com/haziqjamil/iprior/wiki/The-predicted-log-likelihood-feature}{Wiki}
 #'   page for more information.} \item{\code{report}}{The EM reports every
 #'   \code{report} iterations. Defaults to \code{100}.}
-#'   \item{\code{silent}}{Logical, whether the EM report should be printed or
-#'   not. This is the same as setting \code{progress = "none"}.}
+#'   \item{\code{silent}}{(logical) Should the EM report should be printed or
+#'   not? This is the same as setting \code{progress = "none"}.}
 #'   \item{\code{lambda, psi, sigma}}{These are options to set the initial
 #'   values of the parameters. For convenience, the user may choose to input one
 #'   of \code{psi} or \code{sigma}, but not both, since \code{psi = 1 / sigma ^
