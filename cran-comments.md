@@ -6,7 +6,7 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
-There were 1 NOTE:
+There was 1 NOTE:
 
 * checking installed package size ... NOTE
   installed size is  8.3Mb
