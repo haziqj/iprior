@@ -48,4 +48,3 @@ mod.cars <- iprior(dist ~ speed, cars, model = list(kernel = "FBM"))
 plot(mod.cars, plots = "fitted")
 
 }
-

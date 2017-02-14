@@ -118,4 +118,3 @@ kernL(stack.loss ~ ., data = stackloss,
 print(mod, strict.width = "cut", width = 50)
 
 }
-

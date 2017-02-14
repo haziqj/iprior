@@ -36,4 +36,3 @@ prog <- progress(mod, "all")
 plot(prog$lambda1, type = "l")
 
 }
-

@@ -45,4 +45,3 @@ summary(mod.iprior)
 \seealso{
 \code{\link{iprior}} and \code{\link{kernL}}.
 }
-

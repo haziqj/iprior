@@ -16,4 +16,3 @@ The colour palette indexed by \code{x}.
 This is the colour palette used by the \code{iprior} package. It is based off
 \code{RColorBrewer::brewer.pal}'s Set 1, Set 2 and Dark 2 palettes.
 }
-

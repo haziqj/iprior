@@ -22,4 +22,3 @@ data(hsbsmall)
 str(hsbsmall)
 }
 \keyword{datasets}
-

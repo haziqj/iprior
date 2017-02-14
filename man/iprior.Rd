@@ -129,6 +129,7 @@ the parameters of the model via the EM algorithm.
 \item \code{ipriorMod}: Re-run or continue running the EM algorithm from last
 attained parameter values in object \code{ipriorMod}.
 }}
+
 \examples{
 # Formula based input
 (mod.stackf <- iprior(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc.,
@@ -159,4 +160,3 @@ mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM,0.75"))  # custom Hurst
 mod.fit <- iprior(mod, control = list(lambda = 8.41, psi = 0.33))
 
 }
-

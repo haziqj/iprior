@@ -37,4 +37,3 @@ will be overridden with the single optimal Hurst value.
 mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
 (mod.iprior <- fbmOptim(mod))
 }
-

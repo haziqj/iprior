@@ -44,4 +44,3 @@ McDonald, G. C. and Schwing, R. C. (1973). Instabilities of
   \emph{Technometrics}, 15(3):463-481.
 }
 \keyword{datasets}
-

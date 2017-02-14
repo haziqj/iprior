@@ -37,4 +37,3 @@ Raudenbush, S. W., & Bryk, A. S. (2002). \emph{Hierarchical
   linear models: Applications and data analysis methods} (Vol. 1). Sage.
 }
 \keyword{datasets}
-

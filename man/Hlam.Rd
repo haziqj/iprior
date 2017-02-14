@@ -2,8 +2,10 @@
 % Please edit documentation in R/Hlam.R
 \name{Hlam}
 \alias{Hlam}
-\alias{Hlam.ipriorKernel}
+\alias{Hlam}
 \alias{Hlam.ipriorMod}
+\alias{Hlam}
+\alias{Hlam.ipriorKernel}
 \title{Extract the scaled kernel matrix}
 \usage{
 Hlam(object, lambda = NULL)
@@ -40,4 +42,3 @@ H.mat2 <- Hlam(mod, mod.fit$lambda)
 all.equal(H.mat1, H.mat2)
 
 }
-

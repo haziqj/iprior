@@ -21,4 +21,3 @@ data(simdat)
 str(simdat)
 }
 \keyword{datasets}
-

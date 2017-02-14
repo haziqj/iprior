@@ -22,4 +22,3 @@ Var.Y <- vary(mod.fit)
 str(Var.Y)
 
 }
-

@@ -21,4 +21,3 @@ This basically obtains \code{object$sigma}. For \code{R (>= 3.3.0)} then
 \code{sigma} is an S3 method with the default method coming from the
 \code{stats} package.
 }
-

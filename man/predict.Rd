@@ -37,4 +37,3 @@ formula interface to fit the model, then the new data supplied for
 \donttest{predict(mod.orange, Orange[1, ])}
 
 }
-
