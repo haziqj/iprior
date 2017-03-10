@@ -144,81 +144,81 @@ fn.H2a <- function(x, y = NULL) {
   tmp
 }
 
-fn.H3 <- function(x, y = NULL, gamma = NULL) {
-	# The Fractional Brownian Motion kernel with Hurst coef. = gamma.
-  if (is.null(gamma)) gamma <- 0.5
-	x <- as.numeric(x)
-	n <- length(x)
-
-	if (is.null(y)) {
-		tmp <- matrix(0, n, n)
-		index.mat <- upper.tri(tmp, diag = TRUE)
-		index <- which(index.mat, arr.ind = TRUE)
-		tmp2 <- abs(x[index[, 1]]) ^ (2 * gamma) +
-		  abs(x[index[, 2]]) ^ (2 * gamma) -
-		  abs(x[index[, 1]] - x[index[, 2]]) ^ (2 * gamma)
-		tmp[index.mat] <- tmp2
-		tmp2 <- tmp; diag(tmp2) <- 0
-		tmp <- tmp + t(tmp2)
-	}
-	else{
-		y <- as.numeric(y); m <- length(y)
-		tmp <- matrix(NA, ncol = n, nrow = m)
-		for (i in 1:m) {
-			for (j in 1:n) {
-				tmp[i, j] <- abs(y[i]) ^ (2 * gamma) + abs(x[j]) ^ (2 * gamma) -
-				  abs(y[i] - x[j]) ^ (2 * gamma)
-			}
-		}
-	}
-	class(tmp) <- paste("FBM", gamma, sep = ",")
-	tmp
-}
-
-fn.H3a <- function(x, y = NULL, gamma = NULL){ #takes in vector of covariates
-	# The centred and scaled version of the FBM kernel. This is the one used
-	# instead of fn.H3a above
-  if (is.null(gamma)) gamma <- 0.5
-	x <- as.numeric(x)
-	n <- length(x)
-
-	if (is.null(y)) {
-		A <- matrix(0, n, n)
-		index.mat <- upper.tri(A)
-		index <- which(index.mat, arr.ind = TRUE)
-		tmp2 <- abs(x[index[, 1]] - x[index[, 2]]) ^ (2 * gamma)
-		A[index.mat] <- tmp2
-		A <- A + t(A)
-		rvec <- apply(A, 1, sum)
-		s <- sum(rvec)
-		rvec1 <- tcrossprod(rvec, rep(1, n))
-		tmp <- (A - rvec1 / n - t(rvec1) / n + s / (n ^ 2)) / (-2)
-	}
-	else{
-		y <- as.numeric(y)
-		m <- length(y)
-
-		A <- matrix(0, n, n)
-		index.mat <- upper.tri(A)
-		index <- which(index.mat, arr.ind = TRUE)
-		tmp2 <- abs(x[index[, 1]] - x[index[,2]]) ^ (2 * gamma)
-		A[index.mat] <- tmp2
-		A <- A + t(A)
-		rvec <- apply(A, 1, sum)
-		s <- sum(rvec)
-		rvec1 <- tcrossprod(rep(1, m), rvec)
-
-		B <- matrix(0, m, n)
-		indexy <- expand.grid(1:m, 1:n)
-		B[, ] <- abs(y[indexy[, 1]] - x[indexy[, 2]]) ^ (2 * gamma)
-		qvec <- apply(B, 1, sum)
-		qvec1 <- tcrossprod(qvec, rep(1, n))
-
-		tmp <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
-	}
-	class(tmp) <- paste("FBM", gamma, sep = ",")
-	tmp
-}
+# fn.H3 <- function(x, y = NULL, gamma = NULL) {
+# 	# The Fractional Brownian Motion kernel with Hurst coef. = gamma.
+#   if (is.null(gamma)) gamma <- 0.5
+# 	x <- as.numeric(x)
+# 	n <- length(x)
+#
+# 	if (is.null(y)) {
+# 		tmp <- matrix(0, n, n)
+# 		index.mat <- upper.tri(tmp, diag = TRUE)
+# 		index <- which(index.mat, arr.ind = TRUE)
+# 		tmp2 <- abs(x[index[, 1]]) ^ (2 * gamma) +
+# 		  abs(x[index[, 2]]) ^ (2 * gamma) -
+# 		  abs(x[index[, 1]] - x[index[, 2]]) ^ (2 * gamma)
+# 		tmp[index.mat] <- tmp2
+# 		tmp2 <- tmp; diag(tmp2) <- 0
+# 		tmp <- tmp + t(tmp2)
+# 	}
+# 	else{
+# 		y <- as.numeric(y); m <- length(y)
+# 		tmp <- matrix(NA, ncol = n, nrow = m)
+# 		for (i in 1:m) {
+# 			for (j in 1:n) {
+# 				tmp[i, j] <- abs(y[i]) ^ (2 * gamma) + abs(x[j]) ^ (2 * gamma) -
+# 				  abs(y[i] - x[j]) ^ (2 * gamma)
+# 			}
+# 		}
+# 	}
+# 	class(tmp) <- paste("FBM", gamma, sep = ",")
+# 	tmp
+# }
+#
+# fn.H3a <- function(x, y = NULL, gamma = NULL) { #takes in vector of covariates
+# 	# The centred and scaled version of the FBM kernel. This is the one used
+# 	# instead of fn.H3 above
+#   if (is.null(gamma)) gamma <- 0.5
+# 	x <- as.numeric(x)
+# 	n <- length(x)
+#
+# 	if (is.null(y)) {
+# 		A <- matrix(0, n, n)
+# 		index.mat <- upper.tri(A)
+# 		index <- which(index.mat, arr.ind = TRUE)
+# 		tmp2 <- abs(x[index[, 1]] - x[index[, 2]]) ^ (2 * gamma)
+# 		A[index.mat] <- tmp2
+# 		A <- A + t(A)
+# 		rvec <- apply(A, 1, sum)
+# 		s <- sum(rvec)
+# 		rvec1 <- tcrossprod(rvec, rep(1, n))
+# 		tmp <- (A - rvec1 / n - t(rvec1) / n + s / (n ^ 2)) / (-2)
+# 	}
+# 	else{
+# 		y <- as.numeric(y)
+# 		m <- length(y)
+#
+# 		A <- matrix(0, n, n)
+# 		index.mat <- upper.tri(A)
+# 		index <- which(index.mat, arr.ind = TRUE)
+# 		tmp2 <- abs(x[index[, 1]] - x[index[,2]]) ^ (2 * gamma)
+# 		A[index.mat] <- tmp2
+# 		A <- A + t(A)
+# 		rvec <- apply(A, 1, sum)
+# 		s <- sum(rvec)
+# 		rvec1 <- tcrossprod(rep(1, m), rvec)
+#
+# 		B <- matrix(0, m, n)
+# 		indexy <- expand.grid(1:m, 1:n)
+# 		B[, ] <- abs(y[indexy[, 1]] - x[indexy[, 2]]) ^ (2 * gamma)
+# 		qvec <- apply(B, 1, sum)
+# 		qvec1 <- tcrossprod(qvec, rep(1, n))
+#
+# 		tmp <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
+# 	}
+# 	class(tmp) <- paste("FBM", gamma, sep = ",")
+# 	tmp
+# }
 
 # The following three functions are able to take matrices instead of vector
 # inputs. This is required for the one.lam = TRUE option. These functions are
@@ -254,14 +254,42 @@ fnH2 <- function(x, y = NULL){
 
 #' @rdname kernel
 #' @export
-fnH3 <- function(x, y = NULL, gamma = 0.5){
-	res <- 0
-	if ((ncol(x) > 1) && !is.null(ncol(x))) {
-		if ((ncol(x) != ncol(y)) && !is.null(y)) {
-		  stop("New data is structurally unsimilar.")
-		}
-		for (i in 1:ncol(x)) res <- res + fn.H3a(x = x[, i], y = y[, i], gamma)
-	}
-	else res <- fn.H3a(x, y, gamma)
-	return(res)
+fnH3 <- function(x, y = NULL, gamma = NULL, normtype = 2) {
+  if (is.null(gamma)) gamma <- 0.5
+  if (is.vector(x)) x <- matrix(x, ncol = 1)
+  n <- nrow(x)
+
+  fnNorm <- function(x) {
+    sum(abs(x) ^ normtype) ^ (normtype * gamma / normtype)
+  }
+
+  A <- matrix(0, n, n)
+  index.mat <- upper.tri(A)
+  index <- which(index.mat, arr.ind = TRUE)
+  tmp1 <- as.matrix(x[index[, 1], ]) - as.matrix(x[index[, 2], ])
+  tmp2 <- apply(tmp1, 1, fnNorm)
+  A[index.mat] <- tmp2
+  A <- A + t(A)
+  rvec <- apply(A, 1, sum)
+  s <- sum(rvec)
+
+  if (is.null(y)) {
+    rvec1 <- tcrossprod(rvec, rep(1, n))
+    tmp <- (A - rvec1 / n - t(rvec1) / n + s / (n ^ 2)) / (-2)
+  }
+  else{
+    if (is.vector(y)) y <- matrix(y, ncol = 1)
+    m <- nrow(y)
+
+    rvec1 <- tcrossprod(rep(1, m), rvec)
+    B <- matrix(0, m, n)
+    indexy <- expand.grid(1:m, 1:n)
+    tmp3 <- as.matrix(y[indexy[, 1], ]) - as.matrix(x[indexy[, 2], ])
+    B[, ] <- apply(tmp3, 1, fnNorm)
+    qvec <- apply(B, 1, sum)
+    qvec1 <- tcrossprod(qvec, rep(1, n))
+    tmp <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
+  }
+  class(tmp) <- paste("FBM", gamma, sep = ",")
+  tmp
 }
