@@ -1,7 +1,8 @@
-# v0.6.4.9001
+# v0.6.4.9002
 
 * Updated documentation.
 * Edit FBM kernel. Corrected a mistake. Initially for multivariate `x` then  `H(x) = H1(x[1]) + ... + H_p(x[p])`. This is only true for Canonical kernel. Now correctly applies the FBM kernel using the norm function on each multivariate `x_i`.
+* Added support for Gaussian process regression with the currently available kernels.
 
 # v0.6.4
 

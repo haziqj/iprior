@@ -9,6 +9,10 @@ fastSquare <- function(X) {
     .Call('iprior_fastSquare', PACKAGE = 'iprior', X)
 }
 
+fastSquareRoot <- function(X) {
+    .Call('iprior_fastSquareRoot', PACKAGE = 'iprior', X)
+}
+
 fastVDiag <- function(X, y) {
     .Call('iprior_fastVDiag', PACKAGE = 'iprior', X, y)
 }

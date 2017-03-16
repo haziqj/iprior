@@ -28,6 +28,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fastSquareRoot
+Eigen::MatrixXd fastSquareRoot(SEXP X);
+RcppExport SEXP iprior_fastSquareRoot(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(fastSquareRoot(X));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fastVDiag
 NumericMatrix fastVDiag(NumericMatrix X, NumericVector y);
 RcppExport SEXP iprior_fastVDiag(SEXP XSEXP, SEXP ySEXP) {

@@ -32,7 +32,7 @@ kernL(y, ..., model = list())
  \code{FALSE} to assign one scale parameter for all kernel matrices.}
  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
  using the formula call. Should all the variable share the same scale
- parameter?}}
+ parameter?}\item{\code{rootkern}}{Logical, defaults to \code{FALSE}. Setting to \code{TRUE} is equivalent to Gaussian process regression.}}
 
  These options are also available, but are only relevant when calling using
  non-formula: \describe{\item{\code{yname}}{Character vector to set the name

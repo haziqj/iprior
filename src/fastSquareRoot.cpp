@@ -19,29 +19,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <RcppEigen.h>
+// #include <unsupported/Eigen/MatrixFunctions>
 
 // [[Rcpp::depends(RcppEigen)]]
 
-using Rcpp::as;
-using Eigen::Map;
-using Eigen::MatrixXd;
-using Eigen::Lower;
+using namespace Rcpp;
+using namespace Eigen;
 
-// Multiplying a symmetric matrix by itself in C++.
+// Obtaing matrix square root in C++.
 //
-// Returns the square of a symmetric matrix X.
+// Returns the square root of a positive definite matrix X.
 //
-// A fast implementation of X^2 for symmetric matrices. This helps
-// speed up the I-prior EM algorithm.
+// An implementation of X^{1/2} for symmetric positive definite matrices.
 //
-// @param X A symmetric matrix
+// @param X A positive definite matrix
 //
 // [[Rcpp::export]]
 
-Eigen::MatrixXd fastSquare(SEXP X) {
-  const Map<MatrixXd> S(as<Map<MatrixXd> >(X));
-  const int m(S.rows());
-  const MatrixXd SS(MatrixXd(m,m).setZero().
-                      selfadjointView<Lower>().rankUpdate(S.adjoint()));
-  return SS;
+Eigen::MatrixXd fastSquareRoot(SEXP X) {
+  const Map<MatrixXd> A(as<Map<MatrixXd> >(X));
+  Eigen::SelfAdjointEigenSolver<MatrixXd> es(A);
+  Eigen::MatrixXd sqrtA = es.operatorSqrt();
+  return sqrtA;
 }

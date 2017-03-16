@@ -60,7 +60,7 @@
 #'  \code{FALSE} to assign one scale parameter for all kernel matrices.}
 #'  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
 #'  using the formula call. Should all the variable share the same scale
-#'  parameter?}}
+#'  parameter?}\item{\code{rootkern}}{Logical, defaults to \code{FALSE}. Setting to \code{TRUE} is equivalent to Gaussian process regression.}}
 #'
 #'  These options are also available, but are only relevant when calling using
 #'  non-formula: \describe{\item{\code{yname}}{Character vector to set the name
@@ -138,7 +138,7 @@ kernL.default <- function(y, ..., model = list()) {
   mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
               silent = TRUE, order = as.character(1:p), intr.3plus = NULL,
-              delete = NULL)
+              delete = NULL, rootkern = FALSE)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -286,7 +286,10 @@ kernL.default <- function(y, ..., model = list()) {
   }
 
   # Set up list of H matrices --------------------------------------------------
-  Hl <- hMatList(x, mod$kernel, mod$intr, no.int, mod$Hurst, mod$intr.3plus)
+  # note: hMatList() is in Utitilities.R
+  Hl <- hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
+                 gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
+                 rootkern = mod$rootkern)
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
@@ -494,7 +497,8 @@ print.ipriorKernel <- function(x, ...) {
   cat("Number of x variables, p = ", x$p, "\n")
   cat("Number of scale parameters, l = ", x$l, "\n")
   cat("Number of interactions = ", x$no.int + x$no.int.3plus, "\n")
-  cat("\nInfo on H matrix:\n\n")
+  if (x$model$rootkern) cat("\nInfo on root H matrix:\n\n")
+  else cat("\nInfo on H matrix:\n\n")
   str(x$Hl, ...)
   cat("\n")
 }

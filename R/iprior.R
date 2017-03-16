@@ -189,12 +189,20 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est <- ipriorEM(ipriorKernel, maxit, stop.crit, report, silent, intercept,
                   lambda, psi, clean, paramprogress, force.regEM, force.nlm)
   est$ipriorKernel <- ipriorKernel
-  param <- c(est$alpha, est$lambda, est$psi)
+  est$sigma <- 1/sqrt(est$psi)
+  if (ipriorKernel$model$rootkern) {
+    # Do if GPR
+    param <- c(est$alpha, est$lambda * est$psi, est$sigma)
+    psi.or.sigma <- "sigma"
+  } else {
+    param <- c(est$alpha, est$lambda, est$psi)
+    psi.or.sigma <- "psi"
+  }
   if (length(param) == 3) {
-    names(param) <- c("(Intercept)", "lambda", "psi")
+    names(param) <- c("(Intercept)", "lambda", psi.or.sigma)
   } else {
     names(param) <- c("(Intercept)", paste0("lambda", 1:length(est$lambda)),
-                      "psi")
+                      psi.or.sigma)
   }
 
   # Fix xname ------------------------------------------------------------------
@@ -220,8 +228,10 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   # Other things to return -----------------------------------------------------
   est$control      <- con
   est$coefficients <- param
-  est$sigma        <- 1/sqrt(est$psi)
   est$T2           <- as.numeric(crossprod(est$w.hat)/est$psi)
+
+  # Gaussian Process Regression estimates --------------------------------------
+
 
   class(est) <- "ipriorMod"
   est
@@ -296,19 +306,30 @@ print.ipriorMod <- function(x, ...) {
   #                  "Pearson & Canonical", paste("Pearson &", FBM),
   #                  paste("Canonical &", FBM),
   #                  paste("Pearson, Canonical, &", FBM))
-  if (sum(which.kern) == 1) {
-    cat("\nRKHS used:", kerneltypes[which.kern])
-  } else if (sum(which.kern) == 2) {
-    cat("\nRKHS used:", paste(kerneltypes[which.kern], collapse = " & "))
+  if (x$ipriorKernel$model$rootkern) {
+    if (sum(which.kern) == 1) {
+      cat("\nGPR with", kerneltypes[which.kern])
+    } else if (sum(which.kern) == 2) {
+      cat("\nGPR with", paste(kerneltypes[which.kern], collapse = " & "))
+    } else {
+      cat("\nGPR with", paste("Pearson, Canonical, &", FBM))
+    }
+    cat(" covariance kernel.\n")
   } else {
-    cat("\nRKHS used:", paste("Pearson, Canonical, &", FBM))
+    if (sum(which.kern) == 1) {
+      cat("\nRKHS used:", kerneltypes[which.kern])
+    } else if (sum(which.kern) == 2) {
+      cat("\nRKHS used:", paste(kerneltypes[which.kern], collapse = " & "))
+    } else {
+      cat("\nRKHS used:", paste("Pearson, Canonical, &", FBM))
+    }
+    if (x$ipriorKernel$l == 1) {
+      cat(", with a single scale parameter.\n")
+    } else {
+      cat(", with multiple scale parameters.\n")
+    }
   }
-  if (x$ipriorKernel$l == 1) {
-    cat(", with a single scale parameter.\n")
-  } else {
-    cat(", with multiple scale parameters.\n")
-  }
-  cat("\n")
+  # cat("\n")
   cat("\nParameter estimates:\n")
   print(x$coefficients)
   cat("\n")
@@ -318,6 +339,9 @@ print.ipriorMod <- function(x, ...) {
 summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
   se <- fisher(object)
+  if (object$ipriorKernel$model$rootkern) {
+    se[c(-1, -length(se))] <- se[c(-1, -length(se))] * object$psi
+  }
 
   # Z values to compare against (standard) Normal distribution -----------------
   zval <- coef(object)/se
@@ -352,7 +376,8 @@ summary.ipriorMod <- function(object, ...) {
               Hurst = object$ipriorKernel$model$Hurst,formula = object$formula,
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
               xname = xname, no.int = object$ipriorKernel$no.int,
-              optim.converged = object$optim.converged)
+              optim.converged = object$optim.converged,
+              rootkern = object$ipriorKernel$model$rootkern)
   class(res) <- "ipriorSummary"
   res
 }
@@ -370,7 +395,8 @@ print.ipriorSummary <- function(x, ...) {
   printCan <- paste0("Canonical (", paste(x.can, collapse = ", "), ")")
 
   cat("\n")
-  cat("RKHS used:\n")
+  if (x$rootkern) cat("GPR covariance kernel:\n")
+  else cat("RKHS used:\n")
   if (!(length(x.pea) == 0)) cat(printPea, "\n")
   if (!(length(x.can) == 0)) cat(printCan, "\n")
   if (!(length(x.fbm) == 0)) {
@@ -386,10 +412,12 @@ print.ipriorSummary <- function(x, ...) {
     printFBM <- paste(printFBM, collapse = "\n")
     cat(printFBM, "\n")
   }
-  if (x$l == 1) {
-    cat("with a single scale parameter.\n")
-  } else {
-    cat("with multiple scale parameters.\n")
+  if (!x$rootkern) {
+    if (x$l == 1) {
+      cat("with a single scale parameter.\n")
+    } else {
+      cat("with multiple scale parameters.\n")
+    }
   }
   cat("\n")
   cat("Residuals:\n")

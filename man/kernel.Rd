@@ -14,13 +14,16 @@ fnH1(x, y = NULL)
 
 fnH2(x, y = NULL)
 
-fnH3(x, y = NULL, gamma = 0.5)
+fnH3(x, y = NULL, gamma = NULL, normtype = 2)
 }
 \arguments{
 \item{x, y}{A vector, matrix or data frame. \code{x} and \code{y} must have
 similar dimensions.}
 
 \item{gamma}{The Hurst coefficient when using the FBM kernel.}
+
+\item{normtype}{For the FBM kernel, can choose the norm. Default is the
+2-norm. Available choices are any p-norm where p is an integer.}
 }
 \value{
 A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
@@ -47,7 +50,8 @@ the Canonical kernel used for "straight-line" effects and the FBM for
 smoothing effects. The smoothness is controlled somewhat by the Hurst
 coefficient.
 
-More information is available from the \href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
+More information is available from the
+\href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
 }
 \seealso{
 The

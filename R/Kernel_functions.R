@@ -31,11 +31,14 @@
 #' smoothing effects. The smoothness is controlled somewhat by the Hurst
 #' coefficient.
 #'
-#' More information is available from the \href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
+#' More information is available from the
+#' \href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
 #'
 #' @param x,y A vector, matrix or data frame. \code{x} and \code{y} must have
 #'   similar dimensions.
 #' @param gamma The Hurst coefficient when using the FBM kernel.
+#' @param normtype For the FBM kernel, can choose the norm. Default is the
+#'   2-norm. Available choices are any p-norm where p is an integer.
 #'
 #' @return A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
 #'   or \code{"Pearson"} whose \code{[i, j]} entries are \eqn{h(}\code{y[i]},

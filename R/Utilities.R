@@ -71,11 +71,24 @@ isPea <- function(x) x == "Pearson"
 
 isFBM <- function(x) grepl("FBM", x)
 
-canPeaFBM <- function(x, kernel, gamma, y) {
+fastSquareRoot2 <- function(x) {
+  tmp <- eigenCpp(x)
+  tmp$vec %*% tcrossprod(diag(sqrt(abs(tmp$val))), tmp$vec)
+}
+
+canPeaFBM <- function(x, kernel, gamma, y, rootkern = FALSE) {
   if (isCan(kernel)) res <- fnH2(x, y)
   if (isPea(kernel)) res <- fnH1(x, y)
   if (isFBM(kernel)) res <- fnH3(x, y, gamma)
-  res
+  if (rootkern) {
+    classres <- paste0("r", class(res))
+    res <- fastSquareRoot2(res)
+    class(res) <- classres
+    res
+  } else {
+    res
+  }
+
 }
 
 whereInt <- function(x) {
@@ -112,7 +125,7 @@ splitHurst <- function(kernel) {
   tmp
 }
 
-hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus,
+hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
                      xstar = vector("list", p)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
   # and predict.R
@@ -127,8 +140,8 @@ hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus,
   # }
 
   suppressWarnings(
-    H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel),
-                gamma = gamma, y = xstar, SIMPLIFY = FALSE)
+    H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel), gamma = gamma,
+                y = xstar, rootkern = rootkern, SIMPLIFY = FALSE)
   )
   if (!is.null(intr)) {
 	  # Add in interactions, if any.
