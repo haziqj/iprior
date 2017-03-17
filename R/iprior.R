@@ -192,7 +192,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est$sigma <- 1/sqrt(est$psi)
   if (ipriorKernel$model$rootkern) {
     # Do if GPR
-    param <- c(est$alpha, est$lambda * est$psi, est$sigma)
+    param <- c(est$alpha, est$lambda ^ 2 * est$psi, est$sigma)
     psi.or.sigma <- "sigma"
   } else {
     param <- c(est$alpha, est$lambda, est$psi)
@@ -340,7 +340,7 @@ summary.ipriorMod <- function(object, ...) {
   # Standard errors from inverse observed Fisher matrix ------------------------
   se <- fisher(object)
   if (object$ipriorKernel$model$rootkern) {
-    se[c(-1, -length(se))] <- se[c(-1, -length(se))] * object$psi
+    se[c(-1, -length(se))] <- se[c(-1, -length(se))] * 2 * object$lambda * object$psi
   }
 
   # Z values to compare against (standard) Normal distribution -----------------
