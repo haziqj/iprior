@@ -81,7 +81,7 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
     if (rootkern) {
       Hlam.mat <- object$psi *
         Reduce("+", mapply("*", Hl, lambda ^ 2, SIMPLIFY = FALSE))
-      w.hat <- object$VarY.inv %*% (Y - object$alpha)
+      w.hat <- varyinv(object) %*% (Y - object$alpha)
     } else {
       Hlam.mat <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
       w.hat <- object$w.hat

@@ -240,8 +240,8 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 
 
 	list(alpha = alpha, lambda = lambda, psi = psi, log.lik = log.lik1,
-	     no.iter = i, fitted.values = Y.hat, VarY.inv = VarY.inv,
-	     # Psql = Psql, Sl = Sl, Hlam.mat = Hlam.mat,
+	     no.iter = i, fitted.values = Y.hat,
+	     # Psql = Psql, Sl = Sl,VarY.inv = VarY.inv, Hlam.mat = Hlam.mat,
 	     w.hat = w.hat, converged = converged,
 	     res.loglik = res.loglik, res.param = res.param)
 }
