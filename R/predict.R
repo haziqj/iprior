@@ -66,18 +66,29 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
         xstar <- list(as.matrix(xstar))
       }
     } else {
+      if (any(sapply(newdata, is.vector))) {
+        newdata <- lapply(newdata, function(x) t(as.matrix(x)))
+      }
       xstar <- newdata
       xrownames <- rownames(do.call(cbind, newdata))
     }
 
     # Define new kernel matrix -------------------------------------------------
     Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, intr.3plus,
-                   rootkern, xstar)
+                   rootkern = FALSE, xstar)  # can't square root if
+                                             # matrix not square
     lambdaExpand(object$lambda, env = environment())
-    Hlam.mat <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
+    if (rootkern) {
+      Hlam.mat <- object$psi *
+        Reduce("+", mapply("*", Hl, lambda ^ 2, SIMPLIFY = FALSE))
+      w.hat <- object$VarY.inv %*% (Y - object$alpha)
+    } else {
+      Hlam.mat <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
+      w.hat <- object$w.hat
+    }
 
     # Calculate fitted values --------------------------------------------------
-    ystar <- as.vector(object$alpha + (Hlam.mat %*% object$w.hat))
+    ystar <- as.vector(object$alpha + (Hlam.mat %*% w.hat))
     names(ystar) <- xrownames
   }
   ystar
