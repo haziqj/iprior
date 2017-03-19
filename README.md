@@ -19,13 +19,13 @@ install.packages("iprior")
 library(iprior)
 ```
 
-or installing the developmental version from this GitHub repository. R/iprior makes use of several C++ code, so as a prerequisite, you must have a working C++ compiler. To get it:
+or the developmental version from this GitHub repository. R/iprior makes use of several C++ code, so as a prerequisite, you must have a working C++ compiler. To get it:
 
 -   On Windows, install [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
 -   On Mac, install Xcode from the app store.
 -   On Linux, `sudo apt-get install r-base-dev` or similar.
 
-The easiest way to then install from this repo is by using the [devtools](https://github.com/hadley/devtools) package.
+The easiest way to then install from this repo is by using the [devtools](https://github.com/hadley/devtools) package. Install this first.
 
 ``` r
 install.packages("devtools")
