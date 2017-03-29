@@ -37,8 +37,6 @@
 #' @param x,y A vector, matrix or data frame. \code{x} and \code{y} must have
 #'   similar dimensions.
 #' @param gamma The Hurst coefficient when using the FBM kernel.
-#' @param normtype For the FBM kernel, can choose the norm. Default is the
-#'   2-norm. Available choices are any p-norm where p is an integer.
 #'
 #' @return A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
 #'   or \code{"Pearson"} whose \code{[i, j]} entries are \eqn{h(}\code{y[i]},
@@ -127,25 +125,25 @@ fn.H1a <- function(x, y = NULL) {
   mat
 }
 
-fn.H2 <- function(x, y = NULL) {
-  # Canonical kernel function.
-  if (is.null(y)) y <- x
-  tmp <- tcrossprod(y, x)
-  class(tmp) <- "Canonical"
-  tmp
-}
+# fn.H2 <- function(x, y = NULL) {
+#   # Canonical kernel function.
+#   if (is.null(y)) y <- x
+#   tmp <- tcrossprod(y, x)
+#   class(tmp) <- "Canonical"
+#   tmp
+# }
 
-fn.H2a <- function(x, y = NULL) {
-  # Centred Canonical kernel function. This is the kernel used, as opposed to
-  # the uncentred one.
-  x <- as.numeric(x)
-  if (is.null(y)) y <- x
-  else y <- as.numeric(y)
-  xbar <- mean(x)
-  tmp <- tcrossprod(y - xbar, x - xbar)
-  class(tmp) <- "Canonical"
-  tmp
-}
+# fn.H2a <- function(x, y = NULL) {
+#   # Centred Canonical kernel function. This is the kernel used, as opposed to
+#   # the uncentred one.
+#   x <- as.numeric(x)
+#   if (is.null(y)) y <- x
+#   else y <- as.numeric(y)
+#   xbar <- mean(x)
+#   tmp <- tcrossprod(y - xbar, x - xbar)
+#   class(tmp) <- "Canonical"
+#   tmp
+# }
 
 # fn.H3 <- function(x, y = NULL, gamma = NULL) {
 # 	# The Fractional Brownian Motion kernel with Hurst coef. = gamma.
@@ -243,36 +241,43 @@ fnH1 <- function(x, y = NULL){
 
 #' @rdname kernel
 #' @export
-fnH2 <- function(x, y = NULL){
-	res <- 0
-	if ((ncol(x) > 1) && !is.null(ncol(x))) {
-		if ((ncol(x) != ncol(y)) && !is.null(y)) {
-		  stop("New data is structurally unsimilar.")
-		}
-		for (i in 1:ncol(x)) res <- res + fn.H2a(x = x[, i], y = y[, i])
-	}
-	else res <- fn.H2a(x, y)
-	return(res)
+fnH2 <- function(x, y = NULL) {
+  # Centred Canonical kernel function. This is the kernel used, as opposed to
+  # the uncentred one.
+  x <- scale(x, scale = FALSE)  # centre the variables
+  if (is.null(y)) {
+    tmp <- tcrossprod(x)
+  } else {
+    if (is.vector(y)) y <- matrix(y, ncol = ncol(x))
+    else y <- as.matrix(y)
+    y <- sweep(y, 2, attr(x ,"scaled:center"), "-")
+    tmp <- tcrossprod(y, x)
+  }
+  class(tmp) <- "Canonical"
+  tmp
 }
 
 #' @rdname kernel
 #' @export
-fnH3 <- function(x, y = NULL, gamma = NULL, normtype = 2) {
+fnH3 <- function(x, y = NULL, gamma = NULL) {
   if (is.null(gamma)) gamma <- 0.5
   if (is.vector(x)) x <- matrix(x, ncol = 1)
   n <- nrow(x)
 
-  fnNorm <- function(x) {
-    sum(abs(x) ^ normtype) ^ (normtype * gamma / normtype)
-  }
+  # fnNorm <- function(x) {
+  #   sum(abs(x) ^ normtype) ^ (normtype * gamma / normtype)
+  # }
 
   A <- matrix(0, n, n)
   index.mat <- upper.tri(A)
   index <- which(index.mat, arr.ind = TRUE)
-  tmp1 <- as.matrix(x[index[, 1], ]) - as.matrix(x[index[, 2], ])
-  tmp2 <- apply(tmp1, 1, fnNorm)
-  A[index.mat] <- tmp2
+  xcrossprod <- tcrossprod(x)
+  tmp1 <- diag(xcrossprod)[index[, 1]]
+  tmp2 <- diag(xcrossprod)[index[, 2]]
+  tmp3 <- xcrossprod[index]
+  A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
   A <- A + t(A)
+  A <- A ^ gamma
   rvec <- apply(A, 1, sum)
   s <- sum(rvec)
 
@@ -287,8 +292,13 @@ fnH3 <- function(x, y = NULL, gamma = NULL, normtype = 2) {
     rvec1 <- tcrossprod(rep(1, m), rvec)
     B <- matrix(0, m, n)
     indexy <- expand.grid(1:m, 1:n)
-    tmp3 <- as.matrix(y[indexy[, 1], ]) - as.matrix(x[indexy[, 2], ])
-    B[, ] <- apply(tmp3, 1, fnNorm)
+    ynorm <- apply(y, 1, function(x) sum(x ^ 2))
+    xycrossprod <- tcrossprod(y, x)
+    tmp1 <- ynorm[indexy[, 1]]
+    tmp2 <- diag(xcrossprod)[indexy[, 2]]
+    tmp3 <- as.numeric(xycrossprod)
+    B[, ] <- tmp1 + tmp2 - 2 * tmp3
+    B <- B ^ gamma
     qvec <- apply(B, 1, sum)
     qvec1 <- tcrossprod(qvec, rep(1, n))
     tmp <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
