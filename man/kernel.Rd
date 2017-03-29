@@ -14,16 +14,13 @@ fnH1(x, y = NULL)
 
 fnH2(x, y = NULL)
 
-fnH3(x, y = NULL, gamma = NULL, normtype = 2)
+fnH3(x, y = NULL, gamma = NULL)
 }
 \arguments{
 \item{x, y}{A vector, matrix or data frame. \code{x} and \code{y} must have
 similar dimensions.}
 
 \item{gamma}{The Hurst coefficient when using the FBM kernel.}
-
-\item{normtype}{For the FBM kernel, can choose the norm. Default is the
-2-norm. Available choices are any p-norm where p is an integer.}
 }
 \value{
 A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},

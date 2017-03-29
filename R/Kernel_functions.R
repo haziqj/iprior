@@ -287,6 +287,7 @@ fnH3 <- function(x, y = NULL, gamma = NULL) {
   }
   else{
     if (is.vector(y)) y <- matrix(y, ncol = 1)
+    else y <- as.matrix(y)
     m <- nrow(y)
 
     rvec1 <- tcrossprod(rep(1, m), rvec)
