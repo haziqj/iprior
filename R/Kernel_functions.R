@@ -262,6 +262,7 @@ fnH2 <- function(x, y = NULL) {
 fnH3 <- function(x, y = NULL, gamma = NULL) {
   if (is.null(gamma)) gamma <- 0.5
   if (is.vector(x)) x <- matrix(x, ncol = 1)
+  x <- as.matrix(x)
   n <- nrow(x)
 
   # fnNorm <- function(x) {
