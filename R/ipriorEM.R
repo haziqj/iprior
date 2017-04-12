@@ -44,7 +44,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	list2env(model, ipriorEM.env)
   environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
 	environment(BlockA) <- environment(BlockB) <- environment(BlockC) <- ipriorEM.env
-  environment(lambdaExpand) <- environment(lambdaContract) <- ipriorEM.env
+  environment(.lambdaExpand) <- environment(.lambdaContract) <- ipriorEM.env
   environment(fisherNew) <- ipriorEM.env
   if (r > 0 | force.regEM | no.int.3plus > 0) {
     if (force.nlm) {
@@ -106,7 +106,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	log.lik0 <- logLikEM()
 	log.lik1 <- log.lik0 + 2 * stop.crit
 	res.loglik[1,1] <- log.lik0
-	lambdaContract()  # for printing
+	.lambdaContract()  # for printing
 	res.param[1,] <- c(alpha, lambda, psi)
 	if (!silent) {
 		if (clean) {
@@ -123,7 +123,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 			  head.tab <- c(head.tab, format(c(colnames(res.loglik)), width = 11,
 			                                 just = "right"))
 			}
-			cat(head.tab, "\n")		#prints the table headers
+			cat(head.tab, "\n")  # prints the table headers
 			if (paramprogress) {
 			  ipriorEMprettyIter(c(res.loglik[1,], res.param[1,-1]), 0)
 			}
@@ -161,7 +161,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		a <- ifelse((0 < dloglik) & (dloglik < dloglikold), dloglik/dloglikold, 0)
 		predloglik <- log.lik1 - dloglik + dloglik/(1 - a)
 		res.loglik[i + 1, ] <- c(log.lik1, predloglik, dloglik)
-		lambdaContract()  # for printing
+		.lambdaContract()  # for printing
 		res.param[i + 1, ] <- c(alpha, lambda, psi)
 
 		# Report and conclusion ----------------------------------------------------

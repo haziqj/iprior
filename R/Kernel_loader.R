@@ -138,12 +138,21 @@ kernL.default <- function(y, ..., model = list()) {
   mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
               silent = TRUE, order = as.character(1:p), intr.3plus = NULL,
-              delete = NULL, rootkern = FALSE)
+              delete = NULL, rootkern = FALSE, probit = FALSE)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
     warning("Unknown names in model options: ", paste(noNms, collapse = ", "),
             call. = FALSE)
+  }
+
+  # This part is for binary response models ------------------------------------
+  y.levels <- NULL
+  if (is.factor(y)) {
+    mod$probit <- TRUE
+    tmp <- checkLevels(y)
+    y <- tmp$y
+    y.levels <- tmp$levels
   }
 
   # What types of kernels? -----------------------------------------------------
@@ -412,7 +421,7 @@ kernL.default <- function(y, ..., model = list()) {
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
   kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
-                       no.int = no.int, q = q,
+                       no.int = no.int, q = q, y.levels = y.levels,
                        BlockBstuff = BlockBstuff, model = mod, call = cl,
                        no.int.3plus = no.int.3plus)
   class(kernelLoaded) <- "ipriorKernel"
@@ -493,6 +502,7 @@ print.ipriorKernel <- function(x, ...) {
   # cat(kerneltypes[3], 'RKHS loaded') } if (x$q == 1 | x$model$one.lam) cat(',
   # with a single scale parameter.\n') else cat(', with', x$q, 'scale
   # parameters.\n')
+  if (isTRUE(x$model$probit)) cat("Binary response variables\n")
   cat("Sample size = ", x$n, "\n")
   cat("Number of x variables, p = ", x$p, "\n")
   cat("Number of scale parameters, l = ", x$l, "\n")

@@ -29,7 +29,8 @@ hlamFnMult <- function(x = lambda, env = ipriorEM.env) {
                                         SIMPLIFY = FALSE)), envir = env)
 }
 
-lambdaExpand <- function(x = lambda, env = ipriorEM.env) {
+#' @export
+.lambdaExpand <- function(x = lambda, env = ipriorEM.env) {
   # Expands lambda from length l to correct size q = p + no.int, first by
   # expanding the higher order terms (if any), and then by adding the
   # interaction lambdas after that.
@@ -57,7 +58,8 @@ lambdaExpand <- function(x = lambda, env = ipriorEM.env) {
   assign("lambda", lambda.tmp, envir = env)
 }
 
-lambdaContract <- function(x = lambda, env = ipriorEM.env) {
+#' @export
+.lambdaContract <- function(x = lambda, env = ipriorEM.env) {
   # The opposite of lambdaExpand(). Looks for model$order vector and extracts
   # only the l lambdas.
   assign("lambda", x[whereOrd(order)], envir = env)
@@ -73,7 +75,7 @@ linSolvInv <- function(b = NULL){
 
 BlockA <- function(){
   # Block A update function
-  lambdaExpand()
+  .lambdaExpand()
   hlamFn()  # this is assigned in ipriorEM.env
   A <- Hlam.mat
   assign("s", 1/psi, envir = parent.frame())
@@ -127,7 +129,7 @@ ipriorEMClosedForm <- function() {
   lambda.tmp <- rep(NA, l)
 
   for (k in 1:l) {
-    lambdaExpand()
+    .lambdaExpand()
     BlockB(k)
     T1 <- sum(Psql[[k]] * W.hat)
     T2 <- crossprod(Y - alpha, crossprod(Pl[[k]], w.hat)) -
@@ -148,19 +150,19 @@ ipriorEMClosedForm <- function() {
 #   theta.new <- optim(theta, QEstep, method = "L-BFGS-B",
 #                      lower = c(rep(-Inf, l), 1e-9),
 #                      Y = Y, alpha = alpha, W.hat = W.hat, w.hat = w.hat,
-#                      lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+#                      .lambdaExpand = .lambdaExpand, hlamFn = hlamFn,
 #                      env = ipriorEM.env)$par
 #   assign("lambda", theta.new[-length(theta.new)], envir = parent.frame())
 #   assign("psi", theta.new[length(theta.new)], envir = parent.frame())
 #
 # }
 #
-# QEstep <- function(theta, Y, alpha, W.hat, w.hat, lambdaExpand, hlamFn, env) {
+# QEstep <- function(theta, Y, alpha, W.hat, w.hat, .lambdaExpand, hlamFn, env) {
 #   n <- length(Y)
 #   lambda <- theta[-length(theta)]
 #   psi <- theta[length(theta)]
-#   environment(lambdaExpand) <- environment(hlamFn) <- env
-#   lambdaExpand(lambda, env = environment())
+#   environment(.lambdaExpand) <- environment(hlamFn) <- env
+#   .lambdaExpand(lambda, env = environment())
 #   hlamFn(lambda, env = environment())
 #   Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, n)
 #   Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
@@ -177,7 +179,7 @@ ipriorEMOptim1 <- function() {
   assign("lambda", optim(lambda, QEstepLambda, method = "Brent", lower = -1e9,
                          upper = 1e9, Y = Y, alpha = alpha, psi = psi,
                          W.hat = W.hat, w.hat = w.hat,
-                         lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                         .lambdaExpand = .lambdaExpand, hlamFn = hlamFn,
                          env = ipriorEM.env, hessian = FALSE)$par,
          envir = ipriorEM.env)
 
@@ -194,7 +196,7 @@ ipriorEMOptim2 <- function() {
   # Update for lambda ----------------------------------------------------------
   assign("lambda", optim(lambda, QEstepLambda, Y = Y, alpha = alpha, psi = psi,
                          W.hat = W.hat, w.hat = w.hat,
-                         lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                         .lambdaExpand = .lambdaExpand, hlamFn = hlamFn,
                          env = ipriorEM.env, hessian = FALSE)$par,
          envir = ipriorEM.env)
 
@@ -204,12 +206,12 @@ ipriorEMOptim2 <- function() {
   assign("psi", psi, envir = parent.frame())
 }
 
-QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, lambdaExpand,
+QEstepLambda <- function(lambda, Y, alpha, psi, W.hat, w.hat, .lambdaExpand,
                          hlamFn, env) {
   # The Q function for the E-step.
   n <- length(Y)
-  environment(lambdaExpand) <- environment(hlamFn) <- env
-  lambdaExpand(lambda, env = environment())
+  environment(.lambdaExpand) <- environment(hlamFn) <- env
+  .lambdaExpand(lambda, env = environment())
   hlamFn(lambda, env = environment())
   Var.Y <- psi * fastSquare(Hlam.mat) + diag(1 / psi, n)
   Q <- psi * crossprod(Y - alpha) + sum(Var.Y * W.hat)
@@ -223,7 +225,7 @@ ipriorEMnlm <- function() {
   # Update for lambda ----------------------------------------------------------
   assign("lambda", nlm(QEstepLambda, lambda, Y = Y, alpha = alpha, psi = psi,
                        W.hat = W.hat, w.hat = w.hat,
-                       lambdaExpand = lambdaExpand, hlamFn = hlamFn,
+                       .lambdaExpand = .lambdaExpand, hlamFn = hlamFn,
                        env = ipriorEM.env, hessian = FALSE)$estimate,
          envir = ipriorEM.env)
 

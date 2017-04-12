@@ -50,7 +50,7 @@
 predict.ipriorMod <- function(object, newdata = list(), ...) {
   list2env(object$ipriorKernel, environment())
   list2env(model, environment())
-  environment(lambdaExpand) <- environment()
+  environment(.lambdaExpand) <- environment()
 
   if (length(newdata) == 0) {
     ystar <- object$fitted
@@ -77,7 +77,7 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
     Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, intr.3plus,
                    rootkern = FALSE, xstar)  # can't square root if
                                              # matrix not square
-    lambdaExpand(object$lambda, env = environment())
+    .lambdaExpand(object$lambda, env = environment())
     if (rootkern) {
       Hlam.mat <- object$psi *
         Reduce("+", mapply("*", Hl, lambda ^ 2, SIMPLIFY = FALSE))
