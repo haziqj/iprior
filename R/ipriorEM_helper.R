@@ -80,7 +80,7 @@ BlockA <- function(){
   A <- Hlam.mat
   assign("s", 1/psi, envir = parent.frame())
   tmp <- eigenCpp(A)  # a C++ alternative
-  assign("u", psi * tmp$val ^ 2, envir = parent.frame())
+  assign("u", psi * tmp$val ^ 2 + 1e-9, envir = parent.frame())
   assign("V", tmp$vec, envir = parent.frame())
   assign("is.VarYneg", FALSE, envir = parent.frame())
   assign("is.VarYneg", any(u + s < 0), envir = parent.frame())
