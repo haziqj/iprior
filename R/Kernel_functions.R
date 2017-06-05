@@ -244,6 +244,7 @@ fnH1 <- function(x, y = NULL){
 fnH2 <- function(x, y = NULL) {
   # Centred Canonical kernel function. This is the kernel used, as opposed to
   # the uncentred one.
+  rownames(x) <- colnames(x) <- rownames(y) <- colnames(y) <- NULL
   x <- scale(x, scale = FALSE)  # centre the variables
   if (is.null(y)) {
     tmp <- tcrossprod(x)

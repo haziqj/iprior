@@ -146,11 +146,11 @@ kernL.default <- function(y, ..., model = list()) {
             call. = FALSE)
   }
 
-  # This part is for binary response models ------------------------------------
+  # This part is for categorical response models -------------------------------
   y.levels <- NULL
   if (is.factor(y)) {
     mod$probit <- TRUE
-    tmp <- checkLevels(y)
+    tmp <- checkLevels(y)  # Utilities.R
     y <- tmp$y
     y.levels <- tmp$levels
   }
@@ -502,7 +502,7 @@ print.ipriorKernel <- function(x, ...) {
   # cat(kerneltypes[3], 'RKHS loaded') } if (x$q == 1 | x$model$one.lam) cat(',
   # with a single scale parameter.\n') else cat(', with', x$q, 'scale
   # parameters.\n')
-  if (isTRUE(x$model$probit)) cat("Binary response variables\n")
+  if (isTRUE(x$model$probit)) cat("Categorical response variables\n")
   cat("Sample size = ", x$n, "\n")
   cat("Number of x variables, p = ", x$p, "\n")
   cat("Number of scale parameters, l = ", x$l, "\n")
