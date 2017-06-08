@@ -18,11 +18,13 @@
 #
 ################################################################################
 
-checkLevels <- function(y) {
+#' @export
+.checkLevels <- function(y) {
   # Function used for categorical response models. Obtains the levels in the ys
   y <- as.factor(y)
   y.levels <- levels(y)
-  y.numeric <- as.numeric(y) - 1
+  if (length(y.levels == 2))
+    y.numeric <- as.numeric(y) - 1
 
   list(y = y.numeric, levels = y.levels)
 }
@@ -276,6 +278,12 @@ ipriorColPal <- function(x) {
             RColorBrewer::brewer.pal(8, "Dark2"))
   colx[6] <- RColorBrewer::brewer.pal(8, "Set2")[6]
   colx[x]
+}
+
+#' @export
+ggColPal <- function(x) {
+  hues = seq(15, 375, length = x + 1)
+  hcl(h = hues, l = 65, c = 100)[1:x]
 }
 
 # Hacky way to pass R CMD CHECK "no visible binding" note ----------------------

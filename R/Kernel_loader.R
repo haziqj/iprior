@@ -150,7 +150,7 @@ kernL.default <- function(y, ..., model = list()) {
   y.levels <- NULL
   if (is.factor(y)) {
     mod$probit <- TRUE
-    tmp <- checkLevels(y)  # Utilities.R
+    tmp <- .checkLevels(y)  # Utilities.R
     y <- tmp$y
     y.levels <- tmp$levels
   }

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 //   iprior: Linear Regression using I-priors
-//   Copyright (C) 2016  Haziq Jamil
+//   Copyright (C) 2017 Haziq Jamil
 //
 //   This program is free software: you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 //   GNU General Public License for more details.
 //
 //   You should have received a copy of the GNU General Public License
-//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//   along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,16 +29,18 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::Lower;
 
-// Computing a quadratic matrix form in C++.
-//
-// Returns XdiagyXT.
-//
-// A fast implementation of XdiagyXT. This helps speed up
-// the I-prior EM algorithm.
-//
-// @param X A symmetric, square matrix of dimension \code{n} by \code{n}
-// @param y A vector of length \code{n}
-//
+//' Computing a quadratic matrix form in C++.
+//'
+//' Returns XdiagyXT.
+//'
+//' A fast implementation of XdiagyXT. This helps speed up
+//' the I-prior EM algorithm.
+//'
+//' @param X A symmetric, square matrix of dimension \code{n} by \code{n}
+//' @param y A vector of length \code{n}
+//'
+//' @export
+//'
 // [[Rcpp::export]]
 
 NumericMatrix fastVDiag(NumericMatrix X, NumericVector y) {

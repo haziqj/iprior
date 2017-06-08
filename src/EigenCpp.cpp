@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 //   iprior: Linear Regression using I-priors
-//   Copyright (C) 2016  Haziq Jamil
+//   Copyright (C) 2017 Haziq Jamil
 //
 //   This program is free software: you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 //   GNU General Public License for more details.
 //
 //   You should have received a copy of the GNU General Public License
-//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//   along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,15 +29,17 @@ using Eigen::MatrixXd;                // variable size matrix, double precision
 using Eigen::VectorXd;                // variable size vector, double precision
 using Eigen::SelfAdjointEigenSolver;  // one of the eigenvalue solvers
 
-// Eigen decomposition of a matrix in C++.
-//
-// Returns the eigenvalues and eigenvectors of a matrix X.
-//
-// A fast implementation of eigen for symmetric, positive-definite
-// matrices. This helps speed up the I-prior EM algorithm.
-//
-// @param X A symmetric, positive-definite matrix
-//
+//' Eigen decomposition of a matrix in C++.
+//'
+//' Returns the eigenvalues and eigenvectors of a matrix X.
+//'
+//' A fast implementation of eigen for symmetric, positive-definite
+//' matrices. This helps speed up the I-prior EM algorithm.
+//'
+//' @param X A symmetric, positive-definite matrix
+//'
+//' @export
+//'
 // [[Rcpp::export]]
 
 List eigenCpp(Eigen::Map<Eigen::MatrixXd> X) {
