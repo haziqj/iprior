@@ -150,7 +150,7 @@ kernL.default <- function(y, ..., model = list()) {
   y.levels <- NULL
   if (is.factor(y)) {
     mod$probit <- TRUE
-    tmp <- .checkLevels(y)  # Utilities.R
+    tmp <- checkLevels(y)  # Utilities.R
     y <- tmp$y
     y.levels <- tmp$levels
   }
@@ -296,9 +296,9 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up list of H matrices --------------------------------------------------
   # note: hMatList() is in Utitilities.R
-  Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
-                  gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
-                  rootkern = mod$rootkern)
+  Hl <- hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
+                 gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
+                 rootkern = mod$rootkern)
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
@@ -339,11 +339,11 @@ kernL.default <- function(y, ..., model = list()) {
   # Block B update function ----------------------------------------------------
   intr <- mod$intr
   environment(indxFn) <- environment()
-  H2l <- Hsql <- Pl <- Psql <- Sl <- Sl.tmp <- ind <- ind1 <- ind2 <- NULL
+  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
   BlockB <- function(k) NULL
   if (r == 0L & no.int.3plus == 0L) {
     # No need to do all the below Block B stuff if higher order terms involved.
-    if (q == 1L) { # CASE: Single lambda ---------------------------------------
+    if (q == 1L) {
       Pl <- Hl
       Psql <- list(fastSquare(Pl[[1]]))
       Sl <- list(matrix(0, nrow = n, ncol = n))
@@ -360,7 +360,9 @@ kernL.default <- function(y, ..., model = list()) {
       # Prepare the cross-product terms of squared kernel matrices. This is a
       # list of q_choose_2.
       for (j in 1:length(ind1)) {
-        H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+        tmp.H2 <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+          # + Hl[[ind2[j]]] %*% Hl[[ind1[j]]]  # old way. they're symmetric!
+        H2l[[j]] <- tmp.H2 + t(tmp.H2)
         pb.count <- pb.count + 1
         if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
@@ -386,20 +388,14 @@ kernL.default <- function(y, ..., model = list()) {
           if (!is.null(indB$P2.lam1)) {
             lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
             lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
-            Psql[[k]] <<- Psql[[k]] +
-              Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE)) +
-              Reduce("+", mapply("*", lapply(H2l[indB$P2], t), lambda.P2,
-                                 SIMPLIFY = FALSE))
+            Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
+                                                         lambda.P2,
+                                                         SIMPLIFY = FALSE))
           }
           lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
           lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
-          Sl.tmp <- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                       SIMPLIFY = FALSE))
-          if (isTRUE(probit))
-            Sl[[k]] <- Sl.tmp
-          else
-            Sl[[k]] <- Sl.tmp + Reduce("+", mapply("*", lapply(H2l[indB$PRU], t),
-                                                   lambda.PRU, SIMPLIFY = FALSE))
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                         SIMPLIFY = FALSE))
         }
       } else {
         # CASE: Multiple lambda with no interactions, or with non-parsimonious -
@@ -412,13 +408,8 @@ kernL.default <- function(y, ..., model = list()) {
         }
         BlockB <- function(k) {
           ind <- which(ind1 == k | ind2 == k)
-          Sl.tmp <- Reduce("+", mapply("*", H2l[ind], lambda[-k],
-                                       SIMPLIFY = FALSE))
-          if (isTRUE(probit))
-            Sl[[k]] <<- Sl.tmp
-          else
-            Sl[[k]] <<- Sl.tmp + Reduce("+", mapply("*", lapply(H2l[ind], t),
-                                                    lambda[-k], SIMPLIFY = FALSE))
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k],
+                                         SIMPLIFY = FALSE))
         }
       }
     }

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 //   iprior: Linear Regression using I-priors
-//   Copyright (C) 2017 Haziq Jamil
+//   Copyright (C) 2016  Haziq Jamil
 //
 //   This program is free software: you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -10,11 +10,11 @@
 //
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //   GNU General Public License for more details.
 //
 //   You should have received a copy of the GNU General Public License
-//   along with this program. If not, see <http://www.gnu.org/licenses/>.
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,17 +27,15 @@ using Eigen::Map;
 using Eigen::MatrixXd;
 using Eigen::Lower;
 
-//' Multiplying a symmetric matrix by itself in C++.
-//'
-//' Returns the square of a symmetric matrix X.
-//'
-//' A fast implementation of X^2 for symmetric matrices. This helps
-//' speed up the I-prior EM algorithm.
-//'
-//' @param X A symmetric matrix
-//'
-//' @export
-//'
+// Multiplying a symmetric matrix by itself in C++.
+//
+// Returns the square of a symmetric matrix X.
+//
+// A fast implementation of X^2 for symmetric matrices. This helps
+// speed up the I-prior EM algorithm.
+//
+// @param X A symmetric matrix
+//
 // [[Rcpp::export]]
 
 Eigen::MatrixXd fastSquare(SEXP X) {

@@ -74,9 +74,9 @@ predict.ipriorMod <- function(object, newdata = list(), ...) {
     }
 
     # Define new kernel matrix -------------------------------------------------
-    Hl <- .hMatList(x, kernel, intr, no.int, model$Hurst, intr.3plus,
-                    rootkern = FALSE, xstar)  # can't square root if
-                                              # matrix not square
+    Hl <- hMatList(x, kernel, intr, no.int, model$Hurst, intr.3plus,
+                   rootkern = FALSE, xstar)  # can't square root if
+                                             # matrix not square
     .lambdaExpand(object$lambda, env = environment())
     if (rootkern) {
       Hlam.mat <- object$psi *
