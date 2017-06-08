@@ -360,9 +360,7 @@ kernL.default <- function(y, ..., model = list()) {
       # Prepare the cross-product terms of squared kernel matrices. This is a
       # list of q_choose_2.
       for (j in 1:length(ind1)) {
-        tmp.H2 <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
-          # + Hl[[ind2[j]]] %*% Hl[[ind1[j]]]  # old way. they're symmetric!
-        H2l[[j]] <- tmp.H2 + t(tmp.H2)
+        H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
         pb.count <- pb.count + 1
         if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
@@ -388,14 +386,20 @@ kernL.default <- function(y, ..., model = list()) {
           if (!is.null(indB$P2.lam1)) {
             lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
             lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
-            Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
-                                                         lambda.P2,
-                                                         SIMPLIFY = FALSE))
+            Psql[[k]] <<- Psql[[k]] +
+              Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE)) +
+              Reduce("+", mapply("*", lapply(H2l[indB$P2], t),
+                                 lambda.P2, SIMPLIFY = FALSE))
           }
           lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
           lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                         SIMPLIFY = FALSE))
+          Sl.tmp <- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                       SIMPLIFY = FALSE))
+          if (isTRUE(probit))
+            Sl[[k]] <<- Sl.tmp
+          else
+            Sl[[k]] <<- Sl.tmp + Reduce("+", mapply("*", lapply(H2l[indB$PRU], t),
+                                                    lambda.PRU, SIMPLIFY = FALSE))
         }
       } else {
         # CASE: Multiple lambda with no interactions, or with non-parsimonious -
@@ -408,8 +412,12 @@ kernL.default <- function(y, ..., model = list()) {
         }
         BlockB <- function(k) {
           ind <- which(ind1 == k | ind2 == k)
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k],
-                                         SIMPLIFY = FALSE))
+          Sl.tmp <- Reduce("+", mapply("*", H2l[ind], lambda[-k], SIMPLIFY = FALSE))
+          if (isTRUE(probit))
+            Sl[[k]] <<- Sl.tmp
+          else
+            Sl[[k]] <<- Sl.tmp + Reduce("+", mapply("*", lapply(H2l[ind], t),
+                                                    lambda[-k], SIMPLIFY = FALSE))
         }
       }
     }
