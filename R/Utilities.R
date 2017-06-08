@@ -18,11 +18,13 @@
 #
 ################################################################################
 
-checkLevels <- function(y) {
+#' @export
+.checkLevels <- function(y) {
   # Function used for categorical response models. Obtains the levels in the ys
   y <- as.factor(y)
   y.levels <- levels(y)
-  y.numeric <- as.numeric(y) - 1
+  if (length(y.levels) == 2)
+    y.numeric <- as.numeric(y) - 1
 
   list(y = y.numeric, levels = y.levels)
 }
@@ -134,8 +136,9 @@ splitHurst <- function(kernel) {
   tmp
 }
 
-hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
-                     xstar = vector("list", p)) {
+#' @export
+.hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
+                      xstar = vector("list", p)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
   # and predict.R
   p <- length(x)
@@ -254,7 +257,6 @@ if (getRversion() < "3.3.0") {
 #' @export
 sigma.ipriorMod <- function(object, ...) object$sigma
 
-
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
   # yourself when your package is unloaded.
@@ -276,6 +278,12 @@ ipriorColPal <- function(x) {
             RColorBrewer::brewer.pal(8, "Dark2"))
   colx[6] <- RColorBrewer::brewer.pal(8, "Set2")[6]
   colx[x]
+}
+
+#' @export
+ggColPal <- function(x) {
+  hues = seq(15, 375, length = x + 1)
+  hcl(h = hues, l = 65, c = 100)[1:x]
 }
 
 # Hacky way to pass R CMD CHECK "no visible binding" note ----------------------
