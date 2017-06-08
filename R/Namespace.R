@@ -1,9 +1,9 @@
 # Rcpp and RcppEigen stuff -----------------------------------------------------
-#' @useDynLib iprior
+#' @useDynLib iprior, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 # iprior package imports -------------------------------------------------------
-#' @importFrom grDevices dev.new
+#' @importFrom grDevices dev.new hcl
 #' @importFrom graphics abline lines par plot text
 #' @importFrom methods is
 #' @importFrom stats logLik optim coef delete.response kernel lm model.frame

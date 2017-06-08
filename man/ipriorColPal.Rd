@@ -2,9 +2,12 @@
 % Please edit documentation in R/Utilities.R
 \name{ipriorColPal}
 \alias{ipriorColPal}
+\alias{ggColPal}
 \title{Colour palette for \code{iprior} plots}
 \usage{
 ipriorColPal(x)
+
+ggColPal(x)
 }
 \arguments{
 \item{x}{(optional) A vector of maximum length 16.}
