@@ -21,12 +21,7 @@
 #' @export
 .checkLevels <- function(y) {
   # Function used for categorical response models. Obtains the levels in the ys
-  y <- as.factor(y)
-  y.levels <- levels(y)
-  if (length(y.levels == 2))
-    y.numeric <- as.numeric(y) - 1
-
-  list(y = y.numeric, levels = y.levels)
+  list(y = as.numeric(y), levels = levels(y))
 }
 
 triangIndex <- function(k){
