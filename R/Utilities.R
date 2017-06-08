@@ -136,8 +136,9 @@ splitHurst <- function(kernel) {
   tmp
 }
 
-hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
-                     xstar = vector("list", p)) {
+#' @export
+.hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
+                      xstar = vector("list", p)) {
   # Helper function for creation of list of H matrices. Used in Kernel_loader.r
   # and predict.R
   p <- length(x)

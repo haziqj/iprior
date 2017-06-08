@@ -296,9 +296,9 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up list of H matrices --------------------------------------------------
   # note: hMatList() is in Utitilities.R
-  Hl <- hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
-                 gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
-                 rootkern = mod$rootkern)
+  Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
+                  gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
+                  rootkern = mod$rootkern)
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
