@@ -36,7 +36,7 @@ hlamFnMult <- function(x = lambda, env = ipriorEM.env) {
   # interaction lambdas after that.
   lambda.tmp <- rep(NA, q)
   for (i in 1:q) {
-    if (isHOrd(order[i])) {
+    if (isHOrd(order[i]) && !isTRUE(probit)) {
       j.and.pow <- splitHOrd(order[i])
       j <- j.and.pow[1]
       pow <- j.and.pow[2]
