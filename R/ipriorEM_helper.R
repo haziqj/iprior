@@ -36,13 +36,17 @@ hlamFnMult <- function(x = lambda, env = ipriorEM.env) {
   # interaction lambdas after that.
   lambda.tmp <- rep(NA, q)
   for (i in 1:q) {
-    if (isHOrd(order[i]) && !isTRUE(probit)) {
-      j.and.pow <- splitHOrd(order[i])
-      j <- j.and.pow[1]
-      pow <- j.and.pow[2]
-      lambda.tmp[i] <- x[as.numeric(j)] ^ as.numeric(pow)
+    if (isTRUE(probit)) {
+      lambda.tmp[i] <- x[as.numeric(order[i])]
+    } else {
+      if (isHOrd(order[i])) {
+        j.and.pow <- splitHOrd(order[i])
+        j <- j.and.pow[1]
+        pow <- j.and.pow[2]
+        lambda.tmp[i] <- x[as.numeric(j)] ^ as.numeric(pow)
+      }
+      else lambda.tmp[i] <- x[as.numeric(order[i])]
     }
-    else lambda.tmp[i] <- x[as.numeric(order[i])]
   }
   if (parsm && no.int > 0) {
     for (j in 1:no.int) {
