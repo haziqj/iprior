@@ -137,8 +137,8 @@ kernL.default <- function(y, ..., model = list()) {
   # Model options and checks ---------------------------------------------------
   mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
-              silent = TRUE, order = as.character(1:p), intr.3plus = NULL,
-              delete = NULL, rootkern = FALSE, probit = FALSE)
+              order = as.character(1:p), intr.3plus = NULL, rootkern = FALSE,
+              probit = FALSE)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
@@ -318,24 +318,6 @@ kernL.default <- function(y, ..., model = list()) {
   # Set up names for lambda parameters -----------------------------------------
   mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
 
-  # A delete option, mainly to delete unwanted first order terms but keep ------
-  # interactions ---------------------------------------------------------------
-  if (!is.null(mod$delete)) {
-    Hl <- Hl[-mod$delete]
-    h <- length(Hl)
-    q <- q - length(mod$delete)
-    if (!mod$parsm) {
-      l <- q
-      mod$order <- as.character(1:l)
-    } else {
-      l <- p - r
-    }
-  }
-
-  # Set up progress bar --------------------------------------------------------
-  if (!mod$silent) pb <- txtProgressBar(min = 0, max = 1, style = 3, width = 47)
-  pb.count <- 0
-
   # Block B update function ----------------------------------------------------
   intr <- mod$intr
   environment(indxFn) <- environment()
@@ -347,22 +329,15 @@ kernL.default <- function(y, ..., model = list()) {
       Pl <- Hl
       Psql <- list(fastSquare(Pl[[1]]))
       Sl <- list(matrix(0, nrow = n, ncol = n))
-      if (!mod$silent) setTxtProgressBar(pb, 1)
     } else {
       # Next, prepare the indices required for indxFn().
       z <- 1:h
       ind1 <- rep(z, times = (length(z) - 1):0)
       ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
-      if (!mod$silent) {
-        pb <- txtProgressBar(min = 0, max = length(c(ind1, z)), style = 3,
-                             width = 47)
-      }
       # Prepare the cross-product terms of squared kernel matrices. This is a
       # list of q_choose_2.
       for (j in 1:length(ind1)) {
         H2l[[j]] <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
-        pb.count <- pb.count + 1
-        if (!mod$silent) setTxtProgressBar(pb, pb.count)
       }
 
       if (!is.null(intr) && mod$parsm) {
@@ -370,8 +345,6 @@ kernL.default <- function(y, ..., model = list()) {
         for (k in z) {
           Hsql[[k]] <- fastSquare(Hl[[k]])
           if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
-          pb.count <- pb.count + 1
-          if (!mod$silent) setTxtProgressBar(pb, pb.count)
         }
         BlockB <- function(k) {
           # Calculate Psql instead of directly P %*% P because this way
@@ -407,8 +380,6 @@ kernL.default <- function(y, ..., model = list()) {
         for (k in 1:q) {
           Pl[[k]] <- Hl[[k]]
           Psql[[k]] <- fastSquare(Pl[[k]])
-          pb.count <- pb.count + 1
-          if (!mod$silent) setTxtProgressBar(pb, pb.count)
         }
         BlockB <- function(k) {
           ind <- which(ind1 == k | ind2 == k)
@@ -422,9 +393,6 @@ kernL.default <- function(y, ..., model = list()) {
       }
     }
   }
-
-  if (!mod$silent) close(pb)
-  mod <- mod[-match("silent", names(mod))]  #remove silent control
 
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
