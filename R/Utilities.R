@@ -41,6 +41,7 @@ triangIndex <- function(k){
 
 is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
+#' @export
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
 is.ipriorX <- function(x) inherits(x, "ipriorX")
