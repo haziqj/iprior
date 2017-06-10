@@ -322,7 +322,7 @@ kernL.default <- function(y, ..., model = list()) {
   intr <- mod$intr
   environment(indxFn) <- environment()
   H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
-  BlockB <- function(k) NULL
+  BlockB <- function(k, x = lambda) NULL
   if (r == 0L & no.int.3plus == 0L) {
     # No need to do all the below Block B stuff if higher order terms involved.
     if (q == 1L) {
@@ -347,24 +347,24 @@ kernL.default <- function(y, ..., model = list()) {
           Hsql[[k]] <- fastSquare(Hl[[k]])
           if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
         }
-        BlockB <- function(k) {
+        BlockB <- function(k, x = lambda) {
           # Calculate Psql instead of directly P %*% P because this way
           # is < O(n^3).
           indB <- ind[[k]]
-          lambda.P <- c(1, lambda[indB$k.int.lam])
+          lambda.P <- c(1, x[indB$k.int.lam])
           Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
                                          SIMPLIFY = FALSE))
           Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
-                                           c(1, lambda[indB$Psq.lam] ^ 2),
+                                           c(1, x[indB$Psq.lam] ^ 2),
                                            SIMPLIFY = FALSE))
           if (!is.null(indB$P2.lam1)) {
-            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
-            lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
+            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
+            lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
             Psql[[k]] <<- Psql[[k]] +
               Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
           }
-          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
-          lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
+          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
+          lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
           Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
                                        SIMPLIFY = FALSE))
         }
@@ -375,9 +375,9 @@ kernL.default <- function(y, ..., model = list()) {
           Pl[[k]] <- Hl[[k]]
           Psql[[k]] <- fastSquare(Pl[[k]])
         }
-        BlockB <- function(k) {
+        BlockB <- function(k, x = lambda) {
           ind <- which(ind1 == k | ind2 == k)
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], lambda[-k], SIMPLIFY = FALSE))
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
         }
       }
     }
