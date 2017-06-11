@@ -34,8 +34,18 @@ triangIndex <- function(k){
   )
 }
 
+#' Test for \code{iprior} objects
+#'
+#' Checks whether an object is an \code{iprior} fitted model (i.e. an
+#' \code{ipriorMod} object), or an object ready for an \code{iprior} fit (i.e.
+#' an \code{ipriorKernel} object).
+#'
+#' @param x An object.
+#'
+#' @export
 is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
+#' @rdname is.ipriorMod
 #' @export
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
