@@ -6,15 +6,16 @@ cache: packages
 
 sudo: false
 
-addons:
-  apt:
-    packages:
-      - valgrind
+warnings_are_errors: true
 
 matrix:
   include:
     - os: linux
       r: release
+      addons:
+        apt:
+          packages:
+            - valgrind
       env:
         - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
       script:
@@ -45,13 +46,14 @@ matrix:
       r: oldrel
       r_check_args: --as-cran
 
-    - os: osx
-      r: devel
-      r_check_args: --as-cran
+    # - os: osx
+    #   r: devel
+    #   r_check_args: --as-cran
+    # https://github.com/travis-ci/travis-ci/issues/6629
 
 notifications:
-  on_success: change # default: never
-  on_failure: change # default: always
+  on_success: change
+  on_failure: change
   email: false
   pushover:
     api_key:
