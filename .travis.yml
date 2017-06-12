@@ -22,7 +22,7 @@ matrix:
     - os: linux
       r: release
       env:
-        - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
+        - VALGRIND_OPTS='--vanilla --track-origins=yes'
       script:
         - |
           R CMD build .
