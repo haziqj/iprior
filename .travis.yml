@@ -24,7 +24,8 @@ env:
 script:
   - |
     R CMD build .
-    travis_wait 40 R CMD check --as-cran --use-valgrind iprior*tar.gz
 
 after_failure:
   - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
+
+# travis_wait 40 R CMD check --as-cran --use-valgrind iprior*tar.gz
