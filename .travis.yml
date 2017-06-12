@@ -6,7 +6,9 @@ cache: packages
 
 sudo: false
 
-r_github_packages: hadley/testthat
+r_github_packages:
+  - hadley/testthat
+  - jimhester/covr
 
 addons:
   apt:
@@ -21,12 +23,18 @@ matrix:
 
     - os: linux
       r: release
-      env:
-        - VALGRIND_OPTS='--vanilla --track-origins=yes'
+      r_check_args: '--as-cran'
+      after_success:
+        - Rscript -e 'covr::codecov()'
+
+    - os: linux
+      r: release
+      # env:
+      #   - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
       script:
         - |
           R CMD build .
-          travis_wait 60 R CMD check --as-cran --use-valgrind iprior*tar.gz
+          travis_wait 60 R CMD check --no-codoc --no-build-vignettes --no-manual --use-valgrind iprior*tar.gz
       after_failure:
         - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
 
