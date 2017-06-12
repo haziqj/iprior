@@ -6,10 +6,6 @@ cache: packages
 
 sudo: false
 
-r_github_packages:
-  - hadley/testthat
-  - jimhester/covr
-
 addons:
   apt:
     packages:
@@ -34,6 +30,9 @@ matrix:
 
     - os: linux
       r: release
+      r_github_packages:
+        - hadley/testthat
+        - jimhester/covr
       r_check_args: --as-cran
       after_success:
       - Rscript -e 'covr::codecov(quiet = FALSE)'
