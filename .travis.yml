@@ -17,30 +17,38 @@ addons:
 
 matrix:
   include:
-  - os: linux
-    r: oldrel
-    r_check_args: --as-cran
+    - os: linux
+      r: release
+      env:
+        - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
+      script:
+      - |
+        R CMD build .
+        travis_wait 60 R CMD check --no-codoc --no-build-vignettes --no-manual --use-valgrind iprior*tar.gz
+      after_failure:
+      - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
 
-  - os: linux
-    r: release
-    r_check_args: --as-cran
-    after_success:
-    - Rscript -e 'covr::codecov()'
+    - os: linux
+      r: oldrel
+      r_check_args: --as-cran
 
-  - os: linux
-    r: release
-    env:
-      - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
-    script:
-    - |
-      R CMD build .
-      travis_wait 60 R CMD check --no-codoc --no-build-vignettes --no-manual --use-valgrind iprior*tar.gz
-    after_failure:
-    - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
+    - os: linux
+      r: release
+      r_check_args: --as-cran
+      after_success:
+      - Rscript -e 'covr::codecov(quiet = FALSE)'
 
-  - os: linux
-    r: devel
-    r_check_args: --as-cran
+    - os: linux
+      r: devel
+      r_check_args: --as-cran
+
+    - os: osx
+      r: oldrel
+      r_check_args: --as-cran
+
+    - os: osx
+      r: devel
+      r_check_args: --as-cran
 
 notifications:
   on_success: change # default: never
