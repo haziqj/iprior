@@ -27,7 +27,7 @@ A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
   or \code{"Pearson"} whose \code{[i, j]} entries are \eqn{h(}\code{y[i]},
   \code{x[j]}\eqn{)}, with \eqn{h} being the kernel function. The matrix has
   dimensions \code{m} by \code{n} according to the lengths of \code{y} and
-  \code{x} which has lengtsh \code{m} and \code{n} respectively. When a
+  \code{x} which has lengths \code{m} and \code{n} respectively. When a
   single vector argument \code{x} is supplied, then \code{y} is taken to be
   equal to \code{x}, and a symmetric \code{n} by \code{n} matrix is returned.
 

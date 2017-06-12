@@ -34,7 +34,7 @@ can be changed by passing a different \code{maxit} value to the list of
 control options. The parameters are then passed to \code{optim()} and the
 negative log-likelihood is minimised. The method used for optim is
 \code{"L-BFGS-B"}, as the \code{psi} parameter of the I-prior model needs to
-be contrained to be greater than zero.
+be constrained to be greater than zero.
 }
 \examples{
 (mod <- kernL(stack.loss ~ ., stackloss))
