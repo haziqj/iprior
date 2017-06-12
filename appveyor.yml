@@ -16,7 +16,8 @@ cache:
 # Adapt as necessary starting from here
 
 branches:
-  only: master
+  only:
+    - master
 
 environment:
   global:
