@@ -61,7 +61,6 @@ matrix:
   fast_finish: true
 
 build_script:
-  - travis-tool.sh install_github hadley/devtools
   - travis-tool.sh install_deps
 
 test_script:

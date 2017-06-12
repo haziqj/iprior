@@ -25,8 +25,8 @@ matrix:
         - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
       script:
         - |
-        R CMD build .
-        travis_wait 60 R CMD check --as-cran --use-valgrind iprior*tar.gz
+          R CMD build .
+          travis_wait 60 R CMD check --as-cran --use-valgrind iprior*tar.gz
       after_failure:
         - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
 
