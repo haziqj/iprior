@@ -22,6 +22,7 @@ branches:
 environment:
   global:
     WARNINGS_ARE_ERRORS: 1
+    USE_RTOOLS: true
 
   matrix:
   - R_VERSION: devel
@@ -53,6 +54,8 @@ environment:
     RTOOLS_VERSION: 32
     CRAN: http://cran.rstudio.com
     PKGTYPE: source
+
+max_jobs: 2
 
 matrix:
   fast_finish: true
