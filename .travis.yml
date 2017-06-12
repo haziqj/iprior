@@ -17,27 +17,37 @@ addons:
 
 matrix:
   include:
-    - os: linux
-      r: oldrel
-      r_check_args: '--as-cran'
+  - os: linux
+    r: oldrel
+    r_check_args: --as-cran
 
-    - os: linux
-      r: release
-      r_check_args: '--as-cran'
-      after_success:
-        - Rscript -e 'covr::codecov()'
+  - os: linux
+    r: release
+    r_check_args: --as-cran
+    after_success:
+    - Rscript -e 'covr::codecov()'
 
-    - os: linux
-      r: release
-      # env:
-      #   - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
-      script:
-        - |
-          R CMD build .
-          travis_wait 60 R CMD check --no-codoc --no-build-vignettes --no-manual --use-valgrind iprior*tar.gz
-      after_failure:
-        - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
+  - os: linux
+    r: release
+    env:
+      - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
+    script:
+    - |
+      R CMD build .
+      travis_wait 60 R CMD check --no-codoc --no-build-vignettes --no-manual --use-valgrind iprior*tar.gz
+    after_failure:
+    - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
 
-    - os: linux
-      r: devel
-      r_check_args: '--as-cran'
+  - os: linux
+    r: devel
+    r_check_args: --as-cran
+
+notifications:
+  on_success: change # default: never
+  on_failure: change # default: always
+  email: false
+  pushover:
+    api_key:
+      secure: t21xJNty7AbsOXOn+FdMv9tMQ+1Wgp8cF8hMzMHtPzkmhlvdFkS8cGmHXNrVqHIKjTonii61J1rZv5Ku2o3voxKjlHXHQXQcUGuGeI9l8ujcx4LHbI0dxYx5W1F8iUkZip+meSgT+ClYp5r9URBTqBIixUZNzCsfBKNg8QEmPSomzT0af86AER1Q26e0dX8Zriayq/l/oQQRi3Bhd43hpZfxjSgr8/5p0M+Dnfm45iLxOwUmTSCiaWP4e6wJcLxzijL2D95P60xsA7I86I8IP7W6YQi25qsZbuVI6leaQmPNpkD3tda6X+1iO2eRCLVd4gjICAFtjQ9+rJSYl5n8uSi32tiRdICkUIKEGmeieR/+duMcoykGAaOLYT0drcHgsdRVoY+1oM7/8Tmz5zGcFNtUfGbuhHAtIqkxaCoc1KL2PtbehidPJmxkptziqMWidjpiq5ouO89AJzJVSiWtM/UESmV5rYjIzzVtokIqvOdGqQuzcQ8O8/DwcQ5cGq5XOrjc5ow3SFanoA6u72qUEl1xwtQ24ROcniL3uvI0hR+k9I7UMbV8BQskL3fzTqrSyp5TbGu9gI4heGLNBoriPqPs63Wfq68utua3VPL+++t1y0FcIAiXDCEworaPgUxM01OxD0vRWbhbhE1WHwrl0ZQqfhPxZ+e93kjMrJkU9i4=
+    users:
+      - secure: XD/qkHD4M04b0auJ/X6S8mR5hkQbC5leSu/2/Kb93m/gBVeCiOspMUXZcDs79Qd4nrnxq6+h4IJrfnaUyHgTTAoYl9luQ1nmKNPSEdtaj3U6mu/mgX+LUxmbsmdeyuuKgcPvG9vU+wO1hPCFooDrmhKJol818TN+XNN6RLHv3F/QFgDqIR9Wqv1iBVUFfx0fovCKPKfZvcdT2TKCojuN/TcVV3zEEXQht9JnZXlqMptwp2OXfVhEJ1yAw/ZwLkSz9JLvM6VGUvVpwprRSfusx+EA0sGXw02s+8w8/dOkkZBJEfjiGMrq/sL0tgq4/smzj7LbbyMVxfXZ0p1xhQm27/WRYN6FKC7S2kQWtnYfd4yu3XQoviu24ASNXsNZYK6Aoujf3HgKBcSM5Q8kGGcgUGJchFpFKVA9tnqatfwaqjkRtFe08cPqobBGhHKwpyKJsRrsQNo6cZ4ZgyU7ArhfvduWSlIfaGqT9txTSXNntF1Z/CERhRr2DQWzFuQcJIEkwAgXOyiOm1MPAgV0d6zMVZpMBunRi/qY66sPNdUVT5diZnAFeYRQSzCem3hVLSvj46ZxwImFMjFO2ifEZehQVLXTIWZZ9vCmujCHUJAs+KT98szy4c2IO+mq2JTum8JmK5EODr/nv1Dy1XoBvC2AHTSS14FzxqexZruT3idGp0U=

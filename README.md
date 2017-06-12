@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/haziqjamil/iprior?branch=master&svg=true)](https://ci.appveyor.com/project/haziqjamil/iprior)
-[![CRAN Status Badge](http://www.r-pkg.org/badges/version/iprior)](https://cran.r-project.org/package=iprior)
+[![Coverage Status](https://img.shields.io/codecov/c/github/haziqjamil/iprior/master.svg)](https://codecov.io/gh/haziqjamil/iprior)
+[![CRAN_Status_Badge_version_ago](http://www.r-pkg.org/badges/version-ago/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 
 Based on the manuscript entitled "Regression with I-priors" by Wicher Bergsma [2017, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. An I-prior is defined as Gaussian with some prior mean (usually zero) and covariance kernel equal to the Fisher information for the regression function.
