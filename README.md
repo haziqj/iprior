@@ -1,6 +1,7 @@
 # R/iprior: An R package for I-prior regression
 
 [![Build Status](https://travis-ci.org/haziqjamil/iprior.svg?branch=master)](https://travis-ci.org/haziqjamil/iprior)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/haziqjamil/iprior?branch=master&svg=true)](https://ci.appveyor.com/project/haziqjamil/iprior)
 [![CRAN Status Badge](http://www.r-pkg.org/badges/version/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 
