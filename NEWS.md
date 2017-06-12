@@ -4,6 +4,7 @@
 * Edit FBM kernel. Corrected a mistake. Initially for multivariate `x` then  `H(x) = H1(x[1]) + ... + H_p(x[p])`. This is only true for Canonical kernel. Now correctly applies the FBM kernel using the norm function on each multivariate `x_i`.
 * Added support for Gaussian process regression with the currently available kernels.
 * Fixed memory leak in FBM kernel function. Also made Canonical kernel function more efficient.
+* While linear I-prior models can perform classification tasks, one cannot obtain estimation of probabilities for the classes. This is the motivation behind the [`iprobit`] (https://github.com/haziqjamil/iprobit) package. By using a probit link, the I-prior methodology is extended to categorical responses.
 * Most functions written here can be used by I-prior probit models in the `iprobit` package. Added support for categorical response kernel loading.
 * Exported some helper functions like `is.ipriorKernel()` and `is.ipriorMod()`.
 
