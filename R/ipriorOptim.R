@@ -37,7 +37,7 @@
 #' control options. The parameters are then passed to \code{optim()} and the
 #' negative log-likelihood is minimised. The method used for optim is
 #' \code{"L-BFGS-B"}, as the \code{psi} parameter of the I-prior model needs to
-#' be contrained to be greater than zero.
+#' be constrained to be greater than zero.
 #'
 #' @param object An object of class \code{ipriorKernel}.
 #' @param control A list of controls for the initial EM algorithm fit. Refer to
