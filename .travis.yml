@@ -20,11 +20,11 @@ addons:
 
 env:
   - VALGRIND_OPTS='--leak-check=full --track-origins=yes'
-  - travis_wait 60 R CMD check --as-cran --use-valgrind iprior*tar.gz
 
 script:
   - |
     R CMD build .
+    travis_wait 60 R CMD check --as-cran --use-valgrind iprior*tar.gz
 
 after_failure:
   - find *Rcheck -name '*.fail' -print -exec cat '{}' \;
