@@ -21,7 +21,7 @@
 ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
                      silent = FALSE, alpha = NULL, lambda.init = NULL,
                      psi.init = NULL, clean = FALSE, paramprogress = FALSE,
-                     force.regEM = FALSE, force.nlm = FALSE,
+                     force.regEM = FALSE, force.nlm = FALSE, Nys.adj = TRUE,
                      getHlam = FALSE, getVarY = FALSE){
   # This is the EM algorithm engine which estimates the I-prior model
   # parameters.
@@ -47,7 +47,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
     BlockA <- BlockA_Nystrom
     Nys.samp <- Nystrom$Nys.samp
     Nys.m <- Nystrom$m
-    print("NYSTROM!!!")
+    # print("NYSTROM!!!")
   } else {
     BlockA <- BlockA_regular
     # print("not NYSTROM :(")
@@ -71,6 +71,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
     environment(ipriorEMClosedForm) <- ipriorEM.env
     ipriorEMRoutine <- ipriorEMClosedForm
   }
+  loglik.adj.switch <- all(isNystrom(ipriorKernel), Nys.adj)
 
 	# Initialise parameters ------------------------------------------------------
   if (is.null(alpha)) alpha <- as.numeric(mean(Y))
@@ -113,7 +114,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	check.naught <- 0
 	Hlam.mat <- is.VarYneg <- s <- u <- V <- VarY.inv <- w.hat <- W.hat <- 0
 	BlockA()  # lambda expanded here
-	log.lik0 <- logLikEM()
+	log.lik0 <- logLikEM(loglik.adj.switch)
 	log.lik1 <- log.lik0 + 2 * stop.crit
 	res.loglik[1,1] <- log.lik0
 	.lambdaContract()  # for printing
@@ -161,7 +162,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 
 		# New value of log-likelihood ----------------------------------------------
 		BlockA()  # performs Hlam.mat update and eigendecomposition
-		log.lik1 <- logLikEM()
+		log.lik1 <- logLikEM(loglik.adj.switch)
 
 		# Storage ------------------------------------------------------------------
 		dloglik <- log.lik1 - log.lik0

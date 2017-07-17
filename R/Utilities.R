@@ -88,6 +88,11 @@ isPea <- function(x) x == "Pearson"
 
 isFBM <- function(x) grepl("FBM", x)
 
+isNystrom <- function(x) {
+  if (!is.list(x$Nystrom)) return(x$Nystrom)
+  else return(TRUE)
+}
+
 fastSquareRoot2 <- function(x) {
   tmp <- eigenCpp(x)
   tmp$vec %*% tcrossprod(diag(sqrt(abs(tmp$val))), tmp$vec)

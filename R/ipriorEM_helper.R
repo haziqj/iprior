@@ -122,13 +122,18 @@ BlockC <- function(){
   assign("W.hat", W.hat, envir = parent.frame())
 }
 
-logLikEM <- function(){
+logLikEM <- function(Nys.adj){
   # Function to calculate log-likelihood value within the EM routine
   a <- linSolvInv(Y - alpha)
   # logdet <- Re(sum(log((u + s)[u + s > 0])))  # old
   logdet <- sum(log(psi * u ^ 2 + 1 / psi))
-  log.lik <- -(n / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
-  as.numeric(log.lik)
+  log.lik <- -(n / 2) * log(2 * pi) - crossprod(Y - alpha, a) / 2
+  if (isTRUE(Nys.adj)) {
+    logdet <- sum(log(psi * c(u, rep(0, n - Nys.m)) ^ 2 + 1 / psi))
+  } else {
+    logdet <- sum(log(psi * u ^ 2 + 1 / psi))
+  }
+  as.numeric(log.lik - logdet / 2)
 }
 
 # alphaUpdate <- function() {

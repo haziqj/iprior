@@ -18,7 +18,8 @@
 #
 ################################################################################
 
-.reorder_ipriorKernel <- function(object, Nys.samp) {
+.reorder_ipriorKernel <- function(object, Nys.samp = NULL) {
+  if (is.null(Nys.samp)) Nys.samp <- sample(seq_len(object$n))
   # y and X
   object$Y <- object$Y[Nys.samp]
   tmp <- lapply(object$x, rwa_1, smp = Nys.samp)

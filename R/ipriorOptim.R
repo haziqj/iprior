@@ -58,22 +58,22 @@ ipriorOptim <- function(object, control = list(maxit = 3, report = 1)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }
 
-  if (is.null(control$Nystrom)) control$Nystrom <- FALSE
   if (is.null(control$maxit)) control$maxit <- 3
   if (is.null(control$report)) control$report <- 1
   mod.iprior <- iprior(object, control = control)
   silent <- mod.iprior$control$silent
+  object <- mod.iprior$ipriorKernel
 
   if (!silent) cat("\nNow switching to optim...\n\n")
   mod.optim <- optim(par = mod.iprior$coef[-1], fn = logLik, object = object,
-                     method = "L-BFGS-B", lower = c(rep(-Inf, object$l), 1e-9),
+                     Nys.adj = FALSE, method = "L-BFGS-B", lower = 1e-9,
                      control = list(trace = !silent, fnscale = -1))
 
   if (!silent) cat("\nPreparing iprior output... ")
   theta <- mod.optim$par
 
   suppressWarnings(mod.iprior <- iprior(object, control = list(silent = TRUE,
-                                                               maxit = 1,
+                                                               maxit = 0,
                                                                theta = theta)))
   if (!silent) cat("DONE.\n")
   mod.iprior$optim.converged <- TRUE

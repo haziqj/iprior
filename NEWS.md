@@ -1,4 +1,8 @@
-# v0.6.4.9005
+# v0.6.5.9001
+
+* Added support for Nystrom kernel approximation. 
+
+# v0.6.5
 
 * Updated documentation.
 * Edit FBM kernel. Corrected a mistake. Initially for multivariate `x` then  `H(x) = H1(x[1]) + ... + H_p(x[p])`. This is only true for Canonical kernel. Now correctly applies the FBM kernel using the norm function on each multivariate `x_i`.

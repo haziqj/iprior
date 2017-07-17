@@ -70,25 +70,25 @@
 #' @name logLik
 #' @rdname logLik
 #' @export
-logLik.ipriorMod <- function(object, theta = NULL, ...) {
+logLik.ipriorMod <- function(object, theta = NULL, Nys.adj = TRUE, ...) {
 	tmp <- with(object, {
 		if (!is.null(theta)) {
 			lambda <- theta[-length(theta)]
 			psi <- theta[length(theta)]
 		}
 		ipriorEM(ipriorKernel, maxit = 0, silent = TRUE, lambda.init = lambda,
-		         psi.init = psi, clean = TRUE)
+		         psi.init = psi, clean = TRUE, Nys.adj = Nys.adj)
 	} )
 	return(tmp$log.lik)
 }
 
 #' @rdname logLik
 #' @export
-logLik.ipriorKernel <- function(object, theta = NULL, ...) {
+logLik.ipriorKernel <- function(object, theta = NULL, Nys.adj = TRUE, ...) {
 	lambda <- theta[-length(theta)]
 	psi <- theta[length(theta)]
 	tmp <- ipriorEM(object, maxit = 0, silent = TRUE, lambda.init = lambda,
-	                psi.init = psi, clean = TRUE)
+	                psi.init = psi, clean = TRUE, Nys.adj = Nys.adj)
 	return(tmp$log.lik)
 }
 
