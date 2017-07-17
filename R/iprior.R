@@ -121,10 +121,10 @@ iprior <- function(...) {
 #' @export
 iprior.default <- function(y, ..., model = list(), control = list()) {
   # Set up the controls for the EM algorithm -----------------------------------
-  con <- list(maxit = 50000, stop.crit = 1e-07, report = 100, intercept = NULL,
+  con <- list(maxit = 500, stop.crit = 1e-07, report = 100, intercept = NULL,
               lambda = NULL, psi = NULL, sigma = NULL, theta = NULL,
               progress = "lite", silent = FALSE, force.regEM = FALSE,
-              force.nlm = FALSE)
+              force.nlm = FALSE, Nystrom = FALSE, Nys.seed = NULL)
   con_names <- names(con)
   con[(control_names <- names(control))] <- control
   if (length(noNms <- control_names[!control_names %in% con_names])) {
@@ -179,17 +179,34 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   check.yname <- is.null(model$yname)
   if (check.yname) model$yname <- ynamefromcall
 
-  # Pass to kernel loader and then EM routine ----------------------------------
+  # Pass to kernel loader ------------------------------------------------------
   if (is.ipriorKernel(y)) {
     ipriorKernel <- y
   } else {
     # When using y and x to call iprior
     ipriorKernel <- kernL(y, ..., model = model)  # pass to kernel loader
   }
+
+  # Nystrom approximation ------------------------------------------------------
+  n <- ipriorKernel$n
+  if (as.numeric(Nystrom) == n) Nystrom <- FALSE
+  if (as.numeric(Nystrom) > 0) {
+    if (!is.null(Nys.seed)) set.seed(Nys.seed)
+    Nys.samp <- sample(seq_len(n), size = n, replace = FALSE)
+    # x <- lapply(x, function(z) z[Nys.samp, ])
+    # y <- y[Nys.samp]
+    # INSERT REORDERING FUNCTION ON ipriorKernel HERE
+    ipriorKernel$Nystrom <- list(m = Nystrom, Nys.samp = Nys.samp, Nys.seed = Nys.seed)
+  }
+
+  # Pass to EM routine ---------------------------------------------------------
   est <- ipriorEM(ipriorKernel, maxit, stop.crit, report, silent, intercept,
                   lambda, psi, clean, paramprogress, force.regEM, force.nlm)
+
+  # After done with EM ---------------------------------------------------------
   est$ipriorKernel <- ipriorKernel
-  est$sigma <- 1/sqrt(est$psi)
+  est$Nystrom <- Nystrom
+  est$sigma <- 1 / sqrt(est$psi)
   if (ipriorKernel$model$rootkern) {
     # Do if GPR
     param <- c(est$alpha, est$lambda ^ 2 * est$psi, est$sigma)
@@ -229,9 +246,6 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est$control      <- con
   est$coefficients <- param
   est$T2           <- as.numeric(crossprod(est$w.hat)/est$psi)
-
-  # Gaussian Process Regression estimates --------------------------------------
-
 
   class(est) <- "ipriorMod"
   est

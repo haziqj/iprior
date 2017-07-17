@@ -42,7 +42,17 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 	list2env(ipriorKernel, ipriorEM.env)
 	list2env(BlockBstuff, ipriorEM.env)
 	list2env(model, ipriorEM.env)
-  environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
+  if (is.list(Nystrom)) {
+    # Nystrom approximation
+    BlockA <- BlockA_Nystrom
+    Nys.samp <- Nystrom$Nys.samp
+    Nys.m <- Nystrom$m
+    print("NYSTROM!!!")
+  } else {
+    BlockA <- BlockA_regular
+    # print("not NYSTROM :(")
+  }
+	environment(linSolvInv) <- environment(logLikEM) <- ipriorEM.env
 	environment(BlockA) <- environment(BlockB) <- environment(BlockC) <- ipriorEM.env
   environment(.lambdaExpand) <- environment(.lambdaContract) <- ipriorEM.env
   environment(fisherNew) <- ipriorEM.env
@@ -184,7 +194,7 @@ ipriorEM <- function(ipriorKernel, maxit = 10, stop.crit = 1e-7, report.int = 1,
 		}
 		if (!silent) setTxtProgressBar(pb, i)
 		if (i %% (report.int * 10) == 0 && !silent) {
-		  # Reset progress bar.
+		  # Reset progress bar
 		  pb <- txtProgressBar(min = i, max = (report.int * 10) + i, style = 1,
 		                       char = ".")
 		}

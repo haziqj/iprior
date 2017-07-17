@@ -86,3 +86,12 @@ test_that("Successfully fit higher order terms",{
   tmp <- summary(mod)
 
 })
+
+test_that("Correct values obtained",{
+
+  mod <- iprior(stack.loss ~ ., data = stackloss, control = list(silent = TRUE))
+  expect_equivalent(logLik(mod), -56.34791)
+  tmp <- coef(mod) - c(17.52380952, 0.04082633, 0.22261143, -0.01226922, 0.10574342)
+  expect_equal(sum(tmp ^ 2), 0, tolerance = 1e-5)
+
+})

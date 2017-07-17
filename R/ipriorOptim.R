@@ -58,6 +58,7 @@ ipriorOptim <- function(object, control = list(maxit = 3, report = 1)) {
     stop("Input objects of class ipriorKernel only.", call. = FALSE)
   }
 
+  if (is.null(control$Nystrom)) control$Nystrom <- FALSE
   if (is.null(control$maxit)) control$maxit <- 3
   if (is.null(control$report)) control$report <- 1
   mod.iprior <- iprior(object, control = control)

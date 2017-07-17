@@ -386,7 +386,7 @@ kernL.default <- function(y, ..., model = list()) {
   BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
                       ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
   kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
-                       no.int = no.int, q = q, y.levels = y.levels,
+                       no.int = no.int, q = q, Nystrom = FALSE, y.levels = y.levels,
                        BlockBstuff = BlockBstuff, model = mod, call = cl,
                        no.int.3plus = no.int.3plus)
   class(kernelLoaded) <- "ipriorKernel"

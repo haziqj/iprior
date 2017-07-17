@@ -71,23 +71,46 @@ hlamFnMult <- function(x = lambda, env = ipriorEM.env) {
 
 linSolvInv <- function(b = NULL){
   # Function to solve VarY %*% a = b,
-  # where VarY = V %*% diag(1 / (u + s)) %*% V
-  if (is.null(b)) a <- fastVDiag(V, 1 / (u + s))  # a C++ alternative
-  else a <- V %*% (diag(1 / (u + s)) %*% (t(V) %*% b) )
-  a
+  # where VarY = V %*% diag(1 / (psi * u ^ 2 + 1 / psi)) %*% V
+  # if (is.null(b)) a <- fastVDiag(V, 1 / (u + s))  # a C++ alternative
+  VU <- V * rep(1 / (psi * u ^ 2 + 1 / psi), each = nrow(V))
+  if (is.null(b)) return(VU %*% t(V))
+  else return(VU %*% crossprod(V, b))
 }
 
-BlockA <- function(){
+BlockA_regular <- function(){
   # Block A update function
   .lambdaExpand()
   hlamFn()  # this is assigned in ipriorEM.env
-  A <- Hlam.mat
-  assign("s", 1 / psi, envir = parent.frame())
-  tmp <- eigenCpp(A)  # a C++ alternative
-  assign("u", psi * tmp$val ^ 2, envir = parent.frame())
+  tmp <- eigenCpp(Hlam.mat)  # a C++ alternative
+
+  assign("u", tmp$val, envir = parent.frame())
   assign("V", tmp$vec, envir = parent.frame())
   assign("is.VarYneg", FALSE, envir = parent.frame())
-  assign("is.VarYneg", any(u + s < 0), envir = parent.frame())
+  assign("is.VarYneg", any(psi * u ^ 2 + 1 / psi < 0), envir = parent.frame())
+}
+
+BlockA_Nystrom <- function(){
+  # Block A update function for Nystrom approximation
+  .lambdaExpand()
+  hlamFn()  # this is assigned in ipriorEM.env
+  A <- Hlam.mat[1:Nys.m, 1:Nys.m]
+  B <- Hlam.mat[1:Nys.m, -(1:Nys.m)]
+  tmp1 <- eigen(A)
+  U <- tmp1$vectors
+  C.tmp <- U * rep(1 / sqrt(tmp1$val + 1e-8), each = nrow(U))
+  C <- C.tmp %*% crossprod(U, B)
+  Q <- A + tcrossprod(C)
+  tmp2 <- eigen(Q)
+  u.approx <- tmp2$values + 1e-9
+  R <- tmp2$vectors
+  V.approx <- rbind(A, t(B)) %*% tcrossprod(C.tmp, U) %*%
+    (R * rep(1 / sqrt(u.approx), each = nrow(R)))
+
+  assign("u", u.approx, envir = parent.frame())
+  assign("V", V.approx, envir = parent.frame())
+  assign("is.VarYneg", FALSE, envir = parent.frame())
+  assign("is.VarYneg", any(psi * u.approx ^ 2 + 1 / psi < 0), envir = parent.frame())
 }
 
 BlockC <- function(){
@@ -102,7 +125,8 @@ BlockC <- function(){
 logLikEM <- function(){
   # Function to calculate log-likelihood value within the EM routine
   a <- linSolvInv(Y - alpha)
-  logdet <- Re(sum(log((u + s)[u + s > 0])))
+  # logdet <- Re(sum(log((u + s)[u + s > 0])))  # old
+  logdet <- sum(log(psi * u ^ 2 + 1 / psi))
   log.lik <- -(n / 2) * log(2 * pi) - logdet / 2 - crossprod(Y - alpha, a) / 2
   as.numeric(log.lik)
 }
@@ -117,7 +141,8 @@ logLikEM <- function(){
 
 psiUpdate <- function() {
   # The common psi update routine in the EM routine below.
-  Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
+  # Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
+  Hlamsq.mat <- (V * rep(u ^ 2, each = nrow(V))) %*% t(V)
   T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
     2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
   psi <- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))
