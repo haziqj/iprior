@@ -193,9 +193,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   if (as.numeric(Nystrom) > 0) {
     if (!is.null(Nys.seed)) set.seed(Nys.seed)
     Nys.samp <- sample(seq_len(n), size = n, replace = FALSE)
-    # x <- lapply(x, function(z) z[Nys.samp, ])
-    # y <- y[Nys.samp]
-    # INSERT REORDERING FUNCTION ON ipriorKernel HERE
+    ipriorKernel <- .reorder_ipriorKernel(ipriorKernel, Nys.samp)
     ipriorKernel$Nystrom <- list(m = Nystrom, Nys.samp = Nys.samp, Nys.seed = Nys.seed)
   }
 
