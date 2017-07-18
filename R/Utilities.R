@@ -306,4 +306,5 @@ globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
                   "intr.3plus", "ipriorEM.env", "l", "lambda", "maxit", "model",
                   "n", "nlm", "no.int", "no.int.3plus", "one.lam", "p", "parsm",
                   "psi", "r", "report", "s", "stop.crit", "theta", "u", "w.hat",
-                  "x", "x0", "intercept", "probit", "rootkern"))
+                  "x", "x0", "intercept", "probit", "rootkern", "Nystrom",
+                  "Nys.m", "Nys.seed"))

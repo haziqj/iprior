@@ -10,9 +10,9 @@
 \title{Obtain the log-likelihood and deviance of an \code{ipriorMod} or
 \code{ipriorKernel} object}
 \usage{
-\method{logLik}{ipriorMod}(object, theta = NULL, ...)
+\method{logLik}{ipriorMod}(object, theta = NULL, Nys.adj = TRUE, ...)
 
-\method{logLik}{ipriorKernel}(object, theta = NULL, ...)
+\method{logLik}{ipriorKernel}(object, theta = NULL, Nys.adj = TRUE, ...)
 
 \method{deviance}{ipriorMod}(object, theta = NULL, ...)
 
@@ -23,6 +23,10 @@
 
 \item{theta}{(optional) Evaluates the log-likelihood at \code{theta} which is
 of the form \code{theta = c(lambda, psi)}.}
+
+\item{Nys.adj}{Logical (defaults to \code{TRUE}). When using the Nystrom
+approximation, the adjusted log-likelihood value is used, because most of
+the eigenvalues in the log-determinant calculation is zero.}
 
 \item{...}{No further arguments required, so this is not used for
 \code{ipriorMod} or \code{ipriorKernel} class objects.}
@@ -54,6 +58,11 @@ Direct maximisation of the log-likelihood of I-prior models can be unreliable
 some times, but other times it could also lead to a better set of parameters
 if the EM does not converge fully. Perhaps in the future, this package can
 make use of both methods combined as standard.
+
+When using the Nystrom approximation, the calculation of the log-determinant
+needs to be adjusted to include the zeros that were actually left out.
+However, when using direct optimisation, the non-adjusted log-likelihood
+value is used as the objective function value.
 
 As a side note, the ML estimate for the intercept of an I-prior model is the
 mean of the responses \code{y}, and therefore not included as a parameter of
