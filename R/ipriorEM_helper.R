@@ -103,6 +103,11 @@ BlockA_Nystrom <- function(){
   Q <- A + tcrossprod(C)
   tmp2 <- eigen(Q)
   u.approx <- tmp2$values + 1e-9
+  # if (any(u.approx < 0)) {
+  #   print(lambda)
+  #   print(psi)
+  #   print(u.approx)
+  # }
   R <- tmp2$vectors
   V.approx <- rbind(A, t(B)) %*% tcrossprod(C.tmp, U) %*%
     (R * rep(1 / sqrt(u.approx), each = nrow(R)))

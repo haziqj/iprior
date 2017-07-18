@@ -389,7 +389,9 @@ summary.ipriorMod <- function(object, ...) {
               psi.and.se = c(coef(object)[length(se)], se[length(se)]),
               xname = xname, no.int = object$ipriorKernel$no.int,
               optim.converged = object$optim.converged,
-              rootkern = object$ipriorKernel$model$rootkern)
+              rootkern = object$ipriorKernel$model$rootkern,
+              Nystrom = object$ipriorKernel$Nystrom,
+              Nystrom.check = isNystrom(object$ipriorKernel))
   class(res) <- "ipriorSummary"
   res
 }
@@ -451,6 +453,8 @@ print.ipriorSummary <- function(x, ...) {
     }
     cat(" No. of iterations:", x$no.iter)
   }
+  if (isTRUE(x$Nystrom.check)) cat("\nNystrom approximation used (with",
+                                   x$Nystrom$m, "random subsamples)")
   cat("\nStandard deviation of errors:", signif(sigma, digits = 4),
       "with S.E.:", round(sesigma, digits = 4))
   # cat("\nT2 statistic:", signif(x$T2, digits = 4), "on ??? degrees of freedom.")
