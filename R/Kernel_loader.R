@@ -138,12 +138,24 @@ kernL.default <- function(y, ..., model = list()) {
   mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
               parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
               order = as.character(1:p), intr.3plus = NULL, rootkern = FALSE,
-              probit = FALSE)
+              probit = FALSE, Nys.kern = FALSE, Nys.samp = NULL)
   mod_names <- names(mod)
   mod[(model_names <- names(model))] <- model
   if (length(noNms <- model_names[!model_names %in% mod_names])) {
     warning("Unknown names in model options: ", paste(noNms, collapse = ", "),
             call. = FALSE)
+  }
+
+  # This part is for Nystrom (when called from ipriorNystrom function) ---------
+  if (as.numeric(mod$Nys.kern) > 0) {
+    if (is.null(mod$Nys.samp)) mod$Nys.samp <- sample(seq_len(n))
+    y <- y[mod$Nys.samp]
+    tmp <- lapply(x, rwa_1, smp = mod$Nys.samp)  # defined in .reorder_ipriorKernel()
+    mostattributes(tmp) <- attributes(x)
+    x <- tmp
+    tmp <- lapply(x, rwa_1, smp = seq_len(mod$Nys.kern))
+    mostattributes(tmp) <- attributes(x)
+    x.Nys <- tmp
   }
 
   # This part is for categorical response models -------------------------------
@@ -296,9 +308,15 @@ kernL.default <- function(y, ..., model = list()) {
 
   # Set up list of H matrices --------------------------------------------------
   # note: hMatList() is in Utitilities.R
-  Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
-                  gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
-                  rootkern = mod$rootkern)
+  if (as.numeric(mod$Nys.kern) > 0) {
+    Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
+                    gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
+                    rootkern = mod$rootkern, xstar = x.Nys)
+  } else {
+    Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
+                    gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
+                    rootkern = mod$rootkern)
+  }
   h <- length(Hl)
   names(Hl) <- mod$xname[1:h]
   if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
@@ -323,8 +341,9 @@ kernL.default <- function(y, ..., model = list()) {
   environment(indxFn) <- environment()
   H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
   BlockB <- function(k, x = lambda) NULL
-  if (r == 0L & no.int.3plus == 0L) {
+  if (r == 0L & no.int.3plus == 0L & as.numeric(mod$Nys.kern) == 0L) {
     # No need to do all the below Block B stuff if higher order terms involved.
+    # Also no need if Nys.kern option called.
     if (q == 1L) {
       Pl <- Hl
       Psql <- list(fastSquare(Pl[[1]]))
@@ -390,6 +409,8 @@ kernL.default <- function(y, ..., model = list()) {
                        BlockBstuff = BlockBstuff, model = mod, call = cl,
                        no.int.3plus = no.int.3plus)
   class(kernelLoaded) <- "ipriorKernel"
+  if (as.numeric(mod$Nys.kern) > 0L)
+    class(kernelLoaded) <- c("ipriorKernel_Nystrom")
   kernelLoaded
 }
 
