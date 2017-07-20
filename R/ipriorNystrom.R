@@ -6,47 +6,61 @@ ipriorNystrom <- function(y, ..., size, seed = NULL, lambda.init = NULL,
 ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
                                   psi.init = NULL, model = list()) {
   x.names <- as.character(as.list(match.call(expand.dots = FALSE))$...)
-  ipriorNystrom.env <- environment()
 
   # Take subsamples and prepare kernel -----------------------------------------
-  if (!is.null(seed)) set.seed(seed)
-  Nys.samp <- sample(seq_along(y))
-  model$Nys.kern <- size
-  model$Nys.samp <- Nys.samp
-  if (is.null(model$xname)) model$xname <- x.names
-  model$kernel <- "FBM"
-  mod <- kernL(y, ..., model = model)
+  if (is.ipriorKernel_Nystrom(y)) {
+    ipriorKernel <- y
+  } else {
+    if (!is.null(seed)) set.seed(seed)
+    Nys.samp <- sample(seq_along(y))
+    model$Nys.kern <- size
+    model$Nys.samp <- Nys.samp
+    if (is.null(model$xname)) model$xname <- x.names
+    model$kernel <- "FBM"
+    ipriorKernel <- kernL(y, ..., model = model)
+  }
 
   # Initialise parameters ------------------------------------------------------
   lambda <- lambda.init
   psi <- psi.init
-  if (is.null(lambda)) lambda <- abs(rnorm(mod$l, sd = 0.1))
+  if (is.null(lambda)) lambda <- abs(rnorm(ipriorKernel$l, sd = 0.1))
   else {
-    if (length(lambda) != mod$l) {
+    if (length(lambda) != ipriorKernel$l) {
       stop(paste("Incorrect dimension of lambda initial values. vector of
-                 length", mod$l, "required."), call. = FALSE)
+                 length", ipriorKernel$l, "required."), call. = FALSE)
     }
   }
   if (is.null(psi)) psi <- abs(rnorm(1))
   theta <- c(lambda, psi)
 
   # Minimise deviance = -2 * log-likelihood ------------------------------------
-  res.optim <- optim(theta, deviance, object = mod, method = "L-BFGS",
+  res.optim <- optim(theta, deviance, object = ipriorKernel, method = "L-BFGS",
                      control = list(trace = 1), hessian = TRUE)
 
   # Results --------------------------------------------------------------------
   theta <- res.optim$par
-  res <- list(alpha = mean(mod$Y), lambda = exp(theta[-length(theta)]),
+  res <- list(alpha = mean(ipriorKernel$Y), lambda = exp(theta[-length(theta)]),
               psi = exp(theta[length(theta)]),
-              se = diag(solve(res.optim$hessian)), ipriorKernel = mod,
+              se = diag(solve(res.optim$hessian)), ipriorKernel = ipriorKernel,
               loglik = -2 * res.optim$value, optim = res.optim)
   class(res) <- "ipriorMod_Nystrom"
   res
 }
 
 ipriorNystrom.formula <- function(formula, data, size, seed = NULL, lambda.init = NULL,
-                                  psi.init = NULL) {
+                                  psi.init = NULL, model = list()) {
+  # Take subsamples and prepare kernel -----------------------------------------
+  if (!is.null(seed)) set.seed(seed)
+  Nys.samp <- sample(seq_len(nrow(data)))
+  model$Nys.kern <- size
+  model$Nys.samp <- Nys.samp
+  model$kernel <- "FBM"
+  ipriorKernel <- kernL(formula, data, model = model)
 
+  # Pass to default function ---------------------------------------------------
+  res <- ipriorNystrom.default(y = ipriorKernel, size = size, seed = seed,
+                               lambda.init = lambda.init, psi.init = psi.init)
+  res
 }
 
 print.ipriorMod_Nystrom <- function(x, ...) {
@@ -76,8 +90,8 @@ logLik.ipriorKernel_Nystrom <- function(object, theta = NULL, ...) {
   list2env(Nystrom_eigen(object, exp(beta), exp(delta)), envir = environment())
   # if(...) z <- c(z, rep(0, n - Nys.m))
   logdet <- sum(log(z))
-  res <- (-n / 2) * log(2 * pi) - logdet / 2 - crossprod(object$Y - alpha, a) / 2
-  print(c(exp(theta), res))
+  res <- (-object$n / 2) * log(2 * pi) - logdet / 2 - crossprod(object$Y - alpha, a) / 2
+  # print(c(exp(theta), res))
   as.numeric(res)
 }
 
@@ -137,6 +151,19 @@ fitted.ipriorMod_Nystrom <- function(object, ...) {
   as.numeric(y.hat)[order(object$ipriorKernel$model$Nys.samp)]
 }
 
-plot.ipriorMod_Nystrom <- function() {
-  1
+plot_fitted <- function(object) {
+  list2env(object, environment())
+  list2env(ipriorKernel, environment())
+  list2env(model, environment())
+
+  xval <- x[[1]][order(Nys.samp)]
+  yval <- Y[order(Nys.samp)]
+  x.order <- order(xval)
+  y.hat <- fitted(object)
+  df.plot <- data.frame(y = yval[x.order], x = xval[x.order], fitted = y.hat[x.order])
+
+  ggplot(df.plot) +
+    geom_point(aes(x = x, y = y)) +
+    geom_line(aes(x = x, y = fitted), col = ggColPal(1), size = 1.3) +
+    theme_bw()
 }

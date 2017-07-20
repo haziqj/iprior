@@ -13,6 +13,7 @@ License: GPL (>= 3.0)
 Depends: 
   R (>= 3.2.5)
 Imports:
+  ggplot2,
   methods,
   RColorBrewer,
   Rcpp (>= 0.12.5)

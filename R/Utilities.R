@@ -49,6 +49,8 @@ is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 #' @export
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
+is.ipriorKernel_Nystrom <- function(x) inherits(x, "ipriorKernel_Nystrom")
+
 is.ipriorX <- function(x) inherits(x, "ipriorX")
 
 testXForm <- function(x) {
