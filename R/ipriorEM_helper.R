@@ -121,7 +121,7 @@ BlockA_Nystrom <- function(){
 BlockC <- function(){
   # Block C update function
   assign("VarY.inv", linSolvInv(), envir = parent.frame())
-  w.hat <- psi * Hlam.mat %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1))
+  w.hat <- psi * V %*% ((t(V) * u) %*% (VarY.inv %*% matrix(Y - alpha, ncol = 1)))
   W.hat <- VarY.inv + tcrossprod(w.hat)
   assign("w.hat", w.hat, envir = parent.frame())
   assign("W.hat", W.hat, envir = parent.frame())
@@ -152,7 +152,7 @@ logLikEM <- function(Nys.adj){
 psiUpdate <- function() {
   # The common psi update routine in the EM routine below.
   # Hlamsq.mat <- fastSquare(Hlam.mat)  # a C++ alternative
-  Hlamsq.mat <- (V * rep(u ^ 2, each = nrow(V))) %*% t(V)
+  Hlamsq.mat <- V %*% (t(V) * u ^ 2)
   T3 <- crossprod(Y - alpha) + sum(Hlamsq.mat * W.hat) -
     2 * crossprod(Y - alpha, crossprod(Hlam.mat, w.hat))
   psi <- sqrt(max(0, as.numeric(sum(diag(W.hat)) / T3)))

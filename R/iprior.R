@@ -445,13 +445,15 @@ print.ipriorSummary <- function(x, ...) {
   cat("\n")
   if (!is.null(x$optim.converged)) {
     cat("Routine converged via EM and direct optimisation.")
-  } else {
+  } else if (!is.null(x$no.iter)) {
     if (x$converged) {
       cat("EM converged to within", x$stop.crit, "tolerance.")
     } else {
       cat("EM failed to converge.")
     }
     cat(" No. of iterations:", x$no.iter)
+  } else {
+    cat("Direct maximisation of likelihood")
   }
   if (isTRUE(x$Nystrom.check)) cat("\nNystrom approximation used (with",
                                    x$Nystrom$m, "random subsamples)")

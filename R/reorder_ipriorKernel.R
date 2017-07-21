@@ -27,7 +27,8 @@
   object$x <- tmp
 
   # Hl
-  object$Hl <- lapply(object$Hl, rwa_2, smp = Nys.samp)
+  if (!is.ipriorKernel_Nystrom(object))
+    object$Hl <- lapply(object$Hl, rwa_2, smp = Nys.samp)
 
   # In BlockBstuff
   if (!is.null(object$BlockBstuff$H2l))

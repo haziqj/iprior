@@ -10,4 +10,5 @@
 #'   model.response pnorm printCoefmat qqnorm rnorm terms optimHess nlm
 #' @importFrom utils combn setTxtProgressBar str txtProgressBar
 #' @import RColorBrewer
+#' @import ggplot2
 NULL
