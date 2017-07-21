@@ -13,7 +13,7 @@
 #' @export
 #'
 eigenCpp <- function(X) {
-    .Call(iprior_eigenCpp, X)
+    .Call(`_iprior_eigenCpp`, X)
 }
 
 #' Multiplying a symmetric matrix by itself in C++.
@@ -28,11 +28,11 @@ eigenCpp <- function(X) {
 #' @export
 #'
 fastSquare <- function(X) {
-    .Call(iprior_fastSquare, X)
+    .Call(`_iprior_fastSquare`, X)
 }
 
 fastSquareRoot <- function(X) {
-    .Call(iprior_fastSquareRoot, X)
+    .Call(`_iprior_fastSquareRoot`, X)
 }
 
 #' Computing a quadratic matrix form in C++.
@@ -48,6 +48,6 @@ fastSquareRoot <- function(X) {
 #' @export
 #'
 fastVDiag <- function(X, y) {
-    .Call(iprior_fastVDiag, X, y)
+    .Call(`_iprior_fastVDiag`, X, y)
 }
 

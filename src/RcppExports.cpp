@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // eigenCpp
 List eigenCpp(Eigen::Map<Eigen::MatrixXd> X);
-RcppExport SEXP iprior_eigenCpp(SEXP XSEXP) {
+RcppExport SEXP _iprior_eigenCpp(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // fastSquare
 Eigen::MatrixXd fastSquare(SEXP X);
-RcppExport SEXP iprior_fastSquare(SEXP XSEXP) {
+RcppExport SEXP _iprior_fastSquare(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // fastSquareRoot
 Eigen::MatrixXd fastSquareRoot(SEXP X);
-RcppExport SEXP iprior_fastSquareRoot(SEXP XSEXP) {
+RcppExport SEXP _iprior_fastSquareRoot(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,7 @@ END_RCPP
 }
 // fastVDiag
 NumericMatrix fastVDiag(NumericMatrix X, NumericVector y);
-RcppExport SEXP iprior_fastVDiag(SEXP XSEXP, SEXP ySEXP) {
+RcppExport SEXP _iprior_fastVDiag(SEXP XSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -50,4 +50,17 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(fastVDiag(X, y));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_iprior_eigenCpp", (DL_FUNC) &_iprior_eigenCpp, 1},
+    {"_iprior_fastSquare", (DL_FUNC) &_iprior_fastSquare, 1},
+    {"_iprior_fastSquareRoot", (DL_FUNC) &_iprior_fastSquareRoot, 1},
+    {"_iprior_fastVDiag", (DL_FUNC) &_iprior_fastVDiag, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_iprior(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
