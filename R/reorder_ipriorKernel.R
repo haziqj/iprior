@@ -18,6 +18,7 @@
 #
 ################################################################################
 
+#' @export
 .reorder_ipriorKernel <- function(object, Nys.samp = NULL) {
   if (is.null(Nys.samp)) Nys.samp <- sample(seq_len(object$n))
   # y and X
