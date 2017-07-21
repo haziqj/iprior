@@ -81,5 +81,5 @@ Nystrom_eigen <- function(object, lambda, psi) {
   z <- psi * u ^ 2 + 1 / psi
   a <- (V * rep(1 / z, each = nrow(V))) %*% (crossprod(V, Y - mean(Y)))
 
-  list(u = u, V = V, z = z, a = a)
+  list(u = u, V = V, z = z, a = a, A = A, B = B)
 }
