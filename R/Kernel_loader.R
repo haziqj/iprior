@@ -475,6 +475,7 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   kernelLoaded$call <- cl
   names(kernelLoaded$call)[2] <- "formula"
   kernelLoaded$terms <- tt
+  kernelLoaded$formula <- formula
   kernelLoaded
 }
 
