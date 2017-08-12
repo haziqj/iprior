@@ -1,3 +1,4 @@
+#' @export
 fitted.ipriorMod_Nystrom <- function(object, ...) {
   this.env <- environment()
   list2env(object, this.env)
@@ -7,6 +8,7 @@ fitted.ipriorMod_Nystrom <- function(object, ...) {
   as.numeric(y.hat)[order(object$ipriorKernel$model$Nys.samp)]
 }
 
+#' @export
 predict.ipriorMod_Nystrom <- function(object, newdata = list(), ...) {
   list2env(object, environment())
   list2env(ipriorKernel, environment())

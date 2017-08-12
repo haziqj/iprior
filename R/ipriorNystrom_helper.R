@@ -1,8 +1,9 @@
+#' @export
 logLik.ipriorKernel_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ...) {
   # Initialise parameters ------------------------------------------------------
   alpha <- as.numeric(mean(object$Y))
-  beta <- theta[-length(theta)]
-  delta <- theta[length(theta)]
+  beta <- theta[-length(theta)]  # log(lambda)
+  delta <- theta[length(theta)]  # log(psi)
   if (is.null(beta)) beta <- abs(rnorm(object$l, sd = 0.1))
   else {
     if (length(beta) != object$l) {
@@ -21,6 +22,7 @@ logLik.ipriorKernel_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, .
   as.numeric(res)
 }
 
+#' @export
 logLik.ipriorMod_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ...) {
   if (is.null(theta)) {
     if (isTRUE(Nys.adj)) object$loglik.adj
@@ -29,10 +31,12 @@ logLik.ipriorMod_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ...)
   else logLik(object$ipriorKernel, theta, Nys.adj)
 }
 
+#' @export
 deviance.ipriorKernel_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ...) {
   -2 * logLik(object, theta)
 }
 
+#' @export
 deviance.ipriorMod_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ...) {
   if (is.null(theta)) {
     if (isTRUE(Nys.adj)) -2 * logLik(object)
@@ -41,6 +45,7 @@ deviance.ipriorMod_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ..
   else deviance(object$ipriorKernel, theta, Nys.adj)
 }
 
+#' @export
 Nystrom_eigen <- function(object, lambda, psi) {
   this.env <- environment()
   list2env(object, this.env)
@@ -67,13 +72,14 @@ Nystrom_eigen <- function(object, lambda, psi) {
   A <- Hlam.mat[, 1:Nys.m]
   B <- Hlam.mat[, -(1:Nys.m)]
   tmp1 <- eigenCpp(A)
-  if (any(tmp1$val + 1e-7 < 0)) print(tmp1$val + 1e-7)
+  # print(c(lambda, psi))
+  # if (any(tmp1$val + 1e-7 < 0)) print(tmp1$val + 1e-7)
   U <- tmp1$vectors
   C.tmp <- U * rep(1 / sqrt(tmp1$val + 1e-7), each = nrow(U))
   C <- C.tmp %*% crossprod(U, B)
   Q <- A + tcrossprod(C)
   tmp2 <- eigenCpp(Q)
-  if (any(tmp2$val + 1e-7 < 0)) print(tmp2$val + 1e-7)
+  # if (any(tmp2$val + 1e-7 < 0)) print(tmp2$val + 1e-7)
   u <- tmp2$values + 1e-7
   R <- tmp2$vectors
   V <- rbind(A, t(B)) %*% tcrossprod(C.tmp, U) %*%

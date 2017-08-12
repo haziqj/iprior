@@ -1,7 +1,9 @@
+#' @export
 plot.ipriorMod_Nystrom <- function(object, ...) {
   plot_fitted(object)
 }
 
+#' @export
 plot_fitted <- function(object) {
   list2env(object, environment())
   list2env(ipriorKernel, environment())
@@ -27,6 +29,7 @@ plot_fitted <- function(object) {
 #   plot(object)
 # }
 
+#' @export
 plot_multilevel <- function(object) {
   list2env(object, environment())
   list2env(ipriorKernel, environment())

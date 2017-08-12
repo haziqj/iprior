@@ -1,8 +1,10 @@
+#' @export
 ipriorNystrom <- function(y, ..., size, seed = NULL, lambda.init = NULL,
                           psi.init = NULL) {
   UseMethod("ipriorNystrom")
 }
 
+#' @export
 ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
                                   psi.init = NULL, model = list()) {
   x.names <- as.character(as.list(match.call(expand.dots = FALSE))$...)
@@ -34,7 +36,7 @@ ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
   theta <- c(lambda, psi)
 
   # Minimise deviance = -2 * log-likelihood ------------------------------------
-  res.optim <- optim(theta, deviance, object = ipriorKernel, method = "L-BFGS",
+  res.optim <- optim(theta, deviance, object = ipriorKernel, method = "L-BFGS-B",
                      control = list(trace = 1), hessian = TRUE)
 
   # Change the call to "ipriorNystrom" -----------------------------------------------
@@ -66,6 +68,7 @@ ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
   res
 }
 
+#' @export
 ipriorNystrom.formula <- function(formula, data, size, seed = NULL, lambda.init = NULL,
                                   psi.init = NULL, model = list()) {
   # Take subsamples and prepare kernel -----------------------------------------

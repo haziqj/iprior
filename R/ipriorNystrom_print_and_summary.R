@@ -1,13 +1,16 @@
+#' @export
 print.ipriorMod_Nystrom <- function(x, ...) {
   class(x) <- "ipriorMod"
   print(x)
 }
 
+#' @export
 print.ipriorKernel_Nystrom <- function(x, ...) {
   class(x) <- "ipriorKernel"
   print(x)
 }
 
+#' @export
 summary.ipriorMod_Nystrom <- function(object, ...) {
   # Create table for summary output --------------------------------------------
   se <- object$se
