@@ -260,6 +260,7 @@ kernL.default <- function(y, ..., model = list()) {
       mod$intr.3plus <- addZeroesIntr3Plus(mod$intr.3plus)
     }
     no.int.3plus <- ncol(mod$intr.3plus)
+    q <- q + no.int.3plus
   }
 
   # Set up names for x variables -----------------------------------------------

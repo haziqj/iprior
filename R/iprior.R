@@ -244,6 +244,7 @@ iprior.default <- function(y, ..., model = list(), control = list()) {
   est$control      <- con
   est$coefficients <- param
   est$T2           <- as.numeric(crossprod(est$w.hat)/est$psi)
+  est$formula      <- ipriorKernel$formula
 
   class(est) <- "ipriorMod"
   est

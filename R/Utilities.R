@@ -309,4 +309,4 @@ globalVariables(c("BlockB", "BlockBstuff", "Hl", "Hlam.mat", "Pl", "Psql", "Sl",
                   "n", "nlm", "no.int", "no.int.3plus", "one.lam", "p", "parsm",
                   "psi", "r", "report", "s", "stop.crit", "theta", "u", "w.hat",
                   "x", "x0", "intercept", "probit", "rootkern", "Nystrom",
-                  "Nys.m", "Nys.seed"))
+                  "Nys.m", "Nys.seed", "Nys.kern", "Nys.samp"))

@@ -1,6 +1,6 @@
 #' @export
-plot.ipriorMod_Nystrom <- function(object, ...) {
-  plot_fitted(object)
+plot.ipriorMod_Nystrom <- function(x, ...) {
+  plot_fitted(x)
 }
 
 #' @export

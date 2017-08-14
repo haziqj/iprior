@@ -1,6 +1,6 @@
 #' @export
 ipriorNystrom <- function(y, ..., size, seed = NULL, lambda.init = NULL,
-                          psi.init = NULL) {
+                          psi.init = NULL, model = list()) {
   UseMethod("ipriorNystrom")
 }
 
