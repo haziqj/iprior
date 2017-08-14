@@ -301,7 +301,11 @@ fnH3 <- function(x, y = NULL, gamma = NULL) {
     tmp2 <- diag(xcrossprod)[indexy[, 2]]
     tmp3 <- as.numeric(xycrossprod)
     B[, ] <- tmp1 + tmp2 - 2 * tmp3
-    B <- B ^ gamma
+    neg.B <- B[B < 0]
+    if (length(neg.B) > 0) {
+      warning(c("These numbers are negative:", neg.B, ". Positive values taken for root."))
+    }
+    B <- abs(B) ^ gamma
     qvec <- apply(B, 1, sum)
     qvec1 <- tcrossprod(qvec, rep(1, n))
     tmp <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
