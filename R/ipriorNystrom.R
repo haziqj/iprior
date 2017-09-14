@@ -83,8 +83,9 @@ ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
 
 #' @rdname ipriorNystrom
 #' @export
-ipriorNystrom.formula <- function(formula, data, size, seed = NULL, lambda.init = NULL,
-                                  psi.init = NULL, model = list()) {
+ipriorNystrom.formula <- function(formula, data, size, seed = NULL,
+                                  lambda.init = NULL, psi.init = NULL,
+                                  model = list(), ...) {
   # Take subsamples and prepare kernel -----------------------------------------
   if (!is.null(seed)) set.seed(seed)
   Nys.samp <- sample(seq_len(nrow(data)))

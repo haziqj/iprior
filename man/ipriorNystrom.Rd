@@ -10,7 +10,7 @@
   lambda.init = NULL, psi.init = NULL, model = list())
 
 \method{ipriorNystrom}{formula}(formula, data, size, seed = NULL,
-  lambda.init = NULL, psi.init = NULL, model = list())
+  lambda.init = NULL, psi.init = NULL, model = list(), ...)
 }
 \arguments{
 \item{y}{Response variable}

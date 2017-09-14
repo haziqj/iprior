@@ -15,3 +15,14 @@ test_that("Pearson must take in factors",{
 	expect_warning(fn.H1(1:100))
 
 })
+
+test_that("Linear kernel", {
+
+  x <- 1:3
+  y <- matrix(1:6, ncol = 2)
+  kernel_test <- kern_canonical
+  expect_true(is.kernel_linear(kernel_test(x)))
+  expect_true(is.kernel_linear(kernel_test(y)))
+  expect_error(kern_canonical(x, y))
+
+})
