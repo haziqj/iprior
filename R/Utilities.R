@@ -19,21 +19,21 @@
 ################################################################################
 
 # Kernel checks
-is.kernel_type <- function(x, type) {
+is.kern_type <- function(x, type) {
   kernel_type <- attributes(x)$kernel
   if (!is.null(kernel_type)) grepl(type, kernel_type)
   else return(FALSE)
 }
 
-is.kernel_linear <- function(x) is.kernel_type(x, type = "linear")
+is.kern_linear <- function(x) is.kern_type(x, type = "linear")
 
-is.kernel_fbm <- function(x) is.kernel_type(x, type = "fBm")
+is.kern_fbm <- function(x) is.kern_type(x, type = "fBm")
 
-is.kernel_pearson <- function(x) is.kernel_type(x, type = "Pearson")
+is.kern_pearson <- function(x) is.kern_type(x, type = "Pearson")
 
-is.kernel_se <- function(x) is.kernel_type(x, type = "SE")
+is.kern_se <- function(x) is.kern_type(x, type = "SE")
 
-is.kernel_poly <- function(x) is.kernel_type(x, type = "polynomial")
+is.kern_poly <- function(x) is.kern_type(x, type = "polynomial")
 
 #' @export
 .checkLevels <- function(y) {

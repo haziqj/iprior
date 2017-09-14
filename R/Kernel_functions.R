@@ -57,23 +57,64 @@
 #' @aliases Canonical FBM Pearson
 NULL
 
-kern_canonical <- function(x, y = NULL, centre = TRUE, scale = FALSE) {
-  # x, y vector or matrix.
-  x <- scale(x, center = centre, scale = scale)  # centre the variables
+kern_canonical <- function(x, y = NULL, centre = TRUE) {
+  x <- scale(x, center = TRUE, scale = FALSE)  # forces a matrix
+  x.centre <- FALSE
+  if (isTRUE(centre)) x.centre <- attr(x ,"scaled:center")
+  else attr(x, "scaled:center") <- NULL
+
   if (is.null(y)) {
     res <- tcrossprod(x)
   } else {
-    if (is.vector(y)) y <- matrix(y, ncol = ncol(x))
-    else y <- as.matrix(y)
+    if (is.vector(y)) y <- matrix(y)
     if (ncol(y) != ncol(x)) stop("New data y is structurally unsimilar to x.")
-    y <- sweep(y, 2, attr(x ,"scaled:center"), "-")
+    y <- scale(y, center = x.centre, scale = FALSE)
     res <- tcrossprod(y, x)
   }
+
   attributes(res)$kernel <- "linear"
   res
 }
 
 kern_linear <- kern_canonical
+
+kern_pearson <- function(x, y = NULL) {
+  # vectors only
+  ytmp <- y
+  if (is.null(ytmp)) y <- x
+  if (any(!is.factor(x), !is.factor(y))) {
+    warning("Non-factor type vector used with Pearson kernel.", call. = FALSE)
+  }
+
+  # Combine x and y, unfactorise them and work with numbers --------------------
+  x <- factor(x); y <- factor(y)
+  z <- unlist(list(x, y))  # simply doing c(x, y) messes with the factors
+  z <- as.numeric(z)
+  x <- z[seq_along(x)]; y <- z[-seq_along(x)]
+  if (any(is.na(match(y, x)))) {
+    stop("The vector y contains elements not belonging to x.")
+  }
+  prop <- table(x) / length(x)
+
+  unqy <- sort(unique(y))
+  unqx <- sort(unique(x))
+  tmpx <- lapply(unqx, function(k) which(x == k))
+  tmpy <- lapply(unqy, function(k) which(y == k))
+  tmp <- lapply(seq_along(unqy),
+                function(k) expand.grid(tmpy[[k]], tmpx[[unqy[k]]]))
+
+  # Side note: can avoid for loop below by combining the list tmp using
+  # do.call(rbind, tmp) or the faster data.table option
+  # as.matrix(data.table::rbindlist(tmp)) but tests found that this is actually
+  # slower.
+  res <- matrix(-1, nrow = length(y), ncol = length(x))
+  for (i in seq_along(unqy)) {
+    res[as.matrix(tmp[[i]])] <- 1 / prop[unqy[i]] - 1
+  }
+
+  attributes(res)$kernel <- "Pearson"
+  res
+}
 
 
 fn.H1 <- function(x, y = NULL) {
