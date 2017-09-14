@@ -33,7 +33,7 @@ is.kern_pearson <- function(x) is.kern_type(x, type = "Pearson")
 
 is.kern_se <- function(x) is.kern_type(x, type = "SE")
 
-is.kern_poly <- function(x) is.kern_type(x, type = "polynomial")
+is.kern_poly <- function(x) is.kern_type(x, type = "poly")
 
 #' @export
 .checkLevels <- function(y) {

@@ -58,21 +58,10 @@
 NULL
 
 kern_canonical <- function(x, y = NULL, centre = TRUE) {
-  if (is.vector(x)) x <- matrix(x)
-  else x <- as.matrix(x)
-  x <- scale(x, center = centre, scale = FALSE)  # forces a matrix
-  x.centre <- FALSE
-  if (isTRUE(centre)) x.centre <- attr(x ,"scaled:center")
-  else attr(x, "scaled:center") <- NULL
+  list2env(kern_check_xy(x, y, centre), environment())
 
-  if (is.null(y)) {
-    res <- tcrossprod(x)
-  } else {
-    if (is.vector(y)) y <- matrix(y)
-    if (ncol(y) != ncol(x)) stop("New data y is structurally unsimilar to x.")
-    y <- scale(y, center = x.centre, scale = FALSE)
-    res <- tcrossprod(y, x)
-  }
+  if (is.null(y)) res <- tcrossprod(x)
+  else res <- tcrossprod(y, x)
 
   attributes(res)$kernel <- "linear"
   res
@@ -119,9 +108,7 @@ kern_pearson <- function(x, y = NULL) {
 }
 
 kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
-  if (is.vector(x)) x <- matrix(x)
-  else x <- as.matrix(x)
-  n <- nrow(x)
+  list2env(kern_check_xy(x, y, FALSE), environment())
 
   A <- matrix(0, n, n)
   index.mat <- upper.tri(A)
@@ -145,11 +132,6 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
       res <- (A - a - t(a)) / -2
     }
   } else {
-    if (is.vector(y)) y <- matrix(y)
-    else y <- as.matrix(y)
-    if (ncol(y) != ncol(x)) stop("New data y is structurally unsimilar to x.")
-    m <- nrow(y)
-
     rvec1 <- tcrossprod(rep(1, m), rvec)
     B <- matrix(0, m, n)
     indexy <- expand.grid(1:m, 1:n)
@@ -165,9 +147,9 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
     #             ". Positive values taken for root."))
     # }
     B <- abs(B) ^ gamma
-    qvec <- apply(B, 1, sum)
-    qvec1 <- tcrossprod(qvec, rep(1, n))
     if (isTRUE(centre)) {
+      qvec <- apply(B, 1, sum)
+      qvec1 <- tcrossprod(qvec, rep(1, n))
       res <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
     } else {
       bx <- matrix(diag(xcrossprod), nrow = m, ncol = n, byrow = TRUE) ^ gamma
@@ -180,10 +162,77 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
   res
 }
 
+kern_se <- function(x, y = NULL, l = 1, centre = TRUE) {
+  list2env(kern_check_xy(x, y, centre), environment())
+  xcrossprod <- tcrossprod(x)
 
+  if (is.null(y)) {
+    A <- matrix(0, n, n)
+    index.mat <- upper.tri(A)
+    index <- which(index.mat, arr.ind = TRUE)
+    tmp1 <- diag(xcrossprod)[index[, 1]]
+    tmp2 <- diag(xcrossprod)[index[, 2]]
+    tmp3 <- xcrossprod[index]
+    A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
+    A <- A + t(A)
+    xmxp.norm <- A
+  } else {
+    B <- matrix(0, m, n)
+    indexy <- expand.grid(1:m, 1:n)
+    ynorm <- apply(y, 1, function(x) sum(x ^ 2))
+    xycrossprod <- tcrossprod(y, x)
+    tmp1 <- ynorm[indexy[, 1]]
+    tmp2 <- diag(xcrossprod)[indexy[, 2]]
+    tmp3 <- as.numeric(xycrossprod)
+    B[, ] <- tmp1 + tmp2 - 2 * tmp3
+    xmxp.norm <- B
+  }
 
+  res <- exp(-xmxp.norm / (2 * l ^ 2))
+  attributes(res)$kernel <- paste0("SE,", l)
+  res
+}
 
+kern_poly <- function(x, y = NULL, c = 0, d = 2, lam.poly = 1, centre = TRUE) {
+  if (!(as.integer(d) == d)) {
+    stop("Non-integer value for polynomial degree d.", call. = FALSE)
+  }
+  if (d <= 1) {
+    stop("Polynomial degree must be greater than 1.", call. = FALSE)
+  }
+  if (c < 0) {
+    stop("Polynomial offset must be greater than 0.", call. = FALSE)
+  }
 
+  x.ip <- kern_canonical(x, y, centre)
+  res <- (lam.poly * x.ip + c) ^ d
+  attributes(res)$kernel <- paste0("poly", d, ",", c)
+  res
+}
+
+kern_check_xy <- function(x, y, centre.xy) {
+  if (is.vector(x)) x <- matrix(x)
+  else x <- as.matrix(x)
+  n <- nrow(x)
+
+  m <- NULL
+  if (!is.null(y)) {
+    if (is.vector(y)) y <- matrix(y)
+    else y <- as.matrix(y)
+    if (ncol(y) != ncol(x)) stop("New data y is structurally unsimilar to x.")
+    m <- nrow(y)
+  }
+
+  if (isTRUE(centre.xy)) {
+    x <- scale(x, center = TRUE, scale = FALSE)
+    if (!is.null(y)) {
+      x.centre <- attr(x ,"scaled:center")
+      y <- scale(y, center = x.centre, scale = FALSE)
+    }
+  }
+
+  list(x = x, y = y, n = n, m = m)
+}
 
 
 

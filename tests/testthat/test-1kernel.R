@@ -62,3 +62,34 @@ test_that("fBm kernel", {
   expect_equivalent(res1, res3)
 
 })
+
+test_that("SE kernel", {
+
+  x <- 1:3
+  y <- matrix(1:6, ncol = 2)
+  expect_true(is.kern_se(kern_se(x, l = 2)))
+  expect_true(is.kern_se(kern_se(y)))
+  expect_error(kern_se(x, y))
+
+  res1 <- kern_se(y, y)
+  res2 <- kern_se(y)
+  expect_equivalent(res1, res2)
+
+})
+
+test_that("Polynomial kernel", {
+
+  x <- 1:3
+  y <- matrix(1:6, ncol = 2)
+  expect_true(is.kern_poly(kern_poly(x, d = 3)))
+  expect_true(is.kern_poly(kern_poly(y, c = 3)))
+  expect_error(kern_poly(x, y))
+  expect_error(kern_poly(x, d = -1))
+  expect_error(kern_poly(x, c = -1))
+
+  res1 <- kern_poly(y, y, lam.poly = 3)
+  res2 <- kern_poly(y, lam.poly = 3)
+  expect_equivalent(res1, res2)
+
+})
+
