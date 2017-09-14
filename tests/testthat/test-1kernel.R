@@ -29,7 +29,8 @@ test_that("Linear kernel", {
   res1 <- kern_canonical(y, y)
   res2 <- kern_canonical(y.cen, y.cen, centre = FALSE)
   res3 <- kern_canonical(y.cen, y.cen)
-  identical(res1, res2, res3)
+  res4 <- kern_canonical(y)
+  expect_true(identical(res1, res2, res3, res4))
 
 })
 
@@ -42,5 +43,22 @@ test_that("Pearson kernel", {
   expect_true(is.kern_pearson(kern_pearson(x, y)))
   expect_error(kernel(x, z))
   expect_equivalent(kern_pearson(x), kern_pearson(x, x))
+
+})
+
+test_that("fBm kernel", {
+
+  x <- 1:3
+  y <- matrix(1:6, ncol = 2)
+  expect_true(is.kern_fbm(kern_fbm(x)))
+  expect_true(is.kern_fbm(kern_fbm(y)))
+  expect_error(kern_fbm(x, y))
+
+  res1 <- kern_canonical(y, y)
+  res2 <- kern_fbm(y, y, gamma = 1)
+  res3 <- kern_fbm(y, gamma = 1)
+  expect_equivalent(res1, res2)
+  expect_equivalent(res2, res3)
+  expect_equivalent(res1, res3)
 
 })

@@ -58,7 +58,9 @@
 NULL
 
 kern_canonical <- function(x, y = NULL, centre = TRUE) {
-  x <- scale(x, center = TRUE, scale = FALSE)  # forces a matrix
+  if (is.vector(x)) x <- matrix(x)
+  else x <- as.matrix(x)
+  x <- scale(x, center = centre, scale = FALSE)  # forces a matrix
   x.centre <- FALSE
   if (isTRUE(centre)) x.centre <- attr(x ,"scaled:center")
   else attr(x, "scaled:center") <- NULL
@@ -115,6 +117,87 @@ kern_pearson <- function(x, y = NULL) {
   attributes(res)$kernel <- "Pearson"
   res
 }
+
+kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
+  if (is.vector(x)) x <- matrix(x)
+  else x <- as.matrix(x)
+  n <- nrow(x)
+
+  A <- matrix(0, n, n)
+  index.mat <- upper.tri(A)
+  index <- which(index.mat, arr.ind = TRUE)
+  xcrossprod <- tcrossprod(x)
+  tmp1 <- diag(xcrossprod)[index[, 1]]
+  tmp2 <- diag(xcrossprod)[index[, 2]]
+  tmp3 <- xcrossprod[index]
+  A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
+  A <- A + t(A)
+  A <- A ^ gamma
+  rvec <- apply(A, 1, sum)
+  s <- sum(rvec)
+
+  if (is.null(y)) {
+    if (isTRUE(centre)) {
+      rvec1 <- tcrossprod(rvec, rep(1, n))
+      res <- (A - rvec1 / n - t(rvec1) / n + s / (n ^ 2)) / -2
+    } else {
+      a <- matrix(diag(xcrossprod), n, n) ^ gamma
+      res <- (A - a - t(a)) / -2
+    }
+  } else {
+    if (is.vector(y)) y <- matrix(y)
+    else y <- as.matrix(y)
+    if (ncol(y) != ncol(x)) stop("New data y is structurally unsimilar to x.")
+    m <- nrow(y)
+
+    rvec1 <- tcrossprod(rep(1, m), rvec)
+    B <- matrix(0, m, n)
+    indexy <- expand.grid(1:m, 1:n)
+    ynorm <- apply(y, 1, function(x) sum(x ^ 2))
+    xycrossprod <- tcrossprod(y, x)
+    tmp1 <- ynorm[indexy[, 1]]
+    tmp2 <- diag(xcrossprod)[indexy[, 2]]
+    tmp3 <- as.numeric(xycrossprod)
+    B[, ] <- tmp1 + tmp2 - 2 * tmp3
+    # neg.B <- B[B < 0]
+    # if (length(neg.B) > 0) {
+    #   warning(c("These numbers are negative:", neg.B,
+    #             ". Positive values taken for root."))
+    # }
+    B <- abs(B) ^ gamma
+    qvec <- apply(B, 1, sum)
+    qvec1 <- tcrossprod(qvec, rep(1, n))
+    if (isTRUE(centre)) {
+      res <- (B - qvec1 / n - rvec1 / n + s / (n ^ 2)) / (-2)
+    } else {
+      bx <- matrix(diag(xcrossprod), nrow = m, ncol = n, byrow = TRUE) ^ gamma
+      by <- matrix(ynorm, nrow = m, ncol = n) ^ gamma
+      res <- (B - bx - by) / -2
+    }
+  }
+
+  attributes(res)$kernel <- paste0("fBm,", gamma)
+  res
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 fn.H1 <- function(x, y = NULL) {
