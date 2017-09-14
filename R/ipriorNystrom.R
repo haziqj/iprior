@@ -1,9 +1,22 @@
 #' @export
-ipriorNystrom <- function(y, ..., size, seed = NULL, lambda.init = NULL,
-                          psi.init = NULL, model = list()) {
+ipriorNystrom <- function(...) {
   UseMethod("ipriorNystrom")
 }
 
+#' Nystrom method to fit I-prior models
+#'
+#' @param y Response variable
+#'
+#' @param ... Covariates
+#' @param size Size of Nystrom sample
+#' @param seed Choose a random seed, defaults to NULL
+#' @param lambda.init NULL
+#' @param psi.init NULL
+#' @param model Model type
+#' @param formula formula
+#' @param data data
+#'
+#' @name ipriorNystrom
 #' @export
 ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
                                   psi.init = NULL, model = list()) {
@@ -68,6 +81,7 @@ ipriorNystrom.default <- function(y, ..., size, seed = NULL, lambda.init = NULL,
   res
 }
 
+#' @rdname ipriorNystrom
 #' @export
 ipriorNystrom.formula <- function(formula, data, size, seed = NULL, lambda.init = NULL,
                                   psi.init = NULL, model = list()) {

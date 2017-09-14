@@ -45,7 +45,6 @@ deviance.ipriorMod_Nystrom <- function(object, theta = NULL, Nys.adj = FALSE, ..
   else deviance(object$ipriorKernel, theta, Nys.adj)
 }
 
-#' @export
 Nystrom_eigen <- function(object, lambda, psi) {
   this.env <- environment()
   list2env(object, this.env)
