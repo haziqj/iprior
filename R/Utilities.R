@@ -18,21 +18,10 @@
 #
 ################################################################################
 
-logit <- function(x, exp.logit = FALSE) {
-  res <- log(x) - log(1 - x)
-  if (isTRUE(exp.logit)) exp(res)
-  else res
-}
-
-expit <- function(x, log.expit = FALSE) {
-  res <- -log(1 + exp(-x))
-  if (isTRUE(log.expit)) res
-  else exp(res)
-}
-
 # Kernel checks
 is.kern_type <- function(x, type) {
-  kernel_type <- attributes(x)$kernel
+  if (!is.null(attributes(x)$kernel)) kernel_type <- attributes(x)$kernel
+  else kernel_type <- x
   if (!is.null(kernel_type)) grepl(type, kernel_type)
   else return(FALSE)
 }

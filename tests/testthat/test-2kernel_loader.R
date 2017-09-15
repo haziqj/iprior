@@ -94,13 +94,16 @@ test_that("Kernel to param to theta", {
 
   # Remember that kernels vector need to have the hyperparameters specified,
   # i.e. fbm,0.5 instead of just fbm, etc.
+  # e.g. no of theta = 5 + 1 + 1 + 1 = 8
+  # param table is 5 x 5
   kernels <- c("linear", "fbm,0.7", "se,2", "poly3,0.15", "pearson")
   which.pearson <- c(F, F, F, F, T)
+  poly.degree <- c(NA, NA, NA, 3, NA)
   lambda <- rep(1, 5)
 
   res1 <- kernel_to_param(kernels, lambda)
   res2 <- param_to_theta(res1)
-  res3 <- theta_to_param(res2$theta, res2$na, which.pearson)
+  res3 <- theta_to_param(res2$theta, res2$na, which.pearson, poly.degree)
 
   expect_equal(kernels, res3$kernels)
 

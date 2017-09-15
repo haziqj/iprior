@@ -1,11 +1,17 @@
 kernL2 <- function(...) UseMethod("kernL2")
 
 kernL2.default <- function(y, ..., kernel = "linear") {
-  X <- list(...)
+  Xl <- list(...)
+  Xl.kernel.mistake <- match("kernels", names(Xl))
+  if ("kernels" %in% names(Xl)) {
+    kernel <- Xl[[Xl.kernel.mistake]]
+    Xl[[Xl.kernel.mistake]] <- NULL
+  }
+  y <- scale(y, scale = FALSE)  # centre variables
 
   # Meta -----------------------------------------------------------------------
   n <- length(y)
-  p <- length(X)
+  p <- length(Xl)
 
   # What types of kernels? -----------------------------------------------------
   if (length(kernel) < p && length(kernel) > 1) {
@@ -19,14 +25,27 @@ kernL2.default <- function(y, ..., kernel = "linear") {
   kernels <- rep(NA, p)
   kernels[1:p] <- kernel
   # The next two lines ensure that the Pearson kernel is used for factors
-  which.pearson <- unlist(lapply(X, function(x) {is.factor(x) | is.character(x)}))
+  which.pearson <- unlist(lapply(Xl, function(x) {is.factor(x) | is.character(x)}))
   kernels <- correct_pearson_kernel(kernels, which.pearson)
 
-  lambda <- rep(1, p)
-  Hl <- mapply(kernel_translator, X, list(NULL), kernels, lambda, SIMPLIFY = FALSE)
+  Hl <- get_Hl(Xl, list(NULL), kernels, 1)
   kernels <- get_kernels_from_Hl(Hl)
 
+  param <- kernel_to_param(kernels, 1)
+  theta.start <- param_to_theta(param)
+  poly.degree <- param$degree
 
+  res <- list(
+    y = y, Xl = Xl, n = n, p = p, kernels = kernels, Hl = Hl,
+    which.pearson = which.pearson, theta.start = theta.start,
+    poly.degree = poly.degree
+  )
+  class(res) <- "ipriorKernel2"
+  res
+}
+
+get_Hl <- function(X, y = list(NULL), kernels, lambda) {
+  mapply(kernel_translator, X, y, kernels, lambda, SIMPLIFY = FALSE)
 }
 
 kernel_to_param <- function(kernels, lambda) {
@@ -48,7 +67,7 @@ kernel_to_param <- function(kernels, lambda) {
 }
 
 param_to_theta <- function(x) {
-  x <- x[, -ncol(x)]
+  x <- x[, seq_len(4)]  # lambda, hurst, lengthscale, offset
   x$hurst <- qnorm(x$hurst)
   x$lengthscale <- log(x$lengthscale)
   x$offset <- log(x$offset)
@@ -57,13 +76,13 @@ param_to_theta <- function(x) {
   list(theta = as.numeric(res), na = na.action(res))
 }
 
-theta_to_param <- function(theta, na.info, which.pearson) {
-  # don't forget psi
+theta_to_param <- function(theta, na.info, which.pearson, poly.degree) {
   full.length <- length(c(theta, na.info))
-  param <- matrix(NA, ncol = 5, nrow = full.length / 5)
+  param <- matrix(NA, ncol = 4, nrow = full.length / 4)
   tmp <- c(param)
   tmp[-na.info] <- theta
   param[] <- tmp
+  param <- cbind(param, degree = poly.degree)
 
   param <- as.data.frame(param)
   names(param) <- c("lambda", "hurst", "lengthscale", "offset", "degree")
