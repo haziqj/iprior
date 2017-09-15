@@ -103,7 +103,7 @@ kern_pearson <- function(x, y = NULL) {
     res[as.matrix(tmp[[i]])] <- 1 / prop[unqy[i]] - 1
   }
 
-  attributes(res)$kernel <- "Pearson"
+  attributes(res)$kernel <- "pearson"
   res
 }
 
@@ -158,7 +158,7 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
     }
   }
 
-  attributes(res)$kernel <- paste0("fBm,", gamma)
+  attributes(res)$kernel <- paste0("fbm,", gamma)
   res
 }
 
@@ -189,7 +189,7 @@ kern_se <- function(x, y = NULL, l = 1, centre = TRUE) {
   }
 
   res <- exp(-xmxp.norm / (2 * l ^ 2))
-  attributes(res)$kernel <- paste0("SE,", l)
+  attributes(res)$kernel <- paste0("se,", l)
   res
 }
 

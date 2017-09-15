@@ -18,6 +18,18 @@
 #
 ################################################################################
 
+logit <- function(x, exp.logit = FALSE) {
+  res <- log(x) - log(1 - x)
+  if (isTRUE(exp.logit)) exp(res)
+  else res
+}
+
+expit <- function(x, log.expit = FALSE) {
+  res <- -log(1 + exp(-x))
+  if (isTRUE(log.expit)) res
+  else exp(res)
+}
+
 # Kernel checks
 is.kern_type <- function(x, type) {
   kernel_type <- attributes(x)$kernel
@@ -27,11 +39,11 @@ is.kern_type <- function(x, type) {
 
 is.kern_linear <- function(x) is.kern_type(x, type = "linear")
 
-is.kern_fbm <- function(x) is.kern_type(x, type = "fBm")
+is.kern_fbm <- function(x) is.kern_type(x, type = "fbm")
 
-is.kern_pearson <- function(x) is.kern_type(x, type = "Pearson")
+is.kern_pearson <- function(x) is.kern_type(x, type = "pearson")
 
-is.kern_se <- function(x) is.kern_type(x, type = "SE")
+is.kern_se <- function(x) is.kern_type(x, type = "se")
 
 is.kern_poly <- function(x) is.kern_type(x, type = "poly")
 
@@ -47,6 +59,10 @@ get_polydegree <- function(x) {
   if (length(degree) == 1) degree <- 2
   else degree <- as.numeric(degree[2])
   degree
+}
+
+get_kernels_from_Hl <- function(x) {
+  sapply(x, function(x) attributes(x)$kernel)
 }
 
 #' @export
