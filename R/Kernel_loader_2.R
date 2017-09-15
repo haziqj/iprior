@@ -66,17 +66,36 @@ kernel_to_param <- function(kernels, lambda) {
   cbind(param, kernels)
 }
 
-param_to_theta <- function(x) {
-  x <- x[, seq_len(4)]  # lambda, hurst, lengthscale, offset
-  x$hurst <- qnorm(x$hurst)
-  x$lengthscale <- log(x$lengthscale)
-  x$offset <- log(x$offset)
-  if (nrow(x) == 1) x$lambda <- log(x$lambda)
-  res <- na.omit(c(as.matrix(x))) # don't forget psi
-  list(theta = as.numeric(res), na = na.action(res))
+param_to_theta <- function(param, logpsi = NULL) {
+  if (is.null(logpsi)) logpsi <- 0
+  param <- param[, seq_len(4)]  # lambda, hurst, lengthscale, offset
+  param$hurst <- qnorm(param$hurst)
+  param$lengthscale <- log(param$lengthscale)
+  param$offset <- log(param$offset)
+  if (nrow(param) == 1) param$lambda <- log(param$lambda)
+
+  tmp <- collapse_param(param)
+  list(theta = c(tmp$param, psi = logpsi), na = tmp$na)
+}
+
+collapse_param <- function(param) {
+  res <- na.omit(unlist(param[, 1:4]))
+  param.names <- names(res)
+  na <- as.numeric(na.action(res))
+  res <- as.numeric(res)
+
+  param.digits <- gsub("[^[:digit:]]","", param.names)
+  param.names <- gsub("[[:digit:]]","", param.names)
+  param.names <- paste0(param.names, "[", param.digits, "]")
+  param.names
+  names(res) <- param.names
+
+  list(param = res, na = na)
 }
 
 theta_to_param <- function(theta, na.info, which.pearson, poly.degree) {
+  theta <- theta[-length(theta)]
+
   full.length <- length(c(theta, na.info))
   param <- matrix(NA, ncol = 4, nrow = full.length / 4)
   tmp <- c(param)
@@ -94,7 +113,13 @@ theta_to_param <- function(theta, na.info, which.pearson, poly.degree) {
   param$kernels <- correct_pearson_kernel(
     apply(param, 1, param_translator), which.pearson
   )
+
   param
+}
+
+theta_to_psi <- function(theta) {
+  logpsi <- theta[length(theta)]
+  exp(logpsi)
 }
 
 param_translator <- function(x) {

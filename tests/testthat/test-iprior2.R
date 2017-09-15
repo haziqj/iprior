@@ -1,0 +1,28 @@
+context("iprior2")
+
+test_that("Hlam", {
+
+  y <- 1:3
+  x1 <- 1:3
+  x2 <- 4:6
+  x3 <- factor(7:9)
+  mod <- kernL2(y, x1, x2, x3, kernels = c("fbm", "se", "pearson"))
+  K <- get_Hlam(mod)
+  tmp <- eigen_Hlam(K)
+  expect_equal(det(K), 32.73602, tolerance = 1e-6)
+  expect_equal(tmp$u, c(1.869905, 3.598763, 4.864665), tolerance = 1e-6)
+
+})
+
+test_that("logLik", {
+
+  y <- 1:3
+  x1 <- 1:3
+  x2 <- 4:6
+  x3 <- factor(7:9)
+  mod <- kernL2(y, x1, x2, x3, kernel = "poly")
+  res <- loglik_iprior(c(1, 1, 1, 0, 0, 0), object = mod)
+  expect_equal(res, -8.735662, tolerance = 1e-6)
+
+})
+

@@ -34,24 +34,18 @@ eigen_Hlam <- function(Hlam) {
 }
 
 vy_inv_a <- function(u, V, a) {
-  V %*% diag(u, nrow(V)) %*% t(V) %*% a
+  V %*% diag(u) %*% t(V) %*% a
 }
 
-loglik_iprior <- function(theta = NULL, object, debug = FALSE) {
-  logpsi <- 0
-  if (!is.null(theta)) {
-    logpsi <- theta[length(theta)]
-    theta <- theta[-length(theta)]
-  }
-  psi <- exp(logpsi)
+loglik_iprior <- function(theta, object, debug = FALSE) {
+  psi <- theta_to_psi(theta)
   list2env(eigen_Hlam(get_Hlam(object, theta)), environment())
-  y <- object$y
+
+  y <- object$y  # y has already been standardised!
   n <- object$n
-  alpha <- attr(y, "scaled:center")
-  y.cen <- as.numeric(y) - alpha
   z <- psi * u ^ 2 + 1 / psi
   logdet <- sum(log(z))
-  Vy.inv.y <- vy_inv_a(1 / z, V, y.cen)
+  Vy.inv.y <- vy_inv_a(1 / z, V, y)
 
   # for debug
  if (isTRUE(debug)) {
@@ -61,13 +55,18 @@ loglik_iprior <- function(theta = NULL, object, debug = FALSE) {
    print(c(as.numeric(na.omit(c(param))), psi))
  }
 
-  res <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y.cen, Vy.inv.y) / 2
+  res <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
   as.numeric(res)
 }
 
 iprior2 <- function(object) {
-  res <- optim(rnorm(length(object$theta.start$theta) + 1),
+  res <- optim(rnorm(length(object$theta.start$theta)),
                loglik_iprior, object = object, debug = FALSE,
-               method = "L-BFGS", control = list(fnscale = -1))
-  res
+               method = "L-BFGS", control = list(fnscale = -2, trace = 1))
+  param <- theta_to_param(res$par, object$theta.start$na, object$which.pearson,
+                          object$poly.degree)
+  c(collapse_param(param)$param, psi = theta_to_psi(res$par))
 }
+
+# mod <- kernL2(stack.loss, stackloss$Air.Flow, stackloss$Water.Temp,
+#               stackloss$Acid.Conc., kernel = "fbm")
