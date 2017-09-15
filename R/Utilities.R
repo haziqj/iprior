@@ -35,6 +35,20 @@ is.kern_se <- function(x) is.kern_type(x, type = "SE")
 
 is.kern_poly <- function(x) is.kern_type(x, type = "poly")
 
+get_hyperparam <- function(x) {
+  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
+  as.numeric(unlist(strsplit(x, ","))[2])
+}
+
+get_polydegree <- function(x) {
+  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
+  degree <- unlist(strsplit(x, ","))[1]
+  degree <- unlist(strsplit(degree, "poly"))
+  if (length(degree) == 1) degree <- 2
+  else degree <- as.numeric(degree[2])
+  degree
+}
+
 #' @export
 .checkLevels <- function(y) {
   # Function used for categorical response models. Obtains the levels in the ys

@@ -64,3 +64,54 @@ test_that("Overriding Hurst coefficient warning",{
 
 })
 
+
+test_that("Kernel translator",{
+
+  expect_true(is.kern_linear(kernel_translator(1:3, kernel = "linear")))
+
+  res <- kernel_translator(1:3, kernel = "fbm,0.7")
+  expect_true(is.kern_fbm(res))
+  expect_equal(get_hyperparam(res), 0.7)
+
+  res <- kernel_translator(1:3, kernel = "se,0.7")
+  expect_true(is.kern_se(res))
+  expect_equal(get_hyperparam(res), 0.7)
+
+  res1 <- kernel_translator(1:3, kernel = "poly,0.7")
+  res2 <- kernel_translator(1:3, kernel = "poly3")
+  res3 <- kernel_translator(1:3, kernel = "poly4,0.9")
+  expect_true(all(is.kern_poly(res1), is.kern_poly(res2), is.kern_poly(res3)))
+  expect_equal(get_hyperparam(res1), 0.7)
+  expect_equal(get_hyperparam(res2), 0)
+  expect_equal(get_hyperparam(res3), 0.9)
+  expect_equal(get_polydegree(res1), 2)
+  expect_equal(get_polydegree(res2), 3)
+  expect_equal(get_polydegree(res3), 4)
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
