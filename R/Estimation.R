@@ -1,8 +1,7 @@
 get_Hlam <- function(object, theta = NULL) {
   which.poly <- is.kern_poly(object$kernels)
   if (!is.null(theta)) {
-    tmp <- theta_to_param(theta, object$theta.start$na, object$which.pearson,
-                          object$poly.degree)
+    tmp <- theta_to_param(theta, object)
     kernels <- tmp$kernels
     lambda <- tmp$lambda
   } else {
@@ -34,7 +33,7 @@ eigen_Hlam <- function(Hlam) {
 }
 
 vy_inv_a <- function(u, V, a) {
-  V %*% diag(u) %*% t(V) %*% a
+  (V * rep(u, each = nrow(V))) %*% crossprod(V, a)
 }
 
 loglik_iprior <- function(theta, object, debug = FALSE) {
@@ -49,8 +48,7 @@ loglik_iprior <- function(theta, object, debug = FALSE) {
 
   # for debug
  if (isTRUE(debug)) {
-   tmp <- theta_to_param(theta, object$theta.start$na, object$which.pearson,
-                         object$poly.degree)
+   tmp <- theta_to_param(theta, object)
    param <- as.matrix(tmp[, 1:4])
    print(c(as.numeric(na.omit(c(param))), psi))
  }
@@ -59,12 +57,41 @@ loglik_iprior <- function(theta, object, debug = FALSE) {
   as.numeric(res)
 }
 
-iprior2 <- function(object) {
-  res <- optim(rnorm(length(object$theta.start$theta)),
-               loglik_iprior, object = object, debug = FALSE,
+
+iprior2 <- function(y, ..., kernel = "linear", interactions = NULL,
+                    est.lambda = TRUE, est.hurst = TRUE,
+                    est.lengthscale = TRUE, est.offset = TRUE, control = list()) {
+  mod <- kernL2(y = y, ..., kernel = kernel, est.lambda = est.lambda,
+                est.hurst = est.hurst, est.lengthscale = est.lengthscale,
+                est.offset = est.offset)
+
+  control_ <- list(
+    # fnscale   = -2,  # minimise the deviance
+    # trace     = 1,    # trace of the optim
+    theta0 = NULL
+  )
+  control.names <- names(control_)
+  control_[(control.names <- names(control))] <- control
+  control <- control_
+
+
+
+
+  if (is.null(control$theta0)) {
+    theta0 <- rnorm(mod$nt)
+  } else {
+    if (length(theta.start) != mod$nt) {
+      stop(paste("Incorrect number of parameters specified. Should be", nt))
+    }
+  }
+
+  iprior_direct(mod, loglik_iprior, theta0)
+}
+
+iprior_direct <- function(mod, estimation.method, theta.init) {
+  res <- optim(theta.init, estimation.method, object = mod, debug = FALSE,
                method = "L-BFGS", control = list(fnscale = -2, trace = 1))
-  param <- theta_to_param(res$par, object$theta.start$na, object$which.pearson,
-                          object$poly.degree)
+  param <- theta_to_param(res$par, mod)
   c(collapse_param(param)$param, psi = theta_to_psi(res$par))
 }
 

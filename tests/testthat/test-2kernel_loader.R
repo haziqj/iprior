@@ -104,12 +104,20 @@ test_that("Kernel to param to theta", {
   names(psi) <- "psi"
 
   res1 <- kernel_to_param(kernels, lambda)
-  res2 <- param_to_theta(res1)
-  res3 <- theta_to_param(res2$theta, res2$na, which.pearson, poly.degree)
+  res2 <- param_to_theta(res1, list(est.lambda      = c(FALSE, TRUE),
+                                    est.hurst       = TRUE,
+                                    est.lengthscale = FALSE,
+                                    est.offset      = TRUE))
+  res3 <- theta_to_param(res2$theta, list(param.na      = res2$param.na,
+                                          theta.drop    = res2$theta.drop,
+                                          theta.omitted = res2$theta.omitted,
+                                          which.pearson = which.pearson,
+                                          poly.degree   = poly.degree))
 
   expect_equal(kernels, res3$kernels)
   expect_equal(length(collapse_param(res3)$param), 8)
   expect_equal(theta_to_psi(res2$theta), psi)
+  expect_equal(res1, res3)
 
 })
 
