@@ -18,6 +18,22 @@
 #
 ################################################################################
 
+decimal_place <- function(x, k = 2) format(round(x, k), nsmall = k)
+
+dec_plac <- decimal_place
+
+as.time <- function(x) {
+  # For difftime objects
+  time <- as.numeric(x)
+  unit <- attr(x, "units")
+  structure(list(time = time, unit = unit), class = "ipriorTime")
+}
+
+#' @export
+print.ipriorTime <- function(x, ...) {
+  cat(x$time, x$unit)
+}
+
 # Kernel checks
 is.kern_type <- function(x, type) {
   if (!is.null(attributes(x)$kernel)) kernel_type <- attributes(x)$kernel

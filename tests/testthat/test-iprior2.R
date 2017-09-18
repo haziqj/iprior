@@ -26,3 +26,19 @@ test_that("logLik", {
 
 })
 
+test_that("iprior_direct", {
+
+  y <- 1:3
+  x1 <- 1:3
+  x2 <- factor(7:9)
+  mod <- kernL2(y, x1, x2)
+  suppressWarnings(
+    res <- iprior_direct(mod, loglik_iprior, 1:3, list(fnscale = -2, trace = 0,
+                                                       maxit = 1))
+  )
+  theta <- c(0.4311141, -0.2127298, 0.7310789)
+  names(theta) <- names(res$theta)
+  expect_equal(res$theta, theta, tolerance = 1e-6)
+  expect_equal(res$loglik[length(res$loglik)], -4.051600, tolerance = 1e-6)
+
+})

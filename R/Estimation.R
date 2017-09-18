@@ -28,16 +28,28 @@ get_Hlam <- function(object, theta = NULL) {
 }
 
 eigen_Hlam <- function(Hlam) {
+  # Args: The scaled kernel matrix Hlam.
+  #
+  # Output: A list of the eigen values and vectors of Hlam.
   tmp <- eigenCpp(Hlam)
   list(u = tmp$val, V = tmp$vec)
 }
 
 vy_inv_a <- function(u, V, a) {
+  # Args: Eigenvalues u, eigenvectors V (of Vy), and a vector a.
+  #
+  # Output: A vector Vy^{-1} %*% a.
   (V * rep(u, each = nrow(V))) %*% crossprod(V, a)
 }
 
-loglik_iprior <- function(theta, object, debug = FALSE) {
-  psi <- theta_to_psi(theta)
+loglik_iprior <- function(theta, object, trace = FALSE, env = NULL,
+                          get.w = FALSE) {
+  # Args: theta (hyperparameters), object (an ipriorKernel object), and options
+  # trace (logical) and env (the environment of optim) to be used with optim to
+  # get the log-likelihood values and w (if get.w == TRUE)
+  #
+  # Output: The log-likelihood value given theta of the I-prior model.
+  psi <- theta_to_psi(theta, object)
   list2env(eigen_Hlam(get_Hlam(object, theta)), environment())
 
   y <- object$y  # y has already been standardised!
@@ -46,54 +58,63 @@ loglik_iprior <- function(theta, object, debug = FALSE) {
   logdet <- sum(log(z))
   Vy.inv.y <- vy_inv_a(1 / z, V, y)
 
-  # for debug
- if (isTRUE(debug)) {
-   tmp <- theta_to_param(theta, object)
-   param <- as.matrix(tmp[, 1:4])
-   print(c(as.numeric(na.omit(c(param))), psi))
- }
-
   res <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
+
+  if (isTRUE(trace)) {
+    loglik <- get("loglik", envir = env)
+    loglik <- c(loglik, res)
+    assign("loglik", loglik, envir = env)
+  }
+
+  if (isTRUE(get.w)) {
+    w <- psi * (V %*% ((t(V) * u) %*% Vy.inv.y))
+    assign("w", w, envir = env)
+  }
+
   as.numeric(res)
 }
 
 
-iprior2 <- function(y, ..., kernel = "linear", interactions = NULL,
-                    est.lambda = TRUE, est.hurst = TRUE,
-                    est.lengthscale = TRUE, est.offset = TRUE, control = list()) {
-  mod <- kernL2(y = y, ..., kernel = kernel, est.lambda = est.lambda,
-                est.hurst = est.hurst, est.lengthscale = est.lengthscale,
-                est.offset = est.offset)
-
-  control_ <- list(
-    # fnscale   = -2,  # minimise the deviance
-    # trace     = 1,    # trace of the optim
-    theta0 = NULL
-  )
-  control.names <- names(control_)
-  control_[(control.names <- names(control))] <- control
-  control <- control_
 
 
-
-
-  if (is.null(control$theta0)) {
-    theta0 <- rnorm(mod$nt)
-  } else {
-    if (length(theta.start) != mod$nt) {
-      stop(paste("Incorrect number of parameters specified. Should be", nt))
-    }
-  }
-
-  iprior_direct(mod, loglik_iprior, theta0)
-}
-
-iprior_direct <- function(mod, estimation.method, theta.init) {
-  res <- optim(theta.init, estimation.method, object = mod, debug = FALSE,
-               method = "L-BFGS", control = list(fnscale = -2, trace = 1))
-  param <- theta_to_param(res$par, mod)
-  c(collapse_param(param)$param, psi = theta_to_psi(res$par))
+iprior_direct <- function(mod, estimation.method, theta.init, control) {
+  # Args: An ipriorKernel object (mod), one of the direct estimation methods
+  # e.g. loglik_direct or loglik_nystrom, the initial values (theta.init) and a
+  # list of control options to pass to optim.
+  #
+  # Output: A list containing theta, loglik, se, niter, and time.
+  this.env <- environment()
+  w <- loglik <- NULL
+  start.time <- Sys.time()
+  res <- optim(theta.init, estimation.method, object = mod, env = this.env,
+               trace = TRUE, get.w = TRUE, method = "L-BFGS", control = control,
+               hessian = TRUE)
+  end.time <- Sys.time()
+  time.taken <- as.time(end.time - start.time)
+  tmp <- eigenCpp(-res$hessian)
+  u <- tmp$val + 1e-9
+  V <- tmp$vec
+  Fi <- V %*% t(V) / u
+  se <- sqrt(diag(Fi))
+  loglik <- as.numeric(na.omit(loglik))
+  param.full <- theta_to_collapsed_param(res$par, mod)
+  list(param.full = param.full, loglik = loglik, se = se, niter = res$count,
+       w = as.numeric(w), start.time = start.time, end.time = end.time,
+       time = time.taken)
 }
 
 # mod <- kernL2(stack.loss, stackloss$Air.Flow, stackloss$Water.Temp,
 #               stackloss$Acid.Conc., kernel = "fbm")
+
+
+iprior_fixed <- function(mod) {
+  w <- loglik <- NULL
+  start.time <- Sys.time()
+  loglik_iprior(mod$theta, mod, trace = TRUE, get.w = TRUE, env = environment())
+  end.time <- Sys.time()
+  time.taken <- as.time(end.time - start.time)
+  param.full <- theta_to_collapsed_param(mod$theta, mod)
+  list(param.full = param.full, loglik = loglik, se = NA, niter = NA,
+       w = as.numeric(w), start.time = start.time, end.time = end.time,
+       time = time.taken)
+}

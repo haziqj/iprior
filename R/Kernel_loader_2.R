@@ -1,8 +1,10 @@
 kernL2 <- function(...) UseMethod("kernL2")
 
 kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           est.lambda = TRUE, est.hurst = TRUE,
-                           est.lengthscale = TRUE, est.offset = TRUE) {
+                           fixed.hyp = FALSE,
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, lambda = 1, psi = 1) {
   Xl <- list(...)
   # It is common to make the mistake and type kernels instead of kernel. This
   # correct it.
@@ -32,19 +34,23 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
             call. = FALSE)
   }
   kernels <- rep(NA, p)
-  kernels[1:p] <- kernel
+  suppressWarnings(kernels[1:p] <- kernel)
   # The next two lines ensure that the Pearson kernel is used for factors
   which.pearson <- unlist(lapply(Xl, function(x) {is.factor(x) | is.character(x)}))
   kernels <- correct_pearson_kernel(kernels, which.pearson)
 
-  Hl <- get_Hl(Xl, list(NULL), kernels, 1)
+  Hl <- get_Hl(Xl, list(NULL), kernels, lambda)
   kernels <- get_kernels_from_Hl(Hl)
 
+  if (isTRUE(fixed.hyp)) {
+    est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- FALSE
+  }
   est.list <- list(est.lambda = est.lambda, est.hurst = est.hurst,
-                   est.lengthscale = est.lengthscale, est.offset = est.offset)
+                   est.lengthscale = est.lengthscale, est.offset = est.offset,
+                   est.psi = est.psi)
 
-  param <- kernel_to_param(kernels, 1)
-  tmp <- param_to_theta(param, est.list)
+  param <- kernel_to_param(kernels, lambda)
+  tmp <- param_to_theta(param, est.list, log(psi))
   theta <- tmp$theta
   nt <- length(theta)
   param.na <- tmp$param.na
@@ -56,17 +62,33 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     y = y, Xl = Xl, n = n, p = p, nt = nt, kernels = kernels, Hl = Hl,
     which.pearson = which.pearson, param.na = param.na, probit = probit,
     poly.degree = poly.degree, theta = theta, theta.drop = theta.drop,
-    theta.omitted = theta.omitted
+    theta.omitted = theta.omitted, est.list = est.list
   )
   class(res) <- "ipriorKernel2"
   res
 }
 
 print.ipriorKernel2 <- function(x) {
-  cat("Kernels:\n")
-  print(x$kernels)
-  cat("\ntheta.start:\n")
-  print(x$theta)
+  cat("Sample size:", x$n, "\n")
+  cat("No. of covariates:", length(x$Xl), "\n")
+  cat("\n")
+  cat("Kernel matrices:\n")
+  for (i in seq_along(x$Hl)) {
+    cat("", i, print_kern(x$Hl[[i]]), "\n")
+  }
+  cat("\n")
+  cat("Hyperparameters to estimate:\n")
+  if (x$nt > 0)
+    cat(paste(names(x$theta), collapse = ", "))
+  else
+    cat("none")
+}
+
+print_kern <- function(x) {
+  kern.type <- attr(x, "kernel")
+  res <- capture.output(str(x))[1]
+  res <- gsub(" num", kern.type, res)
+  res
 }
 
 get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
@@ -155,6 +177,11 @@ reduce_theta <- function(theta.full, est.list) {
   ind.c <- grepl("offset", names(theta.full))
   theta.full[ind.c][!est.c] <- NA
 
+  # Estimate error precision psi? ----------------------------------------------
+  est.psi <- est.list$est.psi
+  ind.psi <- grepl("psi", names(theta.full))
+  theta.full[ind.psi][!est.psi] <- NA
+
   theta.drop <- is.na(theta.full)
   theta.reduced <- theta.full[!theta.drop]
   theta.omitted <- theta.full.orig[theta.drop]
@@ -230,10 +257,11 @@ theta_to_param <- function(theta, object) {
   param
 }
 
-theta_to_psi <- function(theta) {
+theta_to_psi <- function(theta, object) {
   # Args: A vector of parameters to be optimised, including logpsi.
   #
   # Output: psi, the error precision.
+  theta <- expand_theta(theta, object$theta.drop, object$theta.omitted)
   logpsi <- theta[length(theta)]
   exp(logpsi)
 }
@@ -307,4 +335,15 @@ kernel_translator <- function(x, y = NULL, kernel, lam.poly = 1) {
 
   stop("Incorrect kernel specification or unsupported kernel.",
        call. = FALSE)
+}
+
+theta_to_collapsed_param <- function(theta, object) {
+  # Args: theta (usually theta.full) and the ipriorKernel object.
+  #
+  # Output: A vector of parameters.
+  #
+  # Notes: This is a wrapper function for theta_to_param(). It is useful to get
+  # the vector of parameters directly from theta.
+  param <- theta_to_param(theta, object)
+  c(collapse_param(param)$param, theta_to_psi(theta, object))
 }
