@@ -1,5 +1,11 @@
-iprior2 <- function(y, ..., kernel = "linear", control = list()) {
-  mod <- kernL2(y = y, ..., kernel = kernel)
+iprior2 <- function(...) UseMethod("iprior2")
+
+iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
+  if (is.ipriorKernel2(y)) {
+    mod <- y
+  } else {
+    mod <- kernL2(y = y, ..., kernel = kernel)
+  }
 
   control_ <- list(
     maxit     = 100,
@@ -32,13 +38,35 @@ iprior2 <- function(y, ..., kernel = "linear", control = list()) {
   } else {
     res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
   }
+  res$intercept <- attr(mod$y, "scaled:center")
   res$coefficients <- reduce_theta(res$param.full, mod$est.list)$theta.reduced
-  tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w)
-  res$fitted.values <- as.numeric(tmp$y.hat)
-  res$residuals <- as.numeric(tmp$resid)
+  tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w, res$intercept)
+  res$fitted.values <- tmp$y
+  names(res$fitted.values) <- attr(mod$y, "dimnames")[[1]]
+  res$residuals <- tmp$resid
   res$train.error <- tmp$train.error
   res$kernL <- mod
+
+  cl <- match.call()
+  res$fullcall <- cl
+  cl[[1L]] <- as.name("iprior2")
+  # names(cl)[2] <- ""  # get rid of "y ="
+  names(cl)[-(1:2)] <- paste0("X", seq_along(names(cl)[-(1:2)]))
+  res$call <- cl
+
   class(res) <- "ipriorMod2"
+  res
+}
+
+iprior2.formula <- function(formula, data, kernel = "linear", control = list(),
+                            ...) {
+  mod <- kernL2.formula(formula, data, kernel = kernel, ...)
+  res <- iprior2.default(y = mod)
+
+  cl <- match.call()
+  res$fullcall <- cl
+  cl[[1L]] <- as.name("iprior2")
+  res$call <- cl
   res
 }
 
@@ -47,7 +75,7 @@ print.ipriorMod2 <- function(x, digits = 5) {
   cat("Log-likelihood value:", loglik.max, "\n")
   cat("\n")
   if (x$kernL$nt > 0)
-    print(round(x$theta, digits))
+    print(round(coef(x), digits))
   else
     cat("No hyperparameters estimated.")
 }

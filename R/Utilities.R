@@ -103,6 +103,8 @@ is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
 is.ipriorKernel_Nystrom <- function(x) inherits(x, "ipriorKernel_Nystrom")
 
+is.ipriorKernel2 <- function(x) inherits(x, "ipriorKernel2")
+
 is.ipriorX <- function(x) inherits(x, "ipriorX")
 
 testXForm <- function(x) {
@@ -174,11 +176,13 @@ whereInt <- function(x) {
   x
 }
 
-whichIntr3Plus <- function(x) {
+which_intr_3plus <- function(x) {
   sapply(strsplit(x, ""), function(x) length(x) > 3)
 }
 
-addZeroesIntr3Plus <- function(x) {
+whichIntr3Plus <- which_intr_3plus
+
+add_zeroes_intr_3plus <- function(x) {
   p <- max(sapply(strsplit(x, ":"), length))
   sapply(strsplit(x, ":"), function(x) {
     p_ <- length(x)
@@ -186,6 +190,8 @@ addZeroesIntr3Plus <- function(x) {
     else as.numeric(x)
   })
 }
+
+addZeroesIntr3Plus <- add_zeroes_intr_3plus
 
 splitKernel <- function(kernel) {
   # Helper function to split the FBMs from the Hurst coefficients, if any

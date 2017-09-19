@@ -119,8 +119,9 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
   tmp3 <- xcrossprod[index]
   A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
   A <- A + t(A)
-  A <- A ^ gamma
+  A <- abs(A) ^ gamma
   rvec <- apply(A, 1, sum)
+  # print(rvec)
   s <- sum(rvec)
 
   if (is.null(y)) {
@@ -377,7 +378,7 @@ fnH3 <- function(x, y = NULL, gamma = NULL) {
   tmp3 <- xcrossprod[index]
   A[index.mat] <- tmp1 + tmp2 - 2 * tmp3
   A <- A + t(A)
-  A <- A ^ gamma
+  A <- abs(A) ^ gamma
   rvec <- apply(A, 1, sum)
   s <- sum(rvec)
 

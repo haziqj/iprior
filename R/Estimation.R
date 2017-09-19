@@ -1,29 +1,17 @@
-get_Hlam <- function(object, theta = NULL) {
-  which.poly <- is.kern_poly(object$kernels)
-  if (!is.null(theta)) {
-    tmp <- theta_to_param(theta, object)
-    kernels <- tmp$kernels
-    lambda <- tmp$lambda
-  } else {
-    kernels <- object$kernels
-    lambda <- rep(1, object$p)
-  }
-  Hl <- get_Hl(object$Xl, kernels = kernels, lambda = lambda)
+get_Hlam <- function(object, theta, xstar = list(NULL)) {
+  # which.poly <- is.kern_poly(object$kernels)
+  tmp <- theta_to_param(theta, object)
+  kernels <- tmp$kernels
+  lambda <- tmp$lambda
 
-  # # if polynomial kernels are involved, then need to recalculate Hl
-  # if (any(which.poly)) {
-  #   Hl <- get_Hl(object$Xl, kernels = object$kernels, lambda = lambda)
-  # } else {
-  #   Hl <- object$Hl
-  # }
+  # do we need to calculate Hl entries each time? maybe so for when estimating
+  # hurst, offset, lengthscale, and polynomial kernels.
+  Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+  expand_Hl_and_lambda(Hl, lambda, object$intr, object$intr.3plus, environment())
 
-  # Expand lambda here
-
-  # Expand Hl here
-
-  # Obtain Hlam
   res <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
-  attr(res ,"kernel") <- "Hlam"
+  kernels.to.add <- sapply(Hl, attr, "kernel")
+  attr(res ,"kernel") <- paste(kernels.to.add, collapse = " + ")
   res
 }
 
@@ -98,9 +86,9 @@ iprior_direct <- function(mod, estimation.method, theta.init, control) {
   se <- sqrt(diag(Fi))
   loglik <- as.numeric(na.omit(loglik))
   param.full <- theta_to_collapsed_param(res$par, mod)
-  list(param.full = param.full, loglik = loglik, se = se, niter = res$count,
-       w = as.numeric(w), start.time = start.time, end.time = end.time,
-       time = time.taken)
+  list(theta = res$par, param.full = param.full, loglik = loglik,
+       se = se, niter = res$count, w = as.numeric(w), start.time = start.time,
+       end.time = end.time, time = time.taken)
 }
 
 # mod <- kernL2(stack.loss, stackloss$Air.Flow, stackloss$Water.Temp,
@@ -114,7 +102,7 @@ iprior_fixed <- function(mod) {
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
   param.full <- theta_to_collapsed_param(mod$theta, mod)
-  list(param.full = param.full, loglik = loglik, se = NA, niter = NA,
-       w = as.numeric(w), start.time = start.time, end.time = end.time,
-       time = time.taken)
+  list(theta = NULL, param.full = param.full, loglik = loglik,
+       se = NA, niter = NA, w = as.numeric(w), start.time = start.time,
+       end.time = end.time, time = time.taken)
 }
