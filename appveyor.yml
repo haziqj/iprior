@@ -50,7 +50,7 @@ environment:
 max_jobs: 2
 
 matrix:
-  fast_finish: true
+  fast_finish: false
 
 build_script:
   - travis-tool.sh install_deps
