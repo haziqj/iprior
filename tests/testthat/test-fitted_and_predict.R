@@ -36,9 +36,9 @@ test_that("Predict (formula)", {
   mod <- iprior2(y ~ ., dat[1:3, ], kernel = "fbm")
   tmp <- predict(mod, dat[4, ], intervals = TRUE)
 
-  expect_equal(tmp$y, 17.30887, tolerance = 1e-6)
-  expect_equal(tmp$lower, 13.09142, tolerance = 1e-6)
-  expect_equal(tmp$upper, 21.52631, tolerance = 1e-6)
+  expect_equal(as.numeric(tmp$y), 17.30887, tolerance = 1e-6)
+  expect_equal(as.numeric(tmp$lower), 13.09142, tolerance = 1e-6)
+  expect_equal(as.numeric(tmp$upper), 21.52631, tolerance = 1e-6)
   expect_that(print(tmp), prints_text("Test MSE:"))
 
 })

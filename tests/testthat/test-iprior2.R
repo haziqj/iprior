@@ -42,3 +42,10 @@ test_that("iprior_direct", {
   expect_equal(res$loglik[length(res$loglik)], -4.051600, tolerance = 1e-6)
 
 })
+
+test_that("iprior_fixed", {
+
+  mod <- iprior2(stack.loss ~ ., stackloss, fixed.hyp = TRUE)
+  expect_equal(as.numeric(mod$param.full), rep(1, 4))
+
+})
