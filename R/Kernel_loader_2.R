@@ -14,6 +14,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     Xl[[Xl.kernel.mistake]] <- NULL
   }
   Xl.formula <- match("Xl.formula", names(Xl))
+  formula.method <- FALSE
   if ("Xl.formula" %in% names(Xl)) {
     Xl <- Xl[[Xl.formula]]
     formula.method <- TRUE
