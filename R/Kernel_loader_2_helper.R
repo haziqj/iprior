@@ -1,3 +1,19 @@
+#
+# kernel_to_param()
+# param_to_theta()
+# theta_to_param()
+# param_to_kernel()
+#
+
+param_to_kernel <- function(param) {
+  as.character(param$kernels)
+}
+
+theta_to_kernel <- function(theta, object) {
+  param <- theta_to_param(mod$theta, mod$kernL)
+  param_to_kernel(param)
+}
+
 get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
   # Args: List of data Xl and yl (optional), vector of same length of kernel
   # characters to instruct kernel_translator() which kernels to apply each of

@@ -84,16 +84,33 @@ iprior_direct <- function(mod, estimation.method, theta.init, control) {
   V <- tmp$vec
   Fi <- V %*% t(V) / u
   se <- sqrt(diag(Fi))
+  se <- convert_se(se, res$par, mod)  # delta method to convert to parameter s.e.
   loglik <- as.numeric(na.omit(loglik))
   param.full <- theta_to_collapsed_param(res$par, mod)
   list(theta = res$par, param.full = param.full, loglik = loglik,
-       se = se, niter = res$count, w = as.numeric(w), start.time = start.time,
-       end.time = end.time, time = time.taken)
+       se = se, niter = res$count[1], w = as.numeric(w), start.time = start.time,
+       end.time = end.time, time = time.taken, convergence = res$convergence,
+       message = res$message)
 }
 
-# mod <- kernL2(stack.loss, stackloss$Air.Flow, stackloss$Water.Temp,
-#               stackloss$Acid.Conc., kernel = "fbm")
+convert_se <- function(se, theta, object) {
+  theta.names <- names(object$theta)
+  res <- se
 
+  types <- c("lambda", "hurst", "offset", "lengthscale", "psi")
+  for (i in seq_along(types)) {
+    type <- types[i]
+    ind <- grep(type, theta.names)
+    if (type == "lambda" & length(ind) == 1)
+      res[ind] <- se[ind] * exp(theta[ind])
+    else if (type == "hurst")
+      res[ind] <- se[ind] * dnorm(theta[ind])
+    else
+      res[ind] <- se[ind] * exp(theta[ind])
+  }
+
+  res
+}
 
 iprior_fixed <- function(mod) {
   w <- loglik <- NULL
@@ -104,5 +121,6 @@ iprior_fixed <- function(mod) {
   param.full <- theta_to_collapsed_param(mod$theta, mod)
   list(theta = NULL, param.full = param.full, loglik = loglik,
        se = NA, niter = NA, w = as.numeric(w), start.time = start.time,
-       end.time = end.time, time = time.taken)
+       end.time = end.time, time = time.taken, convergence = NA, message = NA,
+       niter = NA)
 }

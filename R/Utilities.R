@@ -70,6 +70,8 @@ get_kernels_from_Hl <- function(x) {
   sapply(x, function(x) attributes(x)$kernel)
 }
 
+
+
 #' @export
 .checkLevels <- function(y) {
   # Function used for categorical response models. Obtains the levels in the ys

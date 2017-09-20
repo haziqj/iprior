@@ -6,3 +6,4 @@ Rmd
 .RData
 other
 tests/testthat/Rplots.pdf
+vignettes/iprior2_test.Rmd
