@@ -115,10 +115,11 @@ convert_se <- function(se, theta, object) {
 iprior_fixed <- function(mod) {
   w <- loglik <- NULL
   start.time <- Sys.time()
-  loglik_iprior(mod$theta, mod, trace = TRUE, get.w = TRUE, env = environment())
+  loglik_iprior(mod$thetal$theta, mod, trace = TRUE, get.w = TRUE,
+                env = environment())
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
-  param.full <- theta_to_collapsed_param(mod$theta, mod)
+  param.full <- theta_to_collapsed_param(mod$thetal$theta, mod)
   list(theta = NULL, param.full = param.full, loglik = loglik,
        se = NA, niter = NA, w = as.numeric(w), start.time = start.time,
        end.time = end.time, time = time.taken, convergence = NA, message = NA,

@@ -184,10 +184,11 @@ theta_to_param <- function(theta, object) {
   # Notes: The logpsi value is removed. To obtain this use theta_to_psi(). If
   # object is specified, then the param.na, which.pearson and poly.degree are
   # obtained from object.
-  param.na <- object$param.na
+  param.na <- object$thetal$param.na
   which.pearson <- object$which.pearson
   poly.degree <- object$poly.degree
-  theta <- expand_theta(theta, object$theta.drop, object$theta.omitted)
+  theta <- expand_theta(theta, object$thetal$theta.drop,
+                        object$thetal$theta.omitted)
   theta <- theta[-length(theta)]
 
   full.length <- length(c(theta, param.na))
@@ -212,10 +213,12 @@ theta_to_param <- function(theta, object) {
 }
 
 theta_to_psi <- function(theta, object) {
-  # Args: A vector of parameters to be optimised, including logpsi.
+  # Args: A vector of parameters to be optimised, including logpsi, and an
+  # ipriorKernel2 object.
   #
   # Output: psi, the error precision.
-  theta <- expand_theta(theta, object$theta.drop, object$theta.omitted)
+  theta <- expand_theta(theta, object$thetal$theta.drop,
+                        object$thetal$theta.omitted)
   logpsi <- theta[length(theta)]
   exp(logpsi)
 }

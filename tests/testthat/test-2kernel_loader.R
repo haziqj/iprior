@@ -109,17 +109,13 @@ test_that("Kernel to param to theta", {
                                     est.lengthscale = FALSE,
                                     est.offset      = TRUE,
                                     est.psi         = TRUE))
-  res3 <- theta_to_param(res2$theta, list(param.na      = res2$param.na,
-                                          theta.drop    = res2$theta.drop,
-                                          theta.omitted = res2$theta.omitted,
+  res3 <- theta_to_param(res2$theta, list(thetal        = res2,
                                           which.pearson = which.pearson,
                                           poly.degree   = poly.degree))
 
   expect_equal(kernels, res3$kernels)
   expect_equal(length(collapse_param(res3)$param), 8)
-  expect_equal(theta_to_psi(res2$theta, list(theta.drop    = res2$theta.drop,
-                                             theta.omitted = res2$theta.omitted)),
-               psi)
+  expect_equal(theta_to_psi(res2$theta, list(thetal = res2)), psi)
   expect_equal(res1, res3)
 
 })
@@ -153,7 +149,7 @@ test_that("Fixed hyperparameter option", {
   y <- x <- 1:3
   mod <- kernL2(y, x, kernel = "fbm,0.8", fixed.hyp = TRUE)
   expect_true(is.ipriorKernel2(mod))
-  expect_false(all(unlist(mod$est.list)))
+  expect_false(all(unlist(mod$estl)))
 
 })
 

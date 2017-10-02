@@ -26,14 +26,14 @@ iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
   )
 
   if (is.null(control$theta0)) {
-    theta0 <- rnorm(mod$nt) #rep(0, mod$nt)
+    theta0 <- rnorm(mod$thetal$n.theta)  # rep(0, mod$thetal$n.theta)
   } else {
     if (length(theta.start) != mod$nt) {
       stop(paste("Incorrect number of parameters specified. Should be", nt))
     }
   }
 
-  if (mod$nt == 0) {
+  if (mod$thetal$n.theta == 0) {
     res <- iprior_fixed(mod)
     est.method <- "I-prior fixed."
     est.conv <- ""
@@ -46,7 +46,7 @@ iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
       est.conv <- "Convergence criterion not met."
   }
   res$intercept <- attr(mod$y, "scaled:center")
-  res$coefficients <- reduce_theta(res$param.full, mod$est.list)$theta.reduced
+  res$coefficients <- reduce_theta(res$param.full, mod$estl)$theta.reduced
   tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w, res$intercept)
   res$fitted.values <- tmp$y
   names(res$fitted.values) <- attr(mod$y, "dimnames")[[1]]

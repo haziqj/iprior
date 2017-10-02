@@ -7,7 +7,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
                            est.psi = TRUE, lambda = 1, psi = 1) {
   Xl <- list(...)
   # It is common to make the mistake and type kernels instead of kernel. This
-  # correct it.
+  # corrects it.
   Xl.kernel.mistake <- match("kernels", names(Xl))
   if ("kernels" %in% names(Xl)) {
     kernel <- Xl[[Xl.kernel.mistake]]
@@ -40,13 +40,15 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
             call. = FALSE)
   }
   if (length(kernel) > p && length(kernel) > 1) {
-    warning(paste0("Too many kernel options specification (not of length ", p, ")"),
+    warning(paste0("Too many kernel options specification (not of length ", p,
+                   ")"),
             call. = FALSE)
   }
   kernels <- rep(NA, p)
   suppressWarnings(kernels[1:p] <- kernel)
   # The next two lines ensure that the Pearson kernel is used for factors
-  which.pearson <- unlist(lapply(Xl, function(x) {is.factor(x) | is.character(x)}))
+  which.pearson <- unlist(lapply(Xl, function(x) {is.factor(x) |
+      is.character(x)}))
   kernels <- correct_pearson_kernel(kernels, which.pearson)
 
   # Interactions ---------------------------------------------------------------
@@ -75,26 +77,24 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   if (isTRUE(fixed.hyp)) {
     est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- FALSE
   }
-  est.list <- list(est.lambda = est.lambda, est.hurst = est.hurst,
-                   est.lengthscale = est.lengthscale, est.offset = est.offset,
-                   est.psi = est.psi)
+  estl <- list(est.lambda = est.lambda, est.hurst = est.hurst,
+               est.lengthscale = est.lengthscale, est.offset = est.offset,
+               est.psi = est.psi)
 
   param <- kernel_to_param(kernels, lambda)
-  tmp <- param_to_theta(param, est.list, log(psi))
-  theta <- tmp$theta
-  nt <- length(theta)
-  param.na <- tmp$param.na
-  theta.drop <- tmp$theta.drop
-  theta.omitted <- tmp$theta.omitted
-  poly.degree <- param$degree
+  thetal <- param_to_theta(param, estl, log(psi))
+  thetal$n.theta <- length(thetal$theta)
 
   res <- list(
-    y = y, Xl = Xl, n = n, p = p, nt = nt, kernels = kernels, Hl = Hl,
-    which.pearson = which.pearson, param.na = param.na, probit = probit,
-    poly.degree = poly.degree, theta = theta, theta.drop = theta.drop,
-    theta.omitted = theta.omitted, est.list = est.list, intr = intr,
-    intr.3plus = intr.3plus, no.int = no.int, no.int.3plus = no.int.3plus,
-    xname = xname, yname = yname, formula = NULL
+    # Data
+    y = y, Xl = Xl, Hl = Hl,
+    # Model
+    kernels = kernels, which.pearson = which.pearson, probit = probit,
+    poly.degree = param$degree, thetal = thetal, estl = estl,
+    intr = intr, intr.3plus = intr.3plus,
+    # Meta
+    n = n, p = p, no.int = no.int, no.int.3plus = no.int.3plus,
+    xname = xname, yname = yname, formula = NULL, terms = NULL
   )
 
   class(res) <- "ipriorKernel2"
@@ -147,8 +147,8 @@ print.ipriorKernel2 <- function(x) {
   }
   cat("\n")
   cat("Hyperparameters to estimate:\n")
-  if (x$nt > 0)
-    cat(paste(names(x$theta), collapse = ", "))
+  if (x$thetal$n.theta > 0)
+    cat(paste(names(x$thetal$theta), collapse = ", "))
   else
     cat("none")
 }
@@ -158,4 +158,74 @@ print_kern <- function(x) {
   res <- capture.output(str(x))[1]
   res <- gsub(" num", kern.type, res)
   res
+}
+
+BlockB2 <- function() {
+  # Block B update function ----------------------------------------------------
+  environment(indxFn) <- environment()
+  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
+  BlockB <- function(k, x = lambda) NULL
+  if (r == 0L & no.int.3plus == 0L & as.numeric(mod$Nys.kern) == 0L) {
+    # No need to do all the below Block B stuff if higher order terms involved.
+    # Also no need if Nys.kern option called.
+    if (q == 1L) {
+      Pl <- Hl
+      Psql <- list(fastSquare(Pl[[1]]))
+      Sl <- list(matrix(0, nrow = n, ncol = n))
+    } else {
+      # Next, prepare the indices required for indxFn().
+      z <- 1:h
+      ind1 <- rep(z, times = (length(z) - 1):0)
+      ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
+      # Prepare the cross-product terms of squared kernel matrices. This is a
+      # list of q_choose_2.
+      for (j in 1:length(ind1)) {
+        H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+        H2l[[j]] <- H2l.tmp + t(H2l.tmp)
+      }
+
+      if (!is.null(intr) && mod$parsm) {
+        # CASE: Parsimonious interactions only ---------------------------------
+        for (k in z) {
+          Hsql[[k]] <- fastSquare(Hl[[k]])
+          if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
+        }
+        BlockB <- function(k, x = lambda) {
+          # Calculate Psql instead of directly P %*% P because this way
+          # is < O(n^3).
+          indB <- ind[[k]]
+          lambda.P <- c(1, x[indB$k.int.lam])
+          Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
+                                         SIMPLIFY = FALSE))
+          Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                           c(1, x[indB$Psq.lam] ^ 2),
+                                           SIMPLIFY = FALSE))
+          if (!is.null(indB$P2.lam1)) {
+            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
+            lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
+            Psql[[k]] <<- Psql[[k]] +
+              Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
+          }
+          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
+          lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                         SIMPLIFY = FALSE))
+        }
+      } else {
+        # CASE: Multiple lambda with no interactions, or with non-parsimonious -
+        # interactions ---------------------------------------------------------
+        for (k in 1:q) {
+          Pl[[k]] <- Hl[[k]]
+          Psql[[k]] <- fastSquare(Pl[[k]])
+        }
+        BlockB <- function(k, x = lambda) {
+          ind <- which(ind1 == k | ind2 == k)
+          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
+        }
+      }
+    }
+  }
+
+  res <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
+              ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
 }
