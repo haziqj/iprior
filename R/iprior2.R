@@ -1,11 +1,14 @@
 iprior2 <- function(...) UseMethod("iprior2")
 
-iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
+iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
+                            control = list()) {
   if (is.ipriorKernel2(y)) {
     mod <- y
   } else {
     mod <- kernL2(y = y, ..., kernel = kernel)
   }
+
+  method <- match.arg(method, c("direct", "em", "fixed", "canonical"))
 
   control_ <- list(
     maxit     = 100,
@@ -33,18 +36,33 @@ iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
     }
   }
 
-  if (mod$thetal$n.theta == 0) {
+  # Send to correct estimation method ------------------------------------------
+  est.method <- iprior_method_checker(mod, method)
+  if (est.method["fixed"]) {
     res <- iprior_fixed(mod)
-    est.method <- "I-prior fixed."
-    est.conv <- ""
-  } else {
-    res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
-    est.method <- "Direct minimisation of marginal deviance."
-    if (res$conv == 0)
-      est.conv <- paste0("Converged to within ", control$stop.crit, " tolerance.")
-    else
-      est.conv <- "Convergence criterion not met."
+    res$est.method <- "I-prior fixed."
+    res$est.conv <- ""
+    return(res)
   }
+  if (est.method["canonical"]) {
+    stop("Not yet implemented.", call. = FALSE)
+  }
+  if (est.method["em.closed"]) {
+    stop("Not yet implemented.", call. = FALSE)
+  }
+  if (est.method["em.reg"]) {
+    stop("Not yet implemented.", call. = FALSE)
+  }
+  if (est.method["direct"]) {
+    res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
+    res$est.method <- "Direct minimisation of marginal deviance."
+    if (res$conv == 0)
+      res$est.conv <- paste0("Converged to within ", control$stop.crit,
+                             " tolerance.")
+    else
+      res$est.conv <- "Convergence criterion not met."
+  }
+
   res$intercept <- attr(mod$y, "scaled:center")
   res$coefficients <- reduce_theta(res$param.full, mod$estl)$theta.reduced
   tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w, res$intercept)
@@ -53,8 +71,6 @@ iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
   res$residuals <- tmp$resid
   res$train.error <- tmp$train.error
   res$kernL <- mod
-  res$est.method <- est.method
-  res$est.conv <- est.conv
   res$maxit <- control$maxit
   res$stop.crit <- control$stop.crit
 
@@ -69,10 +85,10 @@ iprior2.default <- function(y, ..., kernel = "linear", control = list()) {
   res
 }
 
-iprior2.formula <- function(formula, data, kernel = "linear", control = list(),
-                            ...) {
+iprior2.formula <- function(formula, data, kernel = "linear", method = "direct",
+                            control = list(), ...) {
   mod <- kernL2.formula(formula, data, kernel = kernel, ...)
-  res <- iprior2.default(y = mod)
+  res <- iprior2.default(y = mod, method = method, control = control)
 
   cl <- match.call()
   res$fullcall <- cl
@@ -150,8 +166,6 @@ kernel_summary_translator <- function(x) {
   res
 }
 
-
-
 print.ipriorMod2_summary <- function(x) {
   cat("Call:\n")
   print(x$call)
@@ -177,4 +191,28 @@ print.ipriorMod2_summary <- function(x) {
   # cat("Standard deviation of errors: xxx with S.E.: xxx\n")
 }
 
+iprior_method_checker <- function(object, method) {
+  res <- rep(FALSE, 5)
+  names(res) <- c("fixed", "canonical", "em.closed", "em.reg", "direct")
 
+  if (object$thetal$n.theta == 0 | method == "fixed") {
+    res["fixed"] <- TRUE
+    # if (method != "fixed") warning("No hyperparameters estimated. Using fixed estimation method.", call. = FALSE)
+  } else if (method == "canonical") {
+    if (all(is.kern_linear(object$kernels))) {
+      res["canonical"] <- TRUE
+    } else {
+      res["direct"] <- TRUE
+      warning("Non-linear kernels used. Using direct estimation method.", call. = FALSE)
+    }
+  } else if (method == "em") {
+    if (is.null(object$BlockBStuff)) {
+      res["em.reg"] <- TRUE
+    } else {
+      res["em.closed"] <- TRUE
+    }
+  } else {
+    res["direct"] <- TRUE
+  }
+  res
+}
