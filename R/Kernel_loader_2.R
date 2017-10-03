@@ -1,7 +1,7 @@
 kernL2 <- function(...) UseMethod("kernL2")
 
 kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           fixed.hyp = FALSE,
+                           fixed.hyp = FALSE, Nystrom = FALSE, Nys.seed = NULL,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, lambda = 1, psi = 1) {
@@ -66,6 +66,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     }
     if (length(intr > 0)) no.int <- ncol(intr)
   }
+  if (length(intr.3plus) == 0) intr.3plus <- NULL
   if (!is.null(intr.3plus)) {
     if (!isTRUE(formula.method)) intr.3plus <- add_zeroes_intr_3plus(intr.3plus)
     no.int.3plus <- ncol(intr.3plus)
@@ -82,16 +83,41 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
                est.psi = est.psi)
 
   param <- kernel_to_param(kernels, lambda)
+  poly.deg <- param$deg
   thetal <- param_to_theta(param, estl, log(psi))
   thetal$n.theta <- length(thetal$theta)
+
+  Nystroml <- NULL
+  if (isTRUE(as.logical(Nystrom))) {
+    Nystroml <- list(Nys.samp = 1, Nys.seed = Nys.seed,
+                     Nys.m = as.numeric(Nystrom))
+  }
+
+  BlockBStuff <- NULL
+  # |                 | EM.closed == TRUE |
+  # |-----------------|------------------:|
+  # | poly.deg        |                NA |
+  # | est.lambda      |              TRUE |
+  # | est.hurst       |             FALSE |
+  # | est.lengthscale |             FALSE |
+  # | est.offset      |             FALSE |
+  # | est.psi         |              TRUE |
+  BlockB.cond <- (
+    all(is.na(poly.deg)) & !isTRUE(est.hurst) & !isTRUE(est.lengthscale) &
+      !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi))
+  )
+  if (isTRUE(BlockB.cond)) {
+    BlockBStuff <- BlockB_fn(Hl, intr, n, p)
+  }
 
   res <- list(
     # Data
     y = y, Xl = Xl, Hl = Hl,
     # Model
     kernels = kernels, which.pearson = which.pearson, probit = probit,
-    poly.degree = param$degree, thetal = thetal, estl = estl,
-    intr = intr, intr.3plus = intr.3plus,
+    poly.deg = poly.deg, thetal = thetal, estl = estl,
+    intr = intr, intr.3plus = intr.3plus, Nystroml = Nystroml,
+    BlockBStuff = BlockBStuff,
     # Meta
     n = n, p = p, no.int = no.int, no.int.3plus = no.int.3plus,
     xname = xname, yname = yname, formula = NULL, terms = NULL
@@ -160,72 +186,85 @@ print_kern <- function(x) {
   res
 }
 
-BlockB2 <- function() {
-  # Block B update function ----------------------------------------------------
-  environment(indxFn) <- environment()
+BlockB_fn <- function(Hl, intr, n, p) {
+  # Initialise -----------------------------------------------------------------
+  Hl <- expand_Hl_and_lambda(Hl, seq_along(Hl), intr, NULL)$Hl
+  environment(index_fn_B) <- environment()
   H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
   BlockB <- function(k, x = lambda) NULL
-  if (r == 0L & no.int.3plus == 0L & as.numeric(mod$Nys.kern) == 0L) {
-    # No need to do all the below Block B stuff if higher order terms involved.
-    # Also no need if Nys.kern option called.
-    if (q == 1L) {
-      Pl <- Hl
-      Psql <- list(fastSquare(Pl[[1]]))
-      Sl <- list(matrix(0, nrow = n, ncol = n))
-    } else {
-      # Next, prepare the indices required for indxFn().
-      z <- 1:h
-      ind1 <- rep(z, times = (length(z) - 1):0)
-      ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
-      # Prepare the cross-product terms of squared kernel matrices. This is a
-      # list of q_choose_2.
-      for (j in 1:length(ind1)) {
-        H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
-        H2l[[j]] <- H2l.tmp + t(H2l.tmp)
-      }
 
-      if (!is.null(intr) && mod$parsm) {
-        # CASE: Parsimonious interactions only ---------------------------------
-        for (k in z) {
-          Hsql[[k]] <- fastSquare(Hl[[k]])
-          if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
-        }
-        BlockB <- function(k, x = lambda) {
-          # Calculate Psql instead of directly P %*% P because this way
-          # is < O(n^3).
-          indB <- ind[[k]]
-          lambda.P <- c(1, x[indB$k.int.lam])
-          Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
-                                         SIMPLIFY = FALSE))
-          Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
-                                           c(1, x[indB$Psq.lam] ^ 2),
-                                           SIMPLIFY = FALSE))
-          if (!is.null(indB$P2.lam1)) {
-            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
-            lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
-            Psql[[k]] <<- Psql[[k]] +
-              Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
-          }
-          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
-          lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                         SIMPLIFY = FALSE))
-        }
-      } else {
-        # CASE: Multiple lambda with no interactions, or with non-parsimonious -
-        # interactions ---------------------------------------------------------
-        for (k in 1:q) {
-          Pl[[k]] <- Hl[[k]]
-          Psql[[k]] <- fastSquare(Pl[[k]])
-        }
-        BlockB <- function(k, x = lambda) {
-          ind <- which(ind1 == k | ind2 == k)
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
-        }
+  if (length(Hl) == 1L) {
+    # CASE: Single lambda ------------------------------------------------------
+    Pl <- Hl
+    Psql <- list(fastSquare(Pl[[1]]))
+    Sl <- list(matrix(0, nrow = n, ncol = n))
+    BB.msg <- "Single lambda"
+  } else {
+    # Next, prepare the indices required for indxFn().
+    z <- seq_along(Hl)
+    ind1 <- rep(z, times = (length(z) - 1):0)
+    ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
+    # Prepare the cross-product terms of squared kernel matrices
+    for (j in seq_along(ind1)) {
+      H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+      H2l[[j]] <- H2l.tmp + t(H2l.tmp)
+    }
+
+    if (!is.null(intr)) {
+      # CASE: Parsimonious interactions only ---------------------------------
+      for (k in z) {
+        Hsql[[k]] <- fastSquare(Hl[[k]])
+        if (k <= p) ind[[k]] <- index_fn_B(k)  # only create indices for non-intr
       }
+      BlockB <- function(k, x = lambda) {
+        # Calculate Psql instead of directly P %*% P because this way
+        # is < O(n^3).
+        indB <- ind[[k]]
+        lambda.P <- c(1, x[indB$k.int.lam])
+        Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
+                                       SIMPLIFY = FALSE))
+        Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                         c(1, x[indB$Psq.lam] ^ 2),
+                                         SIMPLIFY = FALSE))
+        if (!is.null(indB$P2.lam1)) {
+          lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
+          lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
+          Psql[[k]] <<- Psql[[k]] +
+            Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
+        }
+        lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
+        lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                       SIMPLIFY = FALSE))
+      }
+      BB.msg <- "Multiple lambda with parsimonious interactions"
+    } else {
+      # CASE: Multiple lambda with no interactions, or with non-parsimonious -
+      # interactions ---------------------------------------------------------
+      for (k in seq_along(Hl)) {
+        Pl[[k]] <- Hl[[k]]
+        Psql[[k]] <- fastSquare(Pl[[k]])
+      }
+      BlockB <- function(k, x = lambda) {
+        ind <- which(ind1 == k | ind2 == k)
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
+      }
+      BB.msg <- "Multiple lambda with no interactions"
     }
   }
 
-  res <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
-              ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
+  list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl, ind1 = ind1,
+       ind2 = ind2, ind = ind, BlockB = BlockB, BB.msg = BB.msg)
 }
+
+# |                 | EM.closed == TRUE |
+# |-----------------|------------------:|
+# | poly.deg        |              NULL |
+# | est.lambda      |              TRUE |
+# | est.hurst       |             FALSE |
+# | est.lengthscale |             FALSE |
+# | est.offset      |             FALSE |
+# | est.psi         |              TRUE |
+
+
+

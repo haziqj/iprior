@@ -177,16 +177,16 @@ collapse_param <- function(param) {
 theta_to_param <- function(theta, object) {
   # Args: A vector of parameters to be optimised, including logpsi. object must
   # be either a ipriorKernel2 type object, or a list containing param.na,
-  # which.pearson and poly.degree.
+  # which.pearson and poly.deg.
   #
   # Output: A param table.
   #
   # Notes: The logpsi value is removed. To obtain this use theta_to_psi(). If
-  # object is specified, then the param.na, which.pearson and poly.degree are
+  # object is specified, then the param.na, which.pearson and poly.deg are
   # obtained from object.
   param.na <- object$thetal$param.na
   which.pearson <- object$which.pearson
-  poly.degree <- object$poly.degree
+  poly.deg <- object$poly.deg
   theta <- expand_theta(theta, object$thetal$theta.drop,
                         object$thetal$theta.omitted)
   theta <- theta[-length(theta)]
@@ -196,7 +196,7 @@ theta_to_param <- function(theta, object) {
   tmp <- c(param)
   tmp[-param.na] <- theta
   param[] <- tmp
-  param <- cbind(param, degree = poly.degree)
+  param <- cbind(param, degree = poly.deg)
 
   param <- as.data.frame(param)
   names(param) <- c("lambda", "hurst", "lengthscale", "offset", "degree")

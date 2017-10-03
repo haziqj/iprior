@@ -247,7 +247,7 @@ splitHurst <- function(kernel) {
 	H
 }
 
-indxFn <- function(k) {
+index_fn_B <- function(k) {
   # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
   # ind2 are created in kernL().
 	ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k	# locating var/kernel matrix
@@ -292,6 +292,8 @@ indxFn <- function(k) {
 			P2.lam2   = grid.Psq.lam[,2]
 	)
 }
+
+indxFn <- index_fn_B
 
 findH2 <- function(z, ind1, ind2){
   # This function finds position of H2 (cross-product terms of H). Used in
