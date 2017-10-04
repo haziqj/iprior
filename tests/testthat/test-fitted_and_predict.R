@@ -5,7 +5,7 @@ test_that("Fitted", {
   set.seed(123)
   y <- rnorm(3)
   x1 <- rnorm(3)
-  mod <- iprior2(y, x1)
+  mod <- iprior2(y, x1, control = list(silent = TRUE))
   tmp <- fitted(mod, intervals = TRUE)
   expect_equal(tmp$y, c(-0.4288420, -0.3579418, 1.5548390), tolerance = 1e-5)
   expect_equal(tmp$lower, c(-0.7050808, -0.6299344, 1.2275848), tolerance = 1e-5)
@@ -19,7 +19,7 @@ test_that("Predict (non-formula)", {
   set.seed(123)
   y <- rnorm(3)
   x1 <- rnorm(3)
-  mod <- iprior2(y, x1)
+  mod <- iprior2(y, x1, control = list(silent = TRUE))
   tmp <- predict(mod, list(rnorm(1)), y.test = rnorm(1), intervals = TRUE)
 
   expect_equal(tmp$y, -1.342379, tolerance = 1e-5)
@@ -33,7 +33,7 @@ test_that("Predict (non-formula)", {
 test_that("Predict (formula)", {
 
   dat <- gen_fbm(4, seed = 123)
-  mod <- iprior2(y ~ ., dat[1:3, ], kernel = "fbm")
+  mod <- iprior2(y ~ ., dat[1:3, ], kernel = "fbm", control = list(silent = TRUE))
   tmp <- predict(mod, dat[4, ], intervals = TRUE)
 
   expect_equal(as.numeric(tmp$y), 17.30887, tolerance = 1e-6)

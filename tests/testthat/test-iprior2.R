@@ -1,30 +1,4 @@
-context("iprior2")
-
-test_that("Hlam", {
-
-  y <- 1:3
-  x1 <- 1:3
-  x2 <- 4:6
-  x3 <- factor(7:9)
-  mod <- kernL2(y, x1, x2, x3, kernels = c("fbm", "se", "pearson"))
-  K <- get_Hlam(mod, mod$thetal$theta)
-  tmp <- eigen_Hlam(K)
-  expect_equal(det(K), 32.73602, tolerance = 1e-6)
-  expect_equal(tmp$u, c(1.869905, 3.598763, 4.864665), tolerance = 1e-6)
-
-})
-
-test_that("logLik", {
-
-  y <- 1:3
-  x1 <- 1:3
-  x2 <- 4:6
-  x3 <- factor(7:9)
-  mod <- kernL2(y, x1, x2, x3, kernel = "poly", est.offset = TRUE)
-  res <- loglik_iprior(c(1, 1, 1, 0, 0, 0), object = mod)
-  expect_equal(res, -8.735662, tolerance = 1e-6)
-
-})
+context("iprior2 and estimation methods")
 
 test_that("iprior_direct", {
 
@@ -45,7 +19,30 @@ test_that("iprior_direct", {
 
 test_that("iprior_fixed", {
 
-  mod <- iprior2(stack.loss ~ ., stackloss, fixed.hyp = TRUE)
+  mod <- iprior2(stack.loss ~ ., stackloss, fixed.hyp = TRUE,
+                 control = list(silent = TRUE))
   expect_equal(as.numeric(mod$param.full), rep(1, 4))
+
+})
+
+test_that("iprior_em_closed", {
+
+  set.seed(123)
+  mod <- iprior2(kernL2(stack.loss ~ ., stackloss), method = "em",
+                 control = list(maxit = 3, silent = TRUE))
+  expect_equal(as.numeric(mod$param.full),
+               c(0.12818, 1.68720, 0.25099, 0.13146), tolerance = 1e-5)
+
+})
+
+test_that("print()", {
+
+  y <- 1:3
+  x1 <- 1:3
+  x2 <- factor(7:9)
+  mod <- iprior2(y, x1, x2, fixed.hyp = TRUE, control = list(silent = TRUE))
+  tmp <- capture.output(print(mod))
+  tmp <- summary(mod)
+  tmp <- capture.output(print(tmp))
 
 })

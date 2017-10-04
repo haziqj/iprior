@@ -14,7 +14,7 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     maxit     = 100,
     stop.crit = 1e-8, # sqrt(.Machine$double.eps),  # roughly 1e-8
     theta0    = NULL,
-    silent    = TRUE,
+    silent    = FALSE,
     report    = 10
   )
   control.names <- names(control_)
@@ -42,12 +42,12 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     res <- iprior_fixed(mod)
     res$est.method <- "I-prior fixed."
     res$est.conv <- ""
-    return(res)
   } else if (est.method["canonical"]) {
     stop("Not yet implemented.", call. = FALSE)
   } else {
     if (est.method["em.closed"]) {
-      res <- iprior_em_closed(mod)
+      res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
+                              control$silent)
       res$est.method <- "Closed-form EM algorithm."
     }
     if (est.method["em.reg"]) {
