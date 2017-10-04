@@ -11,11 +11,11 @@ plot_predict <- function(x) {
 plot_fitted2 <- function(x, X.var = 1, ci = TRUE) {
   fit <- fitted(x, intervals = ci)
   y.hat <- fit$y
-  X <- x$kernL$Xl[[X.var]]
+  X <- x$ipriorKernel$Xl[[X.var]]
   plot.df <- data.frame(y.hat = y.hat, x = X,
-                        y = as.numeric(x$kernL$y) + x$intercept)
-  x.lab <- x$kernL$xname[X.var]
-  y.lab <- x$kernL$yname
+                        y = as.numeric(x$ipriorKernel$y) + x$intercept)
+  x.lab <- x$ipriorKernel$xname[X.var]
+  y.lab <- x$ipriorKernel$yname
 
   p <- ggplot(plot.df)
 

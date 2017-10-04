@@ -14,11 +14,11 @@ predict.ipriorMod2 <- function(object, newdata = list(), y.test = NULL,
   if (length(newdata) == 0) {
     return(cat("No new data supplied. Use fitted() instead."))
   }
-  if (!is.null(object$kernL$formula)) {
-    tt <- object$kernL$terms
+  if (!is.null(object$ipriorKernel$formula)) {
+    tt <- object$ipriorKernel$terms
     Terms <- delete.response(tt)
     xstar <- model.frame(Terms, newdata)
-    if (any(colnames(newdata) == object$kernL$yname))
+    if (any(colnames(newdata) == object$ipriorKernel$yname))
       y.test <- model.extract(model.frame(tt, newdata), "response")
     xrownames <- rownames(xstar)
   } else {
@@ -29,7 +29,7 @@ predict.ipriorMod2 <- function(object, newdata = list(), y.test = NULL,
     xrownames <- rownames(do.call(cbind, newdata))
   }
 
-  Hlam.new <- get_Hlam(object$kernL, object$theta, xstar = xstar)
+  Hlam.new <- get_Hlam(object$ipriorKernel, object$theta, xstar = xstar)
   res <- predict_iprior(y.test, Hlam.new, object$w, object$intercept)
   names(res$y) <- xrownames
   names(res)[grep("train.error", names(res))] <- "test.error"
@@ -104,9 +104,9 @@ predict_iprior_quantiles <- function(object, Hlam.new = NULL, y.hat, alpha) {
   # level.
   #
   # Notes: Helper function used in fitted and predict for ipriorMod2 objects.
-  Hlam <- get_Hlam(object$kernL, object$theta)
+  Hlam <- get_Hlam(object$ipriorKernel, object$theta)
   if (is.null(Hlam.new)) Hlam.new <- Hlam
-  se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$kernL))
+  se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$ipriorKernel))
   names(se) <- NULL
   lower <- y.hat + qnorm(alpha / 2) * se
   upper <- y.hat + qnorm(1 - alpha / 2) * se

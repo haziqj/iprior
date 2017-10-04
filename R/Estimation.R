@@ -1,12 +1,17 @@
-get_Hlam <- function(object, theta, xstar = list(NULL)) {
-  # which.poly <- is.kern_poly(object$kernels)
-  tmp <- theta_to_param(theta, object)
-  kernels <- tmp$kernels
-  lambda <- tmp$lambda
+get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE) {
 
   # do we need to calculate Hl entries each time? maybe so for when estimating
   # hurst, offset, lengthscale, and polynomial kernels.
-  Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+  if (isTRUE(theta.is.lambda)) {
+    Hl <- object$Hl
+    lambda <- theta[seq_along(Hl)]  # in case theta constains psi
+  } else {
+    tmp <- theta_to_param(theta, object)
+    kernels <- tmp$kernels
+    lambda <- tmp$lambda
+    Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+  }
+
   expand_Hl_and_lambda(Hl, lambda, object$intr, object$intr.3plus, environment())
 
   res <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
@@ -82,8 +87,8 @@ iprior_direct <- function(mod, estimation.method, theta.init, control) {
   tmp <- eigenCpp(-res$hessian)
   u <- tmp$val + 1e-9
   V <- tmp$vec
-  Fi <- V %*% t(V) / u
-  se <- sqrt(diag(Fi))
+  Fi.inv <- V %*% t(V) / u
+  se <- sqrt(diag(Fi.inv))
   se <- convert_se(se, res$par, mod)  # delta method to convert to parameter s.e.
   loglik <- as.numeric(na.omit(loglik))
   param.full <- theta_to_collapsed_param(res$par, mod)

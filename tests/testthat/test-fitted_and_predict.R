@@ -7,9 +7,9 @@ test_that("Fitted", {
   x1 <- rnorm(3)
   mod <- iprior2(y, x1)
   tmp <- fitted(mod, intervals = TRUE)
-  expect_equal(tmp$y, c(-0.4288420, -0.3579418, 1.5548390), tolerance = 1e-6)
-  expect_equal(tmp$lower, c(-0.7050808, -0.6299344, 1.2275848), tolerance = 1e-6)
-  expect_equal(tmp$upper, c(-0.15260325, -0.08594914, 1.88209317), tolerance = 1e-6)
+  expect_equal(tmp$y, c(-0.4288420, -0.3579418, 1.5548390), tolerance = 1e-5)
+  expect_equal(tmp$lower, c(-0.7050808, -0.6299344, 1.2275848), tolerance = 1e-5)
+  expect_equal(tmp$upper, c(-0.15260325, -0.08594914, 1.88209317), tolerance = 1e-5)
   expect_that(print(tmp), prints_text("Training MSE:"))
 
 })
@@ -22,9 +22,9 @@ test_that("Predict (non-formula)", {
   mod <- iprior2(y, x1)
   tmp <- predict(mod, list(rnorm(1)), y.test = rnorm(1), intervals = TRUE)
 
-  expect_equal(tmp$y, -1.342379, tolerance = 1e-6)
-  expect_equal(tmp$lower, -1.701595, tolerance = 1e-6)
-  expect_equal(tmp$upper, -0.9831631, tolerance = 1e-6)
+  expect_equal(tmp$y, -1.342379, tolerance = 1e-5)
+  expect_equal(tmp$lower, -1.701595, tolerance = 1e-5)
+  expect_equal(tmp$upper, -0.9831631, tolerance = 1e-5)
   expect_that(print(tmp), prints_text("Test MSE:"))
   expect_that(print(predict(mod, list(rnorm(1)))), prints_text("Test MSE: NA"))
 

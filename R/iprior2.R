@@ -43,19 +43,20 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     res$est.method <- "I-prior fixed."
     res$est.conv <- ""
     return(res)
-  }
-  if (est.method["canonical"]) {
+  } else if (est.method["canonical"]) {
     stop("Not yet implemented.", call. = FALSE)
-  }
-  if (est.method["em.closed"]) {
-    stop("Not yet implemented.", call. = FALSE)
-  }
-  if (est.method["em.reg"]) {
-    stop("Not yet implemented.", call. = FALSE)
-  }
-  if (est.method["direct"]) {
-    res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
-    res$est.method <- "Direct minimisation of marginal deviance."
+  } else {
+    if (est.method["em.closed"]) {
+      res <- iprior_em_closed(mod)
+      res$est.method <- "Closed-form EM algorithm."
+    }
+    if (est.method["em.reg"]) {
+      stop("Not yet implemented.", call. = FALSE)
+    }
+    if (est.method["direct"]) {
+      res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
+      res$est.method <- "Direct minimisation of marginal deviance."
+    }
     if (res$conv == 0)
       res$est.conv <- paste0("Converged to within ", control$stop.crit,
                              " tolerance.")
@@ -70,7 +71,7 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   names(res$fitted.values) <- attr(mod$y, "dimnames")[[1]]
   res$residuals <- tmp$resid
   res$train.error <- tmp$train.error
-  res$kernL <- mod
+  res$ipriorKernel <- mod
   res$maxit <- control$maxit
   res$stop.crit <- control$stop.crit
 
@@ -101,7 +102,7 @@ print.ipriorMod2 <- function(x, digits = 5) {
   loglik.max <- x$loglik[length(x$loglik)]
   cat("Log-likelihood value:", loglik.max, "\n")
   cat("\n")
-  if (x$kernL$nt > 0)
+  if (x$ipriorKernel$thetal$n.theta > 0)
     print(round(coef(x), digits))
   else
     cat("No hyperparameters estimated.")
@@ -117,7 +118,7 @@ summary.ipriorMod2 <- function(object) {
 
   # need to use delta method here!
   coef <- object$param.full
-  se <- expand_theta(object$se, object$kernL$theta.drop, NA)
+  se <- expand_theta(object$se, object$ipriorKernel$thetal$theta.drop, NA)
   zval <- coef / se
   tab <- cbind(Estimate   = round(coef, 4),
                S.E.       = round(se, 4),
@@ -126,7 +127,7 @@ summary.ipriorMod2 <- function(object) {
 
   # rename rownames, remove psi
 
-  param.tab <- theta_to_param(object$theta, object$kernL)
+  param.tab <- theta_to_param(object$theta, object$ipriorKernel)
   kernels.used <- rep(NA, nrow(param.tab))
   for (i in seq_along(param.tab$kernels)) {
     kernels.used[i] <- kernel_summary_translator(param.tab$kernels[i])

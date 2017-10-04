@@ -164,8 +164,20 @@ test_that("Formula input", {
 
 })
 
+test_that("get_Hlam()", {
 
+  y <- x1 <- 1:3
+  x2 <- factor(1:3)
+  x3 <- 4:6
+  mod1 <- kernL2(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"))
+  theta1 <- mod1$thetal$theta
+  mod2 <- kernL2(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"),
+                 est.hurst = TRUE, est.lengthscale = TRUE)
+  theta2 <- mod2$thetal$theta
+  expect_equivalent(get_Hlam(mod1, c(1, 1, 1), theta.is.lambda = TRUE),
+                    get_Hlam(mod2, theta2))
 
+})
 
 
 
