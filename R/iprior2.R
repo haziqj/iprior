@@ -44,7 +44,8 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     res$est.method <- "I-prior fixed."
     res$est.conv <- ""
   } else if (est.method["canonical"]) {
-    stop("Not yet implemented.", call. = FALSE)
+    res <- iprior_canonical(mod, theta0, control.optim)
+    res$est.method <- "Direct minimisation of marginal deviance."
   } else {
     if (est.method["em.closed"]) {
       res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
@@ -208,6 +209,10 @@ iprior_method_checker <- function(object, method) {
     } else {
       res["direct"] <- TRUE
       warning("Non-linear kernels used. Using direct estimation method.", call. = FALSE)
+    }
+    if (object$no.int > 0) {
+      res["direct"] <- TRUE
+      warning("Canonical method not possible with interactions. Using direct estimation method.", call. = FALSE)
     }
   } else if (method == "em") {
     if (is.null(object$BlockBStuff)) {

@@ -18,11 +18,15 @@ test_that("Fixed", {
 
 test_that("Canonical", {
 
-  mod <- list(thetal = list(n.theta = 10), kernels = "linear")
+  mod <- list(thetal = list(n.theta = 10), kernels = "linear", no.int = 0)
   res <- iprior_method_checker(mod, "canonical")
   expect_true(res["canonical"])
 
-  mod <- list(thetal = list(n.theta = 10), kernels = "se,1")
+  mod <- list(thetal = list(n.theta = 10), kernels = "se,1", no.int = 0)
+  expect_warning(res <- iprior_method_checker(mod, "canonical"))
+  expect_true(res["direct"])
+
+  mod <- list(thetal = list(n.theta = 10), kernels = "linear", no.int = 1)
   expect_warning(res <- iprior_method_checker(mod, "canonical"))
   expect_true(res["direct"])
 
