@@ -23,12 +23,16 @@ test_that("Canonical", {
   expect_true(res["canonical"])
 
   mod <- list(thetal = list(n.theta = 10), kernels = "se,1", no.int = 0)
-  expect_warning(res <- iprior_method_checker(mod, "canonical"))
-  expect_true(res["direct"])
+  expect_warning(iprior_method_checker(mod, "canonical"))
+  expect_true(suppressWarnings(
+    iprior_method_checker(mod, "canonical")["direct"]
+  ))
 
   mod <- list(thetal = list(n.theta = 10), kernels = "linear", no.int = 1)
-  expect_warning(res <- iprior_method_checker(mod, "canonical"))
-  expect_true(res["direct"])
+  expect_warning(iprior_method_checker(mod, "canonical"))
+  expect_true(suppressWarnings(
+    iprior_method_checker(mod, "canonical")["direct"]
+  ))
 
 })
 

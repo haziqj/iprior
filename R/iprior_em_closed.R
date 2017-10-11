@@ -25,12 +25,12 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   start.time <- Sys.time()
 
   while (em_loop_logical()) {
-    # Block A --------------------------------------------------------------------
+    # Block A ------------------------------------------------------------------
     Hlam <- get_Hlam(mod, lambda, theta.is.lambda = TRUE)
     list2env(eigen_Hlam(Hlam), environment())
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
-    # Block C --------------------------------------------------------------------
+    # Block C ------------------------------------------------------------------
     zinv.Vt <- t(V) / z
     Vy.inv.y <- as.numeric(crossprod(y, V) %*% zinv.Vt)
     w <- psi * Hlam %*% Vy.inv.y
@@ -52,7 +52,8 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
     # Calculate log-likelihood ---------------------------------------------------
     logdet <- sum(log(z))
-    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
+    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 -
+      crossprod(y, Vy.inv.y) / 2
 
     niter <- niter + 1
     if (!silent) setTxtProgressBar(pb, niter)
