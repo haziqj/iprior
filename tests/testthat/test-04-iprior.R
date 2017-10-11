@@ -56,6 +56,15 @@ test_that("Direct", {
 
 })
 
+test_that("Nystrom", {
+
+  mod <- structure(list(thetal = list(n.theta = 10), nystroml = 1),
+                   class = "ipriorKernel2")
+  res <- iprior_method_checker(mod, "direct")
+  expect_true(res["nystrom"])
+
+})
+
 context("Various estimation methods")
 
 test_that("iprior_direct", {

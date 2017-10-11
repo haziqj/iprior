@@ -61,6 +61,10 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
       res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
       res$est.method <- "Direct minimisation of marginal deviance."
     }
+    if (est.method["nystrom"]) {
+      res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
+      res$est.method <- "Nystrom approximation of kernel matrix."
+    }
     if (res$conv == 0)
       res$est.conv <- paste0("Converged to within ", control$stop.crit,
                              " tolerance.")
@@ -68,7 +72,9 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
       res$est.conv <- "Convergence criterion not met."
   }
 
-  res$intercept <- attr(mod$y, "scaled:center")
+  intercept <- attr(mod$y, "scaled:center")
+  if (is.null(intercept)) intercept <- mean(mod$y)
+  res$intercept <- intercept
   res$coefficients <- reduce_theta(res$param.full, mod$estl)$theta.reduced
   tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w, res$intercept)
   res$fitted.values <- tmp$y
@@ -139,7 +145,7 @@ summary.ipriorMod2 <- function(object) {
   x.kern <- unique.kernels <- unique(kernels.used)
   for (i in seq_along(unique.kernels)) {
     ind <- kernels.used %in% unique.kernels[i]
-    xs <- paste0(object$kernL$xname[ind], collapse = ", ")
+    xs <- paste0(object$ipriorKernel$xname[ind], collapse = ", ")
     x.kern[i] <- paste0(unique.kernels[i], " (", xs, ")\n")
   }
 
@@ -197,12 +203,16 @@ print.ipriorMod2_summary <- function(x) {
 }
 
 iprior_method_checker <- function(object, method) {
-  res <- rep(FALSE, 5)
-  names(res) <- c("fixed", "canonical", "em.closed", "em.reg", "direct")
+  # object is an ipriorKernel2 object.
+  res <- rep(FALSE, 6)
+  names(res) <- c("fixed", "canonical", "em.closed", "em.reg", "direct",
+                  "nystrom")
 
   if (object$thetal$n.theta == 0 | method == "fixed") {
     res["fixed"] <- TRUE
     # if (method != "fixed") warning("No hyperparameters estimated. Using fixed estimation method.", call. = FALSE)
+  } else if (is.ipriorKernel_nys(object)) {
+    res["nystrom"] <- TRUE
   } else if (method == "canonical") {
     if (all(is.kern_linear(object$kernels))) {
       res["canonical"] <- TRUE

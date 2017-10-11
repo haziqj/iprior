@@ -40,7 +40,7 @@ predict.ipriorMod2 <- function(object, newdata = list(), y.test = NULL,
   res
 }
 
-print.ipriorPredict <- function(x, ...) {
+print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
   if (!is.null(x$train.error)) {
     cat("Training MSE:", x$train.error, "\n")
   } else if (!is.nan(x$test.error)) {
@@ -50,15 +50,20 @@ print.ipriorPredict <- function(x, ...) {
   }
   cat("\n")
   cat("Predicted values:\n")
+
+  rows <- min(nrow(x$p), rows)
   if (is.null(x$lower)) {
-    print(x$y)
+    y.print <- round(x$y[seq_len(rows)], dp)
+    print(y.print)
   } else {
     tab <- data.frame(x$lower, x$y, x$upper)
+    tab <- dec_plac(tab, dp)
     lower <- paste0(x$alpha / 2 * 100, "%")
     upper <- paste0((1 - x$alpha / 2) * 100, "%")
     names(tab) <- c(lower, "Mean", upper)
-    print(tab)
+    print(tab[seq_len(rows), ])
   }
+  if (length(x$y) > rows) cat("# ... with", length(x$y) - rows, "more values")
 }
 
 predict_iprior <- function(y, Hlam, w, intercept) {

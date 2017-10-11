@@ -59,3 +59,10 @@ rwa_2 <- function(z, smp) {
   mostattributes(res) <- attributes(z)
   res
 }
+
+reorder_x <- function(x, smp) {
+  if (is.vector(x)) res <- x[smp]
+  else res <- x[smp, ]
+  mostattributes(res) <- attributes(x)
+  res
+}

@@ -1,4 +1,3 @@
-
 get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE) {
 
   # do we need to calculate Hl entries each time? maybe so for when estimating

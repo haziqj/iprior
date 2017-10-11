@@ -1,7 +1,7 @@
 kernL2 <- function(...) UseMethod("kernL2")
 
 kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           fixed.hyp = FALSE, Nystrom = FALSE, Nys.seed = NULL,
+                           fixed.hyp = FALSE, nystrom = FALSE, nys.seed = NULL,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, lambda = 1, psi = 1) {
@@ -33,6 +33,22 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   p <- length(Xl)
   if (is.null(xname)) xname <- paste0("X", seq_len(p))
   if (is.null(yname)) yname <- "y"
+
+  # For Nystrom method: Reorder data and create Xl.Nys -------------------------
+  if (as.numeric(nystrom) > 0 & as.numeric(nystrom) != n) {
+    if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
+    if (!is.null(nys.seed)) set.seed(nys.seed)
+    nys.samp <- sample(seq_along(y))
+    y <- y[nys.samp]
+    tmp <- lapply(Xl, reorder_x, smp = nys.samp)  # defined in .reorder_ipriorKernel()
+    mostattributes(tmp) <- attributes(Xl)
+    Xl <- tmp
+    Xl.nys <- lapply(Xl, reorder_x, smp = seq_len(nystrom))
+    mostattributes(Xl.nys) <- attributes(Xl)
+    nys.check <- TRUE
+  } else {
+    nys.check <- FALSE
+  }
 
   # What types of kernels? -----------------------------------------------------
   if (length(kernel) < p && length(kernel) > 1) {
@@ -72,7 +88,11 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     no.int.3plus <- ncol(intr.3plus)
   }
 
-  Hl <- get_Hl(Xl, list(NULL), kernels, lambda)
+  if (isTRUE(nys.check)) {
+    Hl <- get_Hl(Xl, Xl.nys, kernels, lambda)
+  } else {
+    Hl <- get_Hl(Xl, list(NULL), kernels, lambda)
+  }
   kernels <- get_kernels_from_Hl(Hl)
 
   if (isTRUE(fixed.hyp)) {
@@ -87,10 +107,10 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   thetal <- param_to_theta(param, estl, log(psi))
   thetal$n.theta <- length(thetal$theta)
 
-  Nystroml <- NULL
-  if (isTRUE(as.logical(Nystrom))) {
-    Nystroml <- list(Nys.samp = 1, Nys.seed = Nys.seed,
-                     Nys.m = as.numeric(Nystrom))
+  nystroml <- NULL
+  if (isTRUE(as.logical(nystrom))) {
+    nystroml <- list(nys.samp = nys.samp, nys.seed = nys.seed,
+                     nys.size = as.numeric(nystrom))
   }
 
   BlockBStuff <- NULL
@@ -102,9 +122,11 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   # | est.lengthscale |             FALSE |
   # | est.offset      |             FALSE |
   # | est.psi         |              TRUE |
+  # | nys.check        |             FALSE |
   BlockB.cond <- (
     all(is.na(poly.deg)) & !isTRUE(est.hurst) & !isTRUE(est.lengthscale) &
-      !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi))
+      !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi)) &
+      !isTRUE(nys.check)
   )
   if (isTRUE(BlockB.cond)) {
     BlockBStuff <- BlockB_fn(Hl, intr, n, p)
@@ -116,7 +138,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     # Model
     kernels = kernels, which.pearson = which.pearson, probit = probit,
     poly.deg = poly.deg, thetal = thetal, estl = estl,
-    intr = intr, intr.3plus = intr.3plus, Nystroml = Nystroml,
+    intr = intr, intr.3plus = intr.3plus, nystroml = nystroml,
     BlockBStuff = BlockBStuff,
     # Meta
     n = n, p = p, no.int = no.int, no.int.3plus = no.int.3plus,
@@ -161,6 +183,12 @@ kernL2.formula <- function(formula, data, kernel = "linear", ...) {
 
 print.ipriorKernel2 <- function(x) {
   tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
+
+  # if (isTRUE(x$probit)) {
+  #   cat("Categorical response variables\n")
+  # } else if (is.ipriorKernel_nys(x)) {
+  #   cat("Nystrom kernel approximation ()\n")
+  # }
 
   cat("Sample size:", x$n, "\n")
   cat("No. of covariates:", length(x$Xl), "\n")
@@ -266,5 +294,14 @@ BlockB_fn <- function(Hl, intr, n, p) {
 # | est.offset      |             FALSE |
 # | est.psi         |              TRUE |
 
-
-
+get_Xl.nys <- function(object) {
+  nys.check <- is.ipriorKernel_nys(object)
+  if (isTRUE(nys.check)) {
+    Xl.nys <- lapply(object$Xl, reorder_x,
+                     smp = seq_len(object$nystroml$nys.size))
+    mostattributes(Xl.nys) <- attributes(object$Xl)
+    return(Xl.nys)
+  } else {
+    stop("Nystrom option not called.", call. = FALSE)
+  }
+}

@@ -105,6 +105,12 @@ is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
 is.ipriorKernel_Nystrom <- function(x) inherits(x, "ipriorKernel_Nystrom")
 
+is.ipriorKernel_nys <- function(x) {
+  if (is.ipriorKernel2(x)) {
+    !is.null(x$nystroml)
+  }
+}
+
 is.ipriorKernel2 <- function(x) inherits(x, "ipriorKernel2")
 
 is.ipriorX <- function(x) inherits(x, "ipriorX")

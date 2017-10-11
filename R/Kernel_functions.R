@@ -239,8 +239,13 @@ kern_check_xy <- function(x, y, centre.xy) {
 
 
 
+# Legacy kernels
 
+fnH1 <- kern_pearson
 
+fnH2 <- kern_linear
+
+fnH3 <- kern_fbm
 
 
 
