@@ -11,11 +11,12 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   method <- match.arg(method, c("direct", "em", "fixed", "canonical"))
 
   control_ <- list(
-    maxit     = 100,
+    maxit     = 500,
     stop.crit = 1e-8, # sqrt(.Machine$double.eps),  # roughly 1e-8
     theta0    = NULL,
     silent    = FALSE,
-    report    = 10
+    report    = 10,
+    psi.reg   = FALSE  # option for iprior_em_reg()
   )
   control.names <- names(control_)
   control_[(control.names <- names(control))] <- control
@@ -51,7 +52,9 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
       res$est.method <- "Closed-form EM algorithm."
     }
     if (est.method["em.reg"]) {
-      stop("Not yet implemented.", call. = FALSE)
+      res <- iprior_em_reg(mod, control$maxit, control$stop.crit,
+                           control$silent, theta0)
+      res$est.method <- "Regular EM algorithm."
     }
     if (est.method["direct"]) {
       res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
