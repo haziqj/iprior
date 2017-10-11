@@ -5,17 +5,7 @@
 \alias{Canonical}
 \alias{FBM}
 \alias{Pearson}
-\alias{fnH1}
-\alias{fnH2}
-\alias{fnH3}
 \title{Reproducing kernels for the I-prior package}
-\usage{
-fnH1(x, y = NULL)
-
-fnH2(x, y = NULL)
-
-fnH3(x, y = NULL, gamma = NULL)
-}
 \arguments{
 \item{x, y}{A vector, matrix or data frame. \code{x} and \code{y} must have
 similar dimensions.}
