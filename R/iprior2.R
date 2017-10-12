@@ -20,12 +20,11 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     psi0      = NULL,
     silent    = FALSE,
     report    = 10,
-    psi.reg   = FALSE  # option for iprior_em_reg()
+    psi.reg   = FALSE,  # option for iprior_em_reg()
+    restarts  = 0,
+    no.cores  = parallel::detectCores()
   )
-  control.names <- names(control_)
-  control_[(control.names <- names(control))] <- control
-  control <- control_
-
+  control <- update_control(control, control_)
   control.optim <- list(
     fnscale = -2,
     trace   = ifelse(isTRUE(control$silent), 0, 1),
@@ -44,44 +43,48 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   }
 
   # Send to correct estimation method ------------------------------------------
-  est.method <- iprior_method_checker(mod, method)
-  if (est.method["fixed"]) {
-    res <- iprior_fixed(mod)
-    res$est.method <- "I-prior fixed."
-    res$est.conv <- ""
-  } else if (est.method["canonical"]) {
-    res <- iprior_canonical(mod, theta0, control.optim)
-    res$est.method <- "Direct minimisation of marginal deviance."
+  if (as.numeric(control$restarts) >= 1) {
+    res <- iprior_parallel(mod, method, control)
   } else {
-    if (est.method["em.closed"]) {
-      res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
-                              control$silent, theta0)
-      res$est.method <- "Closed-form EM algorithm."
-    }
-    if (est.method["em.reg"]) {
-      res <- iprior_em_reg(mod, control$maxit, control$stop.crit,
-                           control$silent, theta0)
-      res$est.method <- "Regular EM algorithm."
-    }
-    if (est.method["direct"]) {
-      res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
+    est.method <- iprior_method_checker(mod, method)
+    if (est.method["fixed"]) {
+      res <- iprior_fixed(mod)
+      res$est.method <- "I-prior fixed."
+      res$est.conv <- ""
+    } else if (est.method["canonical"]) {
+      res <- iprior_canonical(mod, theta0, control.optim)
       res$est.method <- "Direct minimisation of marginal deviance."
+    } else {
+      if (est.method["em.closed"]) {
+        res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
+                                control$silent, theta0)
+        res$est.method <- "Closed-form EM algorithm."
+      }
+      if (est.method["em.reg"]) {
+        res <- iprior_em_reg(mod, control$maxit, control$stop.crit,
+                             control$silent, theta0)
+        res$est.method <- "Regular EM algorithm."
+      }
+      if (est.method["direct"]) {
+        res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
+        res$est.method <- "Direct minimisation of marginal deviance."
+      }
+      if (est.method["nystrom"]) {
+        res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
+        res$est.method <- "Nystrom approximation of kernel matrix."
+      }
+      if (est.method["mixed"]) {
+        res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,
+                            control$silent, control.optim)
+        res$est.method <- paste0("EM algorithm (", control$em.maxit,
+                                 " steps) + direct minimisation.")
+      }
+      if (res$conv == 0)
+        res$est.conv <- paste0("Converged to within ", control$stop.crit,
+                               " tolerance.")
+      else
+        res$est.conv <- "Convergence criterion not met."
     }
-    if (est.method["nystrom"]) {
-      res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
-      res$est.method <- "Nystrom approximation of kernel matrix."
-    }
-    if (est.method["mixed"]) {
-      res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,
-                          control$silent, control.optim)
-      res$est.method <- paste0("EM algorithm (", control$em.maxit,
-                               " steps) + direct minimisation.")
-    }
-    if (res$conv == 0)
-      res$est.conv <- paste0("Converged to within ", control$stop.crit,
-                             " tolerance.")
-    else
-      res$est.conv <- "Convergence criterion not met."
   }
 
   intercept <- attr(mod$y, "scaled:center")
