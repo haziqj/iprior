@@ -1,5 +1,6 @@
 iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
-                             lambda0 = NULL, psi0 = NULL) {
+                             theta0 = NULL, lambda0 = NULL, psi0 = NULL,
+                             mixed = FALSE) {
   # Declare all variables and functions to be used into environment ------------
   iprior.env <- environment()
   list2env(mod, iprior.env)
@@ -9,13 +10,16 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   maxit <- max(1, maxit)  # cannot have maxit <= 0
 
   # Initialise -----------------------------------------------------------------
-  if (is.null(lambda0)) {
-    lambda0 <- rnorm(p)
-    if (p == 1) lambda0 <- abs(lambda0)
-  }
-  if (is.null(psi0)) psi0 <- abs(rnorm(1))
-  lambda <- lambda0
-  psi <- psi0
+  # if (is.null(lambda0)) {
+  #   lambda0 <- rnorm(p)
+  #   if (p == 1) lambda0 <- abs(lambda0)
+  # }
+  # if (is.null(psi0)) psi0 <- abs(rnorm(1))
+  # lambda <- lambda0
+  # psi <- psi0
+  if (is.null(theta0)) theta0 <- rnorm(mod$thetal$n.theta)
+  psi <- theta_to_psi(theta0, mod)
+  lambda <- theta_to_collapsed_param(theta0, mod)[seq_len(mod$p)]
   niter <- 0
   loglik <- rep(NA, maxit)
   Hl <- expand_Hl_and_lambda(Hl, lambda, intr, intr.3plus)$Hl
@@ -64,19 +68,23 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   # Calculate standard errors --------------------------------------------------
   # >>> needs adjusting depending on est.lambda / est.psi = T/F <<<
-  Vy.inv <- V %*% zinv.Vt
-  dVy <- NULL
-  for (i in seq_len(p)) {
-    dVy[[i]] <- Vy.inv %*% (psi * (2 * lambda[i] * Psql[[i]] + Sl[[i]]))
-  }
-  dVy[[p + 1]] <- diag(1 / psi, n) - (2 / psi ^ 2) * Vy.inv
-  Fi <- matrix(0, nrow = p + 1, ncol = p + 1)
-  for (i in seq_len(p + 1)) {
-    for (j in seq_len(p + 1)) {
-      Fi[i, j] <- sum(dVy[[i]] * dVy[[j]]) / 2
+  if (!mixed) {
+    Vy.inv <- V %*% zinv.Vt
+    dVy <- NULL
+    for (i in seq_len(p)) {
+      dVy[[i]] <- Vy.inv %*% (psi * (2 * lambda[i] * Psql[[i]] + Sl[[i]]))
     }
+    dVy[[p + 1]] <- diag(1 / psi, n) - (2 / psi ^ 2) * Vy.inv
+    Fi <- matrix(0, nrow = p + 1, ncol = p + 1)
+    for (i in seq_len(p + 1)) {
+      for (j in seq_len(p + 1)) {
+        Fi[i, j] <- sum(dVy[[i]] * dVy[[j]]) / 2
+      }
+    }
+    se <- sqrt(diag(solve(Fi)))
+  } else {
+    se <- NULL
   }
-  se <- sqrt(diag(solve(Fi)))
 
   # Clean up and close ---------------------------------------------------------
   convergence <- niter == maxit
@@ -86,7 +94,8 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   if (!silent) {
     close(pb)
-    if (convergence) cat("Convergence criterion not met.\n")
+    if (mixed) cat("")
+    else if (convergence) cat("Convergence criterion not met.\n")
     else cat("Converged after", niter, "iterations.\n")
   }
 
@@ -95,7 +104,6 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
        se = se, niter = niter, w = as.numeric(w), start.time = start.time,
        end.time = end.time, time = time.taken, convergence = convergence,
        message = NULL)
-
 }
 
 em_loop_logical <- function() {

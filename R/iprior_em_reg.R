@@ -19,14 +19,19 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   while (em_loop_logical()) {
     # Block A ------------------------------------------------------------------
-    Hlam <- get_Hlam(mod, theta)
-    list2env(eigen_Hlam(Hlam), environment())
+    if (is.ipriorKernel_nys(mod)) {
+      Hlam <- get_Hlam(mod, theta, get_Xl.nys(mod))
+      list2env(eigen_Hlam_nys(Hlam), environment())
+    } else {
+      Hlam <- get_Hlam(mod, theta)
+      list2env(eigen_Hlam(Hlam), environment())
+    }
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
     # Block C ------------------------------------------------------------------
     zinv.Vt <- t(V) / z
     Vy.inv.y <- as.numeric(crossprod(y, V) %*% zinv.Vt)
-    w <- psi * Hlam %*% Vy.inv.y
+    w <- psi * (V %*% crossprod(V * u, Vy.inv.y))
     W <- V %*% zinv.Vt + tcrossprod(w)
 
     # Update parameters other than psi -----------------------------------------
@@ -40,7 +45,8 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
       psi <- theta_to_psi(theta, mod)
     } else {
       Hlamsq <- V %*% (t(V) * u ^ 2)
-      T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam %*% w)
+      Hlam.w <- V %*% crossprod(V * u, w)
+      T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam.w)
       psi <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
       theta[ grep("psi", names(mod$thetal$theta))] <- log(psi)
     }
@@ -86,9 +92,17 @@ QEstep <- function(theta, psi = NULL, object, w, W) {
   # Q(theta) = psi  * sum(y ^ 2) + tr(Vy %*% W) - 2 * psi * crossprod(y,
   # Hlam %*% w)
   if (is.null(psi)) psi <- theta_to_psi(theta, object)
-  Hlam <- get_Hlam(object, theta)
-  Vy <- psi * fastSquare(Hlam) + diag(1 / psi, object$n)
+  if (is.ipriorKernel_nys(mod)) {
+    Hlam <- get_Hlam(object, theta, get_Xl.nys(mod))
+    list2env(eigen_Hlam_nys(Hlam), environment())
+  } else {
+    Hlam <- get_Hlam(object, theta)
+    list2env(eigen_Hlam(Hlam), environment())
+  }
+  Hlamsq <- V %*% (t(V) * u ^ 2)
+  Hlam.w <- V %*% crossprod(V * u, w)
+  Vy <- psi * Hlamsq + diag(1 / psi, object$n)
   res <- psi * sum(object$y ^ 2) + sum(Vy * W) -
-    2 * psi * crossprod(object$y, Hlam %*% w)
+    2 * psi * crossprod(object$y, Hlam.w)
   as.numeric(res)
 }

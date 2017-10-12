@@ -2,18 +2,22 @@ iprior2 <- function(...) UseMethod("iprior2")
 
 iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
                             control = list()) {
+  # Load the I-prior model -----------------------------------------------------
   if (is.ipriorKernel2(y)) {
     mod <- y
   } else {
     mod <- kernL2(y = y, ..., kernel = kernel)
   }
 
-  method <- match.arg(method, c("direct", "em", "fixed", "canonical"))
+  method <- match.arg(method, c("direct", "em", "fixed", "canonical", "mixed"))
 
   control_ <- list(
-    maxit     = 500,
-    stop.crit = 1e-8, # sqrt(.Machine$double.eps),  # roughly 1e-8
+    maxit     = 100,
+    em.maxit  = 5,  # for mixed method
+    stop.crit = 1e-8,  # sqrt(.Machine$double.eps), roughly 1e-8
     theta0    = NULL,
+    lambda0   = NULL,
+    psi0      = NULL,
     silent    = FALSE,
     report    = 10,
     psi.reg   = FALSE  # option for iprior_em_reg()
@@ -24,15 +28,17 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
 
   control.optim <- list(
     fnscale = -2,
-    trace = ifelse(isTRUE(control$silent), 0, 1),
-    maxit = control$maxit,
-    REPORT = control$report
+    trace   = ifelse(isTRUE(control$silent), 0, 1),
+    maxit   = control$maxit,
+    REPORT  = control$report
   )
 
+  # Starting values ------------------------------------------------------------
   if (is.null(control$theta0)) {
     theta0 <- rnorm(mod$thetal$n.theta)  # rep(0, mod$thetal$n.theta)
   } else {
-    if (length(theta.start) != mod$nt) {
+    theta0 <- control$theta0
+    if (length(theta0) != mod$thetal$n.theta) {
       stop(paste("Incorrect number of parameters specified. Should be", nt))
     }
   }
@@ -49,7 +55,7 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   } else {
     if (est.method["em.closed"]) {
       res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
-                              control$silent)
+                              control$silent, theta0)
       res$est.method <- "Closed-form EM algorithm."
     }
     if (est.method["em.reg"]) {
@@ -64,6 +70,12 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
     if (est.method["nystrom"]) {
       res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
       res$est.method <- "Nystrom approximation of kernel matrix."
+    }
+    if (est.method["mixed"]) {
+      res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,
+                          control$silent, control.optim)
+      res$est.method <- paste0("EM algorithm (", control$em.maxit,
+                               " steps) + direct minimisation.")
     }
     if (res$conv == 0)
       res$est.conv <- paste0("Converged to within ", control$stop.crit,
@@ -82,8 +94,8 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   res$residuals <- tmp$resid
   res$train.error <- tmp$train.error
   res$ipriorKernel <- mod
-  res$maxit <- control$maxit
-  res$stop.crit <- control$stop.crit
+  res$method <- method
+  res$control <- control
 
   cl <- match.call()
   res$fullcall <- cl
@@ -106,6 +118,46 @@ iprior2.formula <- function(formula, data, kernel = "linear", method = "direct",
   cl[[1L]] <- as.name("iprior2")
   res$call <- cl
   res
+}
+
+iprior2.ipriorMod2 <- function(object, method = NULL, control = list(),
+                               iter.update = 100, ...) {
+  mod           <- object$ipriorKernel
+  con           <- object$control
+  con$theta0    <- object$theta
+  con$maxit     <- iter.update
+  control.names <- names(con)
+  con[(control.names <- names(control))] <- control
+  control <- con
+
+  if (is.null(method)) method <- object$method
+  if (method == "em") method.msg <- "EM"
+  else method.msg <- method
+
+  message(paste0("Updating iprior model with ", iter.update, " iterations using ",
+                 method.msg, " method."))
+
+  # Pass to iprior2.default ----------------------------------------------------
+  res <- iprior2.default(y = mod, method = method, control = con)
+
+  # Update time, call, maxit, niter, lb, error, brier --------------------------
+  new.time.diff <- res$end.time - res$start.time
+  old.time.diff <- object$end.time - object$start.time
+  res$time <- as.time(new.time.diff + old.time.diff)
+  res$start.time <- object$start.time
+  res$end.time <- object$end.time + new.time.diff
+  res$call <- object$call
+  res$control$maxit <- iter.update + object$control$maxit
+  res$niter <- res$niter + object$niter
+  res$loglik <- c(object$loglik, res$loglik)
+
+  res
+}
+
+update.ipriorMod2 <- function(object, method = NULL, control = list(),
+                              iter.update = 100, ...) {
+  res <- iprior2.ipriorMod2(object, method, control, iter.update, ...)
+  assign(deparse(substitute(object)), res, envir = parent.frame())
 }
 
 print.ipriorMod2 <- function(x, digits = 5) {
@@ -149,10 +201,18 @@ summary.ipriorMod2 <- function(object) {
     x.kern[i] <- paste0(unique.kernels[i], " (", xs, ")\n")
   }
 
+  if (object$method == "mixed") {
+    maxit <- object$control$maxit + object$control$em.maxit
+    niter <- object$niter + object$control$em.maxit
+  } else {
+    maxit <- object$control$maxit
+    niter <- object$niter
+  }
+
   res <- list(resid.summ = resid.summ, tab = tab, loglik = logLik(object),
               error = object$train.error, call = object$call, x.kern = x.kern,
               est.method = object$est.method, est.conv = object$est.conv,
-              niter = object$niter, maxit = object$maxit, time = object$time)
+              niter = niter, maxit = maxit, time = object$time)
   class(res) <- "ipriorMod2_summary"
   res
 }
@@ -204,9 +264,9 @@ print.ipriorMod2_summary <- function(x) {
 
 iprior_method_checker <- function(object, method) {
   # object is an ipriorKernel2 object.
-  res <- rep(FALSE, 6)
+  res <- rep(FALSE, 7)
   names(res) <- c("fixed", "canonical", "em.closed", "em.reg", "direct",
-                  "nystrom")
+                  "nystrom", "mixed")
 
   if (object$thetal$n.theta == 0 | method == "fixed") {
     res["fixed"] <- TRUE
@@ -230,6 +290,8 @@ iprior_method_checker <- function(object, method) {
     } else {
       res["em.closed"] <- TRUE
     }
+  } else if (method == "mixed") {
+    res["mixed"] <- TRUE
   } else {
     res["direct"] <- TRUE
   }
