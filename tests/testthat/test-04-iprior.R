@@ -98,7 +98,7 @@ test_that("iprior_em_closed", {
   mod <- iprior2(kernL2(stack.loss ~ ., stackloss), method = "em",
                  control = list(maxit = 3, silent = TRUE))
   expect_equal(as.numeric(mod$param.full),
-               c(0.12818, 1.68720, 0.25099, 0.13146), tolerance = 1e-5)
+               c(-0.55425, -0.23690, 0.88891, 0.13567), tolerance = 1e-5)
 
 })
 
