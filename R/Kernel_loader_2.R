@@ -1,7 +1,7 @@
 kernL2 <- function(...) UseMethod("kernL2")
 
 kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           fixed.hyp = FALSE, nystrom = FALSE, nys.seed = NULL,
+                           fixed.hyp = NULL, nystrom = FALSE, nys.seed = NULL,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, lambda = 1, psi = 1) {
@@ -95,8 +95,13 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   }
   kernels <- get_kernels_from_Hl(Hl)
 
-  if (isTRUE(fixed.hyp)) {
-    est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- FALSE
+  if (!is.null(fixed.hyp)) {
+    if (isTRUE(fixed.hyp)) {
+      est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- FALSE
+    }
+    if (!isTRUE(fixed.hyp)) {
+      est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- TRUE
+    }
   }
   estl <- list(est.lambda = est.lambda, est.hurst = est.hurst,
                est.lengthscale = est.lengthscale, est.offset = est.offset,

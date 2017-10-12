@@ -8,7 +8,7 @@ iprior_parallel <- function(mod, method = "direct",
   }
   if (!isTRUE(control$silent)) {
     cat("Performing", control$restarts, "random restarts on", control$no.cores,
-        "cores.\n")
+        "cores\n")
     snow.options.list <- list(progress = function(i) setTxtProgressBar(pb, i))
     pb <- txtProgressBar(min = 0, max = control$restarts, style = 1)
   } else {
@@ -16,6 +16,7 @@ iprior_parallel <- function(mod, method = "direct",
   }
 
   # The multithreading bit -----------------------------------------------------
+  start.time <- Sys.time()
   cl <- parallel::makeCluster(control$no.cores)
   doSNOW::registerDoSNOW(cl)
   res <- foreach::`%dopar%`(
@@ -46,5 +47,14 @@ iprior_parallel <- function(mod, method = "direct",
   control$restarts <- 0
   control$theta0   <- res[[best.run]]$theta
   control$maxit    <- control$maxit - 3
-  iprior2(mod, method = method, control = control)
+  res <- iprior2(mod, method = method, control = control)
+  end.time <- Sys.time()
+  time.taken <- as.time(end.time - start.time)
+
+  # Update time, call, maxit, niter, lb, error, brier --------------------------
+  res$time <- time.taken
+  res$start.time <- start.time
+  res$end.time <- end.time
+
+  res
 }

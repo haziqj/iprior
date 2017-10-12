@@ -28,7 +28,7 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   control.optim <- list(
     fnscale = -2,
     trace   = ifelse(isTRUE(control$silent), 0, 1),
-    maxit   = control$maxit,
+    maxit   = max(0, control$maxit - 1),
     REPORT  = control$report
   )
 
@@ -45,6 +45,9 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
   # Send to correct estimation method ------------------------------------------
   if (as.numeric(control$restarts) >= 1) {
     res <- iprior_parallel(mod, method, control)
+    res$est.method <- paste0(
+      gsub("\\.", "", res$est.method), " with random restarts."
+    )
   } else {
     est.method <- iprior_method_checker(mod, method)
     if (est.method["fixed"]) {
@@ -53,7 +56,7 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
       res$est.conv <- ""
     } else if (est.method["canonical"]) {
       res <- iprior_canonical(mod, theta0, control.optim)
-      res$est.method <- "Direct minimisation of marginal deviance."
+      res$est.method <- "Efficient canonical method."
     } else {
       if (est.method["em.closed"]) {
         res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
@@ -67,11 +70,11 @@ iprior2.default <- function(y, ..., kernel = "linear", method = "direct",
       }
       if (est.method["direct"]) {
         res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
-        res$est.method <- "Direct minimisation of marginal deviance."
+        res$est.method <- "Direct optimisation method."
       }
       if (est.method["nystrom"]) {
         res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
-        res$est.method <- "Nystrom approximation of kernel matrix."
+        res$est.method <- "Nystrom approximated optimisation."
       }
       if (est.method["mixed"]) {
         res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,

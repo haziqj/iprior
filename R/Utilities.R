@@ -29,6 +29,36 @@ as.time <- function(x) {
   structure(list(time = time, unit = unit), class = "ipriorTime")
 }
 
+check_theta <- function(object) {
+  if (is.ipriorMod2(object)) object <- object$ipriorKernel
+  if (is.ipriorKernel2(object)) {
+    res <- names(object$thetal$theta)
+
+    ind.lam <- grep("lambda", res)
+    if (length(ind.lam) == 1) res[ind.lam] <- "log(lambda)"
+
+    ind.hur <- grep("hurst", res)
+    res[ind.hur] <- paste0("qnorm(", res[ind.hur], ")")
+
+    ind.len <- grep("lengthscale", res)
+    res[ind.len] <- paste0("log(", res[ind.len], ")")
+
+    ind.off <- grep("offset", res)
+    res[ind.off] <- paste0("log(", res[ind.off], ")")
+
+    ind.psi <- grep("psi", res)
+    res[ind.psi] <- "log(psi)"
+
+    if (length(res) == 0) {
+      cat("none")
+    }
+    else {
+      cat(paste0("theta consists of ", length(res), ":\n"))
+      cat(paste(res, collapse = ", "))
+    }
+  }
+}
+
 #' @export
 print.ipriorTime <- function(x, ...) {
   cat(x$time, x$unit)
@@ -97,7 +127,7 @@ triangIndex <- function(k){
 #' @param x An object.
 #'
 #' @export
-is.ipriorMod <- function(x) inherits(x, "ipriorMod")
+is.ipriorMod2 <- function(x) inherits(x, "ipriorMod2")
 
 #' @rdname is.ipriorMod
 #' @export
