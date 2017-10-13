@@ -1,22 +1,23 @@
 Package: iprior
 Title: Linear Regression using I-Priors
-Version: 0.6.5.9001
+Version: 0.6.5.9002
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
 Description: Provides methods to perform and analyse I-prior regression models.
-    Estimation is mainly done via an EM algorithm, but there is flexibility in
-    using any optimiser.
+    Estimation is done either via direct optimisation of the log-likelihood or 
+    an EM algorithm.
 URL: https://github.com/haziqjamil/iprior
 BugReports: https://github.com/haziqjamil/iprior/issues
 License: GPL (>= 3.0)
 Depends: 
   R (>= 3.2.5)
 Imports:
+  doSNOW,
+  foreach,
   ggplot2,
-  methods,
-  RColorBrewer,
-  Rcpp (>= 0.12.5)
+  Rcpp (>= 0.12.5),
+  scales
 LinkingTo:
   Rcpp,
   RcppEigen

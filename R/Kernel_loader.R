@@ -326,7 +326,7 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
 }
 
 #' @export
-print.ipriorKernel2 <- function(x) {
+print.ipriorKernel2 <- function(x, ...) {
   tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
 
   # if (isTRUE(x$probit)) {
