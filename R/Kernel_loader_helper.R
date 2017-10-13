@@ -324,6 +324,42 @@ theta_to_psi <- function(theta, object) {
   exp(logpsi)
 }
 
+get_hyperparam <- function(x) {
+  # Obtain the hyperparameters of kernels.
+  #
+  # Args: x is either a character vector of the kernel specification (e.g. x <-
+  # "fbm,0.5"), or it is the output from one of the kern_x() functions.
+  #
+  # Returns: The hyperparameter associated with the kernel (value that comes
+  # after the comma).
+  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
+  as.numeric(unlist(strsplit(x, ","))[2])
+}
+
+get_polydegree <- function(x) {
+  # Obtain the degree of the polynomial kernel.
+  #
+  # Args: x is either a character vector of the kernel specification (e.g. x <-
+  # "fbm,0.5"), or it is the output from one of the kern_x() functions.
+  #
+  # Returns: Integer.
+  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
+  degree <- unlist(strsplit(x, ","))[1]
+  degree <- unlist(strsplit(degree, "poly"))
+  if (length(degree) == 1) degree <- 2
+  else degree <- as.numeric(degree[2])
+  degree
+}
+
+get_kernels_from_Hl <- function(x) {
+  # Obtain the kernels used to generate the list of kernel matrices.
+  #
+  # Args: x is a list of kernel matrices.
+  #
+  # Returns: A character vector of kernels.
+  sapply(x, function(x) attributes(x)$kernel)
+}
+
 get_Xl.nys <- function(object) {
   # When using the Nystrom method, we calculate the kernel matrix using
   # get_Hl(Xl, Xl.nys) which produces a smaller m x n matrix. This is the helper
@@ -420,7 +456,7 @@ BlockB_fn <- function(Hl, intr, n, p) {
     Sl <- list(matrix(0, nrow = n, ncol = n))
     BB.msg <- "Single lambda"
   } else {
-    # Next, prepare the indices required for indxFn().
+    # Next, prepare the indices required for index_fn_B().
     z <- seq_along(Hl)
     ind1 <- rep(z, times = (length(z) - 1):0)
     ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
@@ -475,4 +511,107 @@ BlockB_fn <- function(Hl, intr, n, p) {
 
   list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl, ind1 = ind1,
        ind2 = ind2, ind = ind, BlockB = BlockB, BB.msg = BB.msg)
+}
+
+index_fn_B <- function(k) {
+  # Indexer helper function used to create indices for H2l. This is a helper
+  # function for BlockB_fn()
+  #
+  # Args: k is the index (out of p scale parameters) which is currently looped.
+  # Note that intr, ind1 and ind2 are created in kernL().
+  #
+  # Returns: A list of various information which helps manipulates the kernel
+  # matrices in BlockB_fn().
+  ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k	# locating var/kernel matrix
+  ind.int <- which(ind.int1 | ind.int2)  # of interactions (out of 1:no.int)
+  k.int <- ind.int + p	# which kernel matrix has interactions involves k
+  k.int.lam <- c(intr[1, ][ind.int2], intr[2, ][ind.int1])	# which has interaction with k?
+  nok <- (1:p)[-k]	# all variables excluding k
+  k.noint <- which(!(ind.int1 | ind.int2)) + p	# the opposite of k.int
+
+  # P.mat %*% R.mat + R.mat %*% P.mat indices ----------------------------------
+  grid.PR1 <- expand.grid(k, nok)
+  za <- apply(grid.PR1, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.PR2 <- expand.grid(k.int, nok)
+  zb <- apply(grid.PR2, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.PR.lam <- expand.grid(k.int.lam, nok)
+
+  # P.mat %*% U.mat + U.mat %*% P.mat indices ----------------------------------
+  grid.PU1 <- expand.grid(k, k.noint)
+  zc <- apply(grid.PU1, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.PU2 <- expand.grid(k.int, k.noint)
+  zd <- apply(grid.PU2, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.PU.lam <- expand.grid(k.int.lam, k.noint)
+
+  # P.mat %*% P.mat indices ----------------------------------------------------
+  grid.Psq <- t(combn(c(k, k.int), 2))
+  ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.Psq.lam <- NULL
+  if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
+
+  list(
+    k.int     = k.int,
+    k.int.lam = k.int.lam,
+    PRU       = c(za, zc, zb, zd),
+    PRU.lam1  = c(rep(0, length(nok) + length(k.noint)),
+                  grid.PR.lam[,1],
+                  grid.PU.lam[,1]),
+    PRU.lam2  = c(nok, k.noint, grid.PR.lam[,2], grid.PU.lam[,2]),
+    Psq       = c(k, k.int),
+    Psq.lam   = k.int.lam,
+    P2        = ze,
+    P2.lam1   = grid.Psq.lam[,1],
+    P2.lam2   = grid.Psq.lam[,2]
+  )
+}
+
+findH2 <- function(z, ind1, ind2){
+  # This function finds position of H2 (cross-product terms of H). Used in
+  # index_fn_B().
+  #
+  # Args: z is a dataframe created from expand.grid(), while ind1 and ind2 are
+  # the indices of the cross-product matrices. These are created in BlockB_fn().
+  #
+  # Returns: A logical vector for use in index_fn_B().
+  x <- z[1]; y <- z[2]
+  which((ind1 == x & ind2 == y) | (ind2 == x & ind1 == y))
+}
+
+tab_intr_3plus <- function(x) {
+  # Helper function which tabulates >2-way interactions.
+  #
+  # Args: x is a character vector of the form "1:2:3" etc. which basically says
+  # that variable 1 interacts with variable 2 and 3.
+  #
+  # Returns: A matrix of interactions information.
+  p <- max(sapply(strsplit(x, ":"), length))
+  sapply(strsplit(x, ":"), function(x) {
+    p_ <- length(x)
+    if (p_ < p) as.numeric(c(x, rep(0, p - p_)))
+    else as.numeric(x)
+  })
+}
+
+which_intr_3plus <- function(x) {
+  # Function to determine the positions of the >2-way interactions.
+  #
+  # Args: x is a character vector of the form "1:2:3" etc. which basically says
+  # that variable 1 interacts with variable 2 and 3.
+  #
+  # Returns: A logical vector, with TRUE indicating that that position has a
+  # >2-way interaction.
+  sapply(strsplit(x, ""), function(x) length(x) > 3)
+}
+
+reorder_x <- function(x, smp) {
+  # For the Nystrom method, the data (vector or matrix) needs to be reordered
+  # according to the random sample.
+  #
+  # Args: x (vector or matrix), and smp is the sequence of reordering.
+  #
+  # Returns: A reordered vector or matrix x.
+  if (is.vector(x)) res <- x[smp]
+  else res <- x[smp, ]
+  mostattributes(res) <- attributes(x)
+  res
 }

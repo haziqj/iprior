@@ -22,15 +22,33 @@ decimal_place <- function(x, k = 2) format(round(x, k), nsmall = k)
 
 dec_plac <- decimal_place
 
+#' Convert \code{difftime} class into \code{time} class
+#'
+#' @param x A \code{difftime} object.
+#'
+#' @return A \code{time} object which contains the time difference and units.
+#'
+#' @export
 as.time <- function(x) {
-  # For difftime objects
   time <- as.numeric(x)
   unit <- attr(x, "units")
-  structure(list(time = time, unit = unit), class = "ipriorTime")
+  structure(list(time = time, unit = unit), class = "time")
 }
 
+#' @export
+print.time <- function(x, ...) {
+  cat(x$time, x$unit)
+}
+
+#' Check the structure of the hyperparameters of an I-prior model
+#'
+#' @param object An \code{ipriorMod} object or an \code{ipriorKernel} object.
+#'
+#' @return A printout of the structure of the hyperparameters.
+#'
+#' @export
 check_theta <- function(object) {
-  if (is.ipriorMod2(object)) object <- object$ipriorKernel
+  if (is.ipriorMod(object)) object <- object$ipriorKernel
   if (is.ipriorKernel2(object)) {
     res <- names(object$thetal$theta)
 
@@ -59,84 +77,32 @@ check_theta <- function(object) {
   }
 }
 
-#' @export
-print.ipriorTime <- function(x, ...) {
-  cat(x$time, x$unit)
-}
-
-# Kernel checks
-is.kern_type <- function(x, type) {
-  if (!is.null(attributes(x)$kernel)) kernel_type <- attributes(x)$kernel
-  else kernel_type <- x
-  if (!is.null(kernel_type)) grepl(type, kernel_type)
-  else return(FALSE)
-}
-
-is.kern_linear <- function(x) is.kern_type(x, type = "linear")
-
-is.kern_fbm <- function(x) is.kern_type(x, type = "fbm")
-
-is.kern_pearson <- function(x) is.kern_type(x, type = "pearson")
-
-is.kern_se <- function(x) is.kern_type(x, type = "se")
-
-is.kern_poly <- function(x) is.kern_type(x, type = "poly")
-
-get_hyperparam <- function(x) {
-  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
-  as.numeric(unlist(strsplit(x, ","))[2])
-}
-
-get_polydegree <- function(x) {
-  if (!is.null(attributes(x)$kernel)) x <- attributes(x)$kernel
-  degree <- unlist(strsplit(x, ","))[1]
-  degree <- unlist(strsplit(degree, "poly"))
-  if (length(degree) == 1) degree <- 2
-  else degree <- as.numeric(degree[2])
-  degree
-}
-
-get_kernels_from_Hl <- function(x) {
-  sapply(x, function(x) attributes(x)$kernel)
-}
-
-
-
-#' @export
-.checkLevels <- function(y) {
-  # Function used for categorical response models. Obtains the levels in the ys
-  list(y = as.numeric(y), levels = levels(y))
-}
-
-triangIndex <- function(k){
-  # Function to list row and column index of upper triangular matrix including
-  # diagonals.
-  w <- 1:k
-  cbind(
-    row = rep(w, times = length(w):1 ) ,
-    col = unlist(lapply(1:length(w), function(x) c(NA,w)[-(0:x)]))
-  )
-}
-
-#' Test for \code{iprior} objects
+#' Test \code{iprior} objects
 #'
-#' Checks whether an object is an \code{iprior} fitted model (i.e. an
-#' \code{ipriorMod} object), or an object ready for an \code{iprior} fit (i.e.
-#' an \code{ipriorKernel} object).
+#' Test whether an object is an \code{ipriorMod}, \code{ipriorKernel}, or either
+#' object with Nystrom method enabled.
 #'
-#' @param x An object.
+#' @param x An \code{ipriorMod} or \code{ipriorKernel} object.
 #'
-#' @export
-is.ipriorMod2 <- function(x) inherits(x, "ipriorMod2")
+#' @return Logical.
+#'
+#' @name is.iprior_x
+NULL
 
-#' @rdname is.ipriorMod
+#' @rdname is.iprior_x
 #' @export
-is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
+is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
-is.ipriorKernel_Nystrom <- function(x) inherits(x, "ipriorKernel_Nystrom")
+#' @rdname is.iprior_x
+#' @export
+is.ipriorKernel <- function(x) {
+  inherits(x, "ipriorKernel") | inherits(x, "ipriorKernel2")
+}
+
+is.ipriorKernel2 <- function(x) inherits(x, "ipriorKernel2")
 
 is.ipriorKernel_nys <- function(x) {
-  if (is.ipriorMod2(x)) x <- x$ipriorKernel
+  if (is.ipriorMod(x)) x <- x$ipriorKernel
   if (is.ipriorKernel2(x)) {
     !is.null(x$nystroml)
   } else {
@@ -144,260 +110,115 @@ is.ipriorKernel_nys <- function(x) {
   }
 }
 
-is.ipriorKernel2 <- function(x) inherits(x, "ipriorKernel2")
-
-is.ipriorX <- function(x) inherits(x, "ipriorX")
-
-testXForm <- function(x) {
-  # Tests whether object x is a data frame fitted using formula interface.
-  xform <- FALSE
-  if (length(x) == 1) {
-    if (is.data.frame(x[[1]])) {
-      xform <- !is.null(attr(x[[1]], "terms"))
-    }
-  }
-  xform
-}
-
-isHOrd <- function(x) {
-  # Tests whether x contains ^ indicating higher order term.
-  grepl("\\^", x)
-}
-
-whereOrd <- function(x) {
-  # Index of non-higher order terms.
-  grep("\\^", x, invert = TRUE)
-}
-
-lenHOrd <- function(x) {
-  # How many higher order terms have been specified?
-  length(grep("\\^", x))
-}
-
-splitHOrd <- function(x) {
-  # Gets the level 1 index and the power it is raised to
-  strsplit(x, "\\^")[[1]]
-}
-
-isCan <- function(x) x == "Canonical"
-
-isPea <- function(x) x == "Pearson"
-
-isFBM <- function(x) grepl("FBM", x)
-
-isNystrom <- function(x) {
-  if (!is.list(x$Nystrom)) return(x$Nystrom)
-  else return(TRUE)
-}
-
-fastSquareRoot2 <- function(x) {
-  tmp <- eigenCpp(x)
-  tmp$vec %*% tcrossprod(diag(sqrt(abs(tmp$val))), tmp$vec)
-}
-
-canPeaFBM <- function(x, kernel, gamma, y, rootkern = FALSE) {
-  if (isCan(kernel)) res <- fnH2(x, y)
-  if (isPea(kernel)) res <- fnH1(x, y)
-  if (isFBM(kernel)) res <- fnH3(x, y, gamma)
-  if (rootkern) {
-    classres <- paste0("r", class(res))
-    res <- fastSquareRoot2(res)
-    class(res) <- classres
-    res
-  } else {
-    res
-  }
-
-}
-
-whereInt <- function(x) {
-  tmp <- x > 0
-  x[tmp] <- which(x > 0)
-  x[!tmp] <- 0
-  x
-}
-
-which_intr_3plus <- function(x) {
-  sapply(strsplit(x, ""), function(x) length(x) > 3)
-}
-
-whichIntr3Plus <- which_intr_3plus
-
-add_zeroes_intr_3plus <- function(x) {
-  p <- max(sapply(strsplit(x, ":"), length))
-  sapply(strsplit(x, ":"), function(x) {
-    p_ <- length(x)
-    if (p_ < p) as.numeric(c(x, rep(0, p - p_)))
-    else as.numeric(x)
-  })
-}
-
-addZeroesIntr3Plus <- add_zeroes_intr_3plus
-
-splitKernel <- function(kernel) {
-  # Helper function to split the FBMs from the Hurst coefficients, if any
-  paste(lapply(strsplit(kernel, ","), function(x) x[1]))
-}
-
-splitHurst <- function(kernel) {
-  # Helper function to split the FBMs from the Hurst coefficients, if any
-  suppressWarnings(
-    tmp <- as.numeric(paste(lapply(strsplit(kernel, ","), function(x) x[2])))
-  )
-  # tmp[is.na(tmp)] <- 0.5
-  tmp
-}
-
+#' @rdname is.iprior_x
 #' @export
-.hMatList <- function(x, kernel, intr, no.int, gamma, intr.3plus, rootkern,
-                      xstar = vector("list", p)) {
-  # Helper function for creation of list of H matrices. Used in Kernel_loader.r
-  # and predict.R
-  p <- length(x)
+is.nystrom <- is.ipriorKernel_nys
 
-  # Check how many Hurst coefficients are provided -----------------------------
-  # if (length(gamma) < sum(isFBM(kernel))) {
-  #   warning("Number of Hurst coefficients supplied is less than the number of FBM kernels used.", call. = FALSE)
-  # }
-  # if (length(gamma) > p) {
-  #   stop("Number of Hurst coefficients supplied is more than the number of FBM kernels used.", call. = FALSE)
-  # }
+#' Test kernel attributes
+#'
+#' Test whether an object uses a specific type of kernel.
+#'
+#' @param x An \code{ipriorMod} object, \code{ipriorKernel} object, a kernel
+#'   matrix generated from one of the \code{kern_x()} functions, or even simply
+#'   just a character vector.
+#'
+#' @return Logical.
+#'
+#' @name is.kern_x
+NULL
 
-  suppressWarnings(
-    H <- mapply(canPeaFBM, x = x, kernel = as.list(kernel), gamma = gamma,
-                y = xstar, rootkern = rootkern, SIMPLIFY = FALSE)
-  )
-  if (!is.null(intr)) {
-	  # Add in interactions, if any.
-		for (j in 1:no.int) {
-			H[[p + j]] <- H[[intr[1, j]]] * H[[intr[2, j]]]
-			class(H[[p + j]]) <- paste(class(H[[intr[1,j]]]), class(H[[intr[2,j]]]),
-			                           sep = " x ")
-		}
-  }
-  if (!is.null(intr.3plus) & length(intr.3plus) > 0) {
-    no.int.3plus <- ncol(intr.3plus)
-    for (j in 1:no.int.3plus) {
-      H[[p + j + no.int]] <- Reduce("*", H[intr.3plus[, j]])
-      intr.3plus.class <- sapply(H[intr.3plus[, j]], class)
-      class(H[[p + j + no.int]]) <- paste(intr.3plus.class, collapse = " x ")
-    }
-  }
-	H
+is.kern_type <- function(x, type) {
+  if (is.ipriorMod(x)) kernel_type <- x$ipriorKernel$kernels
+  else if (is.ipriorKernel2(x)) kernel_type <- x$kernels
+  else if (!is.null(attributes(x)$kernel)) kernel_type <- attributes(x)$kernel
+  else kernel_type <- x
+  if (!is.null(kernel_type)) grepl(type, kernel_type)
+  else return(FALSE)
 }
 
-index_fn_B <- function(k) {
-  # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
-  # ind2 are created in kernL().
-	ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k	# locating var/kernel matrix
-	ind.int <- which(ind.int1 | ind.int2)  # of interactions (out of 1:no.int)
-	k.int <- ind.int + p	# which kernel matrix has interactions involves k
-	k.int.lam <- c(intr[1, ][ind.int2], intr[2, ][ind.int1])	# which has interaction with k?
-	nok <- (1:p)[-k]	# all variables excluding k
-	k.noint <- which(!(ind.int1 | ind.int2)) + p	# the opposite of k.int
+#' @rdname is.kern_x
+#' @export
+is.kern_linear <- function(x) is.kern_type(x, type = "linear")
 
-	# P.mat %*% R.mat + R.mat %*% P.mat indices ----------------------------------
-	grid.PR1 <- expand.grid(k, nok)
-	za <- apply(grid.PR1, 1, findH2, ind1 = ind1, ind2 = ind2)
-	grid.PR2 <- expand.grid(k.int, nok)
-	zb <- apply(grid.PR2, 1, findH2, ind1 = ind1, ind2 = ind2)
-	grid.PR.lam <- expand.grid(k.int.lam, nok)
+#' @rdname is.kern_x
+#' @export
+is.kern_canonical <- is.kern_linear
 
-	# P.mat %*% U.mat + U.mat %*% P.mat indices ----------------------------------
-	grid.PU1 <- expand.grid(k, k.noint)
-	zc <- apply(grid.PU1, 1, findH2, ind1 = ind1, ind2 = ind2)
-	grid.PU2 <- expand.grid(k.int, k.noint)
-	zd <- apply(grid.PU2, 1, findH2, ind1 = ind1, ind2 = ind2)
-	grid.PU.lam <- expand.grid(k.int.lam, k.noint)
+#' @rdname is.kern_x
+#' @export
+is.kern_fbm <- function(x) is.kern_type(x, type = "fbm")
 
-	# P.mat %*% P.mat indices ----------------------------------------------------
-	grid.Psq <- t(combn(c(k, k.int), 2))
-	ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2)
-	grid.Psq.lam <- NULL
-	if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
+#' @rdname is.kern_x
+#' @export
+is.kern_pearson <- function(x) is.kern_type(x, type = "pearson")
 
-	list(
-	    k.int     = k.int,
-	    k.int.lam = k.int.lam,
-			PRU       = c(za, zc, zb, zd),
-			PRU.lam1  = c(rep(0, length(nok) + length(k.noint)),
-			            grid.PR.lam[,1],
-			            grid.PU.lam[,1]),
-			PRU.lam2  = c(nok, k.noint, grid.PR.lam[,2], grid.PU.lam[,2]),
-			Psq       = c(k, k.int),
-			Psq.lam   = k.int.lam,
-			P2        = ze,
-			P2.lam1   = grid.Psq.lam[,1],
-			P2.lam2   = grid.Psq.lam[,2]
-	)
+#' @rdname is.kern_x
+#' @export
+is.kern_se <- function(x) is.kern_type(x, type = "se")
+
+#' @rdname is.kern_x
+#' @export
+is.kern_poly <- function(x) is.kern_type(x, type = "poly")
+
+#' Emulate \code{ggplot2} default colour palette
+#'
+#' Emulate \code{ggplot2} default colour palette.
+#'
+#' This is the default colour scale for categorical variables in \code{ggplot2}.
+#' It maps each level to an evenly spaced hue on the colour wheel. It does not
+#' generate colour-blind safe palettes.
+#'
+#' \code{ipriorColPal()} used to provide the colour palette for the
+#' \code{iprior} package, but this has been changed \code{ggplot2}'s colour
+#' palette instead.
+#'
+#' @param x The number of colours required.
+#' @param h Range of hues to use, in [0, 360].
+#' @param c Chroma (intensity of colour), maximum value varies depending on
+#'   combination of hue and luminance.
+#' @param l Luminance (lightness), in [0, 100].
+#'
+#' @export
+gg_colour_hue <- function(x, h = c(0, 360) + 15, c = 100, l = 65) {
+  hues <- seq(h[1], h[2], length = x + 1)
+  grDevices::hcl(h = hues, c = c, l = l)[1:x]
 }
 
-indxFn <- index_fn_B
+#' @rdname gg_colour_hue
+#' @export
+gg_color_hue <- gg_colour_hue
 
-findH2 <- function(z, ind1, ind2){
-  # This function finds position of H2 (cross-product terms of H). Used in
-  # indxFn(). z is a dataframe created from expand.grid().
-  x <- z[1]; y <- z[2]
-  which((ind1 == x & ind2 == y) | (ind2 == x & ind1 == y))
+#' @rdname gg_colour_hue
+#' @export
+gg_col_hue <- gg_colour_hue
+
+#' @rdname gg_colour_hue
+#' @export
+ipriorColPal <- function(x) {
+  gg_colour_hue(x)
 }
-
-# flatten <- function(x) {
-	# len <- sum(rapply(x, function(x) 1L))
-	# y <- vector("list", len)
-	# i <- 0L
-	# rapply(x, function(x) { i <<- i+1L; y[[i]] <<- x })
-	# y
+# ipriorColPal <- function(x) {
+#   colx <- c(RColorBrewer::brewer.pal(9, "Set1")[-9],
+#             RColorBrewer::brewer.pal(8, "Dark2"))
+#   colx[6] <- RColorBrewer::brewer.pal(8, "Set2")[6]
+#   colx[x]
 # }
 
-if (getRversion() < "3.3.0") {
-  sigma <- function(object, ...) UseMethod("sigma")
+check_levels <- function(y) {
+  # Function used for categorical response model to obtains the levels in the
+  # ys.
+  #
+  # Args: Categorical response variables y.
+  #
+  # Returns: A list of the numerical values (1, 2, 3, ...) and the levels.
+  list(y = as.numeric(y), levels = levels(y))
 }
 
-#' Obtain the standard deviation of the residuals 'sigma'
-#'
-#' Extract the standard deviation of the residuals. For I-prior models, this is
-#' \code{sigma = 1 / sqrt(psi)}.
-#'
-#' This basically obtains \code{object$sigma}. For \code{R (>= 3.3.0)} then
-#' \code{sigma} is an S3 method with the default method coming from the
-#' \code{stats} package.
-#'
-#' @param object An object of class \code{ipriorMod}.
-#' @param ... This is not used here.
-#'
-#' @rawNamespace if (getRversion() >= "3.3.0") importFrom(stats,sigma)
-#' @rawNamespace if (getRversion() < "3.3.0") export(sigma)
-#' @name sigma
 #' @export
-sigma.ipriorMod <- function(object, ...) object$sigma
-
+.checkLevels <- check_levels
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
   # yourself when your package is unloaded.
   library.dynam.unload("iprior", libpath)
-}
-
-#' Colour palette for \code{iprior} plots
-#'
-#' This is the colour palette used by the \code{iprior} package. It is based off
-#' \code{RColorBrewer::brewer.pal}'s Set 1, Set 2 and Dark 2 palettes.
-#'
-#' @param x (optional) A vector of maximum length 16.
-#'
-#' @return The colour palette indexed by \code{x}.
-#'
-#' @export
-ipriorColPal <- function(x) {
-  colx <- c(RColorBrewer::brewer.pal(9, "Set1")[-9],
-            RColorBrewer::brewer.pal(8, "Dark2"))
-  colx[6] <- RColorBrewer::brewer.pal(8, "Set2")[6]
-  colx[x]
-}
-
-#' @rdname ipriorColPal
-#' @export
-ggColPal <- function(x) {
-  hues = seq(15, 375, length = x + 1)
-  grDevices::hcl(h = hues, l = 65, c = 100)[1:x]
 }

@@ -23,12 +23,42 @@ logLik.ipriorMod <- function(object, ...) {
   res[length(res)]
 }
 
+deviance.ipriorMod <- function(object, ...) {
+  -2 * logLik.ipriorMod(object, ...)
+}
+
+if (getRversion() < "3.3.0") {
+  sigma <- function(object, ...) UseMethod("sigma")
+}
+
+#' Obtain the standard deviation of the residuals 'sigma'
+#'
+#' Extract the standard deviation of the residuals. For I-prior models, this is
+#' \code{sigma = 1 / sqrt(psi)}.
+#'
+#' This basically obtains \code{object$sigma}. For \code{R (>= 3.3.0)} then
+#' \code{sigma} is an S3 method with the default method coming from the
+#' \code{stats} package.
+#'
+#' @param object An object of class \code{ipriorMod}.
+#' @param ... This is not used here.
+#'
+#' @rawNamespace if (getRversion() >= "3.3.0") importFrom(stats,sigma)
+#' @rawNamespace if (getRversion() < "3.3.0") export(sigma)
+#' @name sigma
+#' @export
+sigma.ipriorMod <- function(object, ...) {
+  psi <- theta_to_psi(object$theta, object$ipriorKernel)
+  res <- 1 / sqrt(psi)
+  names(res) <- "sigma"
+  res
+}
+
 update.ipriorMod <- function(object, method = NULL, control = list(),
                               iter.update = 100, ...) {
   res <- iprior.ipriorMod(object, method, control, iter.update, ...)
   assign(deparse(substitute(object)), res, envir = parent.frame())
 }
-
 
 print.ipriorMod <- function(x, digits = 5) {
   loglik.max <- x$loglik[length(x$loglik)]

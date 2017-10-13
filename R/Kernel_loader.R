@@ -175,7 +175,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   }
   if (length(intr.3plus) == 0) intr.3plus <- NULL
   if (!is.null(intr.3plus)) {
-    if (!isTRUE(formula.method)) intr.3plus <- add_zeroes_intr_3plus(intr.3plus)
+    if (!isTRUE(formula.method)) intr.3plus <- tab_intr_3plus(intr.3plus)
     no.int.3plus <- ncol(intr.3plus)
   }
 
@@ -219,10 +219,11 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   # | est.lengthscale |             FALSE |
   # | est.offset      |             FALSE |
   # | est.psi         |              TRUE |
+  # | intr.3plus      |              NULL |
   BlockB.cond <- (
     all(is.na(poly.deg)) & !isTRUE(est.hurst) & !isTRUE(est.lengthscale) &
       !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi)) &
-      !isTRUE(nys.check)
+      !isTRUE(nys.check) & is.null(intr.3plus)
   )
   if (isTRUE(BlockB.cond)) {
     BlockBStuff <- BlockB_fn(Hl, intr, n, p)
