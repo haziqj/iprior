@@ -8,7 +8,7 @@ plot_predict <- function(x) {
     theme_bw()
 }
 
-plot_fitted2 <- function(x, X.var = 1, ci = TRUE) {
+plot_fitted <- function(x, X.var = 1, ci = TRUE) {
   fit <- fitted(x, intervals = ci)
   y.hat <- fit$y
   X <- x$ipriorKernel$Xl[[X.var]]

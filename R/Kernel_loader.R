@@ -122,7 +122,12 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   # Meta -----------------------------------------------------------------------
   n <- length(y)
   p <- length(Xl)
-  if (is.null(xname)) xname <- paste0("X", seq_len(p))
+  if (is.null(xname)) {
+    xname <- paste0("X", seq_len(p))
+  } else {
+    where.blanks <- grepl("^$", xname)
+    xname[where.blanks] <- paste0("X", which(where.blanks))
+  }
   if (is.null(yname)) yname <- "y"
 
   # For Nystrom method: Reorder data and create Xl.Nys -------------------------
@@ -242,13 +247,24 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     xname = xname, yname = yname, formula = NULL, terms = NULL
   )
 
+  cl <- match.call()
+  cl[[1L]] <- as.name("kernL")
+  where.blanks <- grepl("^$", names(cl))[-(1:2)]
+  names(cl)[-(1:2)][where.blanks] <- paste0("X", which(where.blanks))
+  res$call <- cl
+
   class(res) <- "ipriorKernel2"
   res
 }
 
 #' @rdname kernL2
 #' @export
-kernL2.formula <- function(formula, data, ..., one.lam = FALSE) {
+kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list(), ...) {
   mf <- model.frame(formula = formula, data = data)
   tt <- terms(mf)
   Terms <- delete.response(tt)
@@ -292,9 +308,20 @@ kernL2.formula <- function(formula, data, ..., one.lam = FALSE) {
     names(x) <- xname
   }
 
-  res <- kernL2.default(y = y, Xl.formula = x, interactions = interactions, ...)
+  res <- kernL2.default(y = y, Xl.formula = x, interactions = interactions,
+                        kernel = kernel, est.lambda = est.lambda,
+                        est.hurst = est.hurst,
+                        est.lengthscale = est.lengthscale,
+                        est.offset = est.offset, est.psi = est.psi,
+                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
+                        nystrom = nystrom, nys.seed = nys.seed, model = model)
   res$formula <- formula
   res$terms <- tt
+
+  cl <- match.call()
+  cl[[1L]] <- as.name("kernL")
+  res$call <- cl
+
   res
 }
 

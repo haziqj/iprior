@@ -123,11 +123,10 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   res$method <- method
   res$control <- control
 
-  cl <- match.call()
-  res$fullcall <- cl
+  res$fullcall <- match.call()
+  cl <- mod$call
   cl[[1L]] <- as.name("iprior")
   # names(cl)[2] <- ""  # get rid of "y ="
-  names(cl)[-(1:2)] <- paste0("X", seq_along(names(cl)[-(1:2)]))
   res$call <- cl
 
   class(res) <- "ipriorMod"
@@ -138,11 +137,6 @@ iprior.formula <- function(formula, data, kernel = "linear", method = "direct",
                             control = list(), ...) {
   mod <- kernL2.formula(formula, data, kernel = kernel, ...)
   res <- iprior.default(y = mod, method = method, control = control)
-
-  cl <- match.call()
-  res$fullcall <- cl
-  cl[[1L]] <- as.name("iprior")
-  res$call <- cl
   res
 }
 

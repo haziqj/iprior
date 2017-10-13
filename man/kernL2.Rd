@@ -10,7 +10,10 @@ kernL2(y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
   nystrom = FALSE, nys.seed = NULL, model = list())
 
-\method{kernL2}{formula}(formula, data, ..., one.lam = FALSE)
+\method{kernL2}{formula}(formula, data, kernel = "linear", one.lam = FALSE,
+  est.lambda = TRUE, est.hurst = FALSE, est.lengthscale = FALSE,
+  est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+  psi = 1, nystrom = FALSE, nys.seed = NULL, model = list(), ...)
 }
 \arguments{
 \item{y}{Vector of response variables}
