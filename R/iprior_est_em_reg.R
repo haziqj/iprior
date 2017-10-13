@@ -1,5 +1,38 @@
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
 iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
-                          theta0 = NULL, psi.reg = FALSE) {
+                          theta0 = NULL, psi.reg = FALSE, mixed = FALSE) {
+  # The regular version of the EM algorithm for estimating I-prior models. This
+  # maximises the M-step using the quasi-Newton L-BFGS algorithm.
+  #
+  # Args: An ipriorKernel object (mod), number of maximum EM iterations (maxit),
+  # the stopping criterion to determine convergence (stop.crit), an option to
+  # suppress reporting (silent), the initial values (theta0) and a logical
+  # argument used internally to determine whether this EM routine is part of the
+  # iprior_mixed() routine or not.
+  #
+  # Returns: A list containing the optimised theta and parameters, loglik
+  # values, standard errors, number of iterations, time taken, and convergence
+  # information.
+
   # Declare all variables and functions to be used into environment ------------
   y <- mod$y
   n <- mod$n
@@ -21,10 +54,10 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     # Block A ------------------------------------------------------------------
     if (is.ipriorKernel_nys(mod)) {
       Hlam <- get_Hlam(mod, theta, get_Xl.nys(mod))
-      list2env(eigen_Hlam_nys(Hlam), environment())
+      eigen_Hlam_nys(Hlam, environment())
     } else {
       Hlam <- get_Hlam(mod, theta)
-      list2env(eigen_Hlam(Hlam), environment())
+      eigen_Hlam(Hlam, environment())
     }
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
@@ -63,46 +96,57 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   time.taken <- as.time(end.time - start.time)
 
   # Calculate standard errors --------------------------------------------------
-  tmp <- optimHess(theta, loglik_iprior, object = mod)
-  tmp <- eigenCpp(-tmp)
-  u <- tmp$val + 1e-9
-  V <- tmp$vec
-  Fi.inv <- V %*% t(V) / u
-  se <- sqrt(diag(Fi.inv))
-  se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
+  if (!isTRUE(mixed)) {
+    tmp <- optimHess(theta, loglik_iprior, object = mod)
+    tmp <- eigenCpp(-tmp)
+    u <- tmp$val + 1e-9
+    V <- tmp$vec
+    Fi.inv <- V %*% t(V) / u
+    se <- sqrt(diag(Fi.inv))
+    se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
+  } else {
+    se <- NULL
+  }
 
   # Clean up and close ---------------------------------------------------------
-  convergence <- niter != maxit
+  convergence <- niter == maxit
   param.full <- theta_to_collapsed_param(theta, mod)
 
   if (!silent) {
     close(pb)
-    if (convergence) cat("Converged after", niter, "iterations.\n")
-    else cat("Convergence criterion not met.\n")
+    if (isTRUE(mixed)) cat("")
+    else if (convergence) cat("Convergence criterion not met.\n")
+    else cat("Converged after", niter, "iterations.\n")
   }
 
   list(theta = theta, param.full = param.full,
-       loglik = as.numeric(na.omit(loglik)),
-       se = se, niter = niter, w = as.numeric(w), start.time = start.time,
-       end.time = end.time, time = time.taken,
-       convergence = as.numeric(!convergence), message = NULL)
+       loglik = as.numeric(na.omit(loglik)), se = se, niter = niter,
+       w = as.numeric(w), start.time = start.time, end.time = end.time,
+       time = time.taken, convergence = convergence, message = NULL)
 }
 
 QEstep <- function(theta, psi = NULL, object, w, W) {
-  # Q(theta) = psi  * sum(y ^ 2) + tr(Vy %*% W) - 2 * psi * crossprod(y,
-  # Hlam %*% w)
+  # This is the Q function (E-step) for the EM algorithm. It is defined as
+  # Q(theta) = psi  * sum(y ^ 2) + tr(Vy %*% W) - 2 * psi * crossprod(y, Hlam
+  # %*% w)
+  #
+  # Args: parameters theta and psi (optional), the ipriorKernel2 object, the
+  # vector w and matrix W.
+  #
+  # Returns: Numeric.
   if (is.null(psi)) psi <- theta_to_psi(theta, object)
   if (is.ipriorKernel_nys(mod)) {
     Hlam <- get_Hlam(object, theta, get_Xl.nys(mod))
-    list2env(eigen_Hlam_nys(Hlam), environment())
+    eigen_Hlam_nys(Hlam, environment())
   } else {
     Hlam <- get_Hlam(object, theta)
-    list2env(eigen_Hlam(Hlam), environment())
+    eigen_Hlam(Hlam, environment())
   }
   Hlamsq <- V %*% (t(V) * u ^ 2)
   Hlam.w <- V %*% crossprod(V * u, w)
   Vy <- psi * Hlamsq + diag(1 / psi, object$n)
   res <- psi * sum(object$y ^ 2) + sum(Vy * W) -
     2 * psi * crossprod(object$y, Hlam.w)
+
   as.numeric(res)
 }

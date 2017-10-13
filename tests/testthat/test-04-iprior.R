@@ -38,7 +38,8 @@ test_that("Canonical", {
 
 test_that("EM", {
 
-  mod <- list(thetal = list(n.theta = 10), BlockBStuff = 1)
+  mod <- list(thetal = list(n.theta = 10), BlockBStuff = 1,
+              estl = list(est.lambda = TRUE, est.psi = TRUE))
   res <- iprior_method_checker(mod, "em")
   expect_true(res["em.closed"])
 
@@ -86,7 +87,7 @@ test_that("iprior_direct", {
 
 test_that("iprior_fixed", {
 
-  mod <- iprior2(stack.loss ~ ., stackloss, fixed.hyp = TRUE,
+  mod <- iprior(stack.loss ~ ., stackloss, fixed.hyp = TRUE,
                  control = list(silent = TRUE))
   expect_equal(as.numeric(mod$param.full), rep(1, 4))
 
@@ -95,7 +96,7 @@ test_that("iprior_fixed", {
 test_that("iprior_em_closed", {
 
   set.seed(123)
-  mod <- iprior2(kernL2(stack.loss ~ ., stackloss), method = "em",
+  mod <- iprior(kernL2(stack.loss ~ ., stackloss), method = "em",
                  control = list(maxit = 3, silent = TRUE))
   expect_equal(as.numeric(mod$param.full),
                c(-0.55425, -0.23690, 0.88891, 0.13567), tolerance = 1e-5)
@@ -107,7 +108,7 @@ test_that("print()", {
   y <- 1:3
   x1 <- 1:3
   x2 <- factor(7:9)
-  mod <- iprior2(y, x1, x2, fixed.hyp = TRUE, control = list(silent = TRUE))
+  mod <- iprior(y, x1, x2, fixed.hyp = TRUE, control = list(silent = TRUE))
   tmp <- capture.output(print(mod))
   tmp <- summary(mod)
   tmp <- capture.output(print(tmp))

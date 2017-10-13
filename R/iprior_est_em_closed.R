@@ -1,6 +1,40 @@
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
 iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
                              theta0 = NULL, lambda0 = NULL, psi0 = NULL,
                              mixed = FALSE) {
+  # The closed-form EM algorithm method for estimating I-prior models. This only
+  # works when there are no other hyperparameters to estimate other than lambda
+  # and psi.
+  #
+  # Args: An ipriorKernel object (mod), number of maximum EM iterations (maxit),
+  # the stopping criterion to determine convergence (stop.crit), an option to
+  # suppress reporting (silent), the initial values (theta0) and a logical
+  # argument used internally to determine whether this EM routine is part of the
+  # iprior_mixed() routine or not.
+  #
+  # Returns: A list containing the optimised theta and parameters, loglik
+  # values, standard errors, number of iterations, time taken, and convergence
+  # information.
+
   # Declare all variables and functions to be used into environment ------------
   iprior.env <- environment()
   list2env(mod, iprior.env)
@@ -22,7 +56,6 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   lambda <- theta_to_collapsed_param(theta0, mod)[seq_len(mod$p)]
   niter <- 0
   loglik <- rep(NA, maxit)
-  Hl <- expand_Hl_and_lambda(Hl, lambda, intr, intr.3plus)$Hl
 
   # The EM loop ----------------------------------------------------------------
   if (!silent) pb <- txtProgressBar(min = 0, max = maxit, style = 1)
@@ -31,7 +64,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   while (em_loop_logical()) {
     # Block A ------------------------------------------------------------------
     Hlam <- get_Hlam(mod, lambda, theta.is.lambda = TRUE)
-    list2env(eigen_Hlam(Hlam), environment())
+    eigen_Hlam(Hlam, environment())
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
     # Block C ------------------------------------------------------------------
@@ -48,6 +81,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
       T2 <- crossprod(y, Pl[[k]]) %*% w - sum(Sl[[k]] * W) / 2
       lambda[k] <- as.numeric(T2 / T1)
     }
+
 
     # Update psi ---------------------------------------------------------------
     Hlamsq <- V %*% (t(V) * u ^ 2)
@@ -67,8 +101,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   time.taken <- as.time(end.time - start.time)
 
   # Calculate standard errors --------------------------------------------------
-  # >>> needs adjusting depending on est.lambda / est.psi = T/F <<<
-  if (!mixed) {
+  if (!isTRUE(mixed)) {
     Vy.inv <- V %*% zinv.Vt
     dVy <- NULL
     for (i in seq_len(p)) {
@@ -94,7 +127,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   if (!silent) {
     close(pb)
-    if (mixed) cat("")
+    if (isTRUE(mixed)) cat("")
     else if (convergence) cat("Convergence criterion not met.\n")
     else cat("Converged after", niter, "iterations.\n")
   }
@@ -104,26 +137,4 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
        se = se, niter = niter, w = as.numeric(w), start.time = start.time,
        end.time = end.time, time = time.taken, convergence = convergence,
        message = NULL)
-}
-
-em_loop_logical <- function() {
-  # Helper function to determine when to stop the while loop for the EM
-  # algorithm.
-  # If niter == 0 return TRUE because must complete 1 iteration.
-  # If niter == 1 then stop if maxit == 1, otherwise continue (nothing to compare).
-  # If niter > 1 then just check whether maxit reached or stop.crit reached.
-  ll.diff <- loglik[niter] - loglik[niter - 1]
-  crit1 <- (niter != maxit)
-  crit2 <- (abs(ll.diff) > stop.crit)
-  if (niter == 0) {
-    return(TRUE)
-  } else if (niter == 1) {
-    return(crit1)
-  } else {
-    if (ll.diff < 0) {
-      warning(paste0("Log-likelihood decreased at iteration ", niter),
-              call. = FALSE)
-    }
-    return(crit1 & crit2)
-  }
 }

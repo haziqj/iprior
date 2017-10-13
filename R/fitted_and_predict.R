@@ -1,4 +1,4 @@
-fitted.ipriorMod2 <- function(object, intervals = FALSE, alpha = 0.05, ...) {
+fitted.ipriorMod <- function(object, intervals = FALSE, alpha = 0.05, ...) {
   y.hat <- object$fitted.values
   res <- list(y = y.hat, resid = object$residuals,
               train.error = object$train.error)
@@ -9,7 +9,7 @@ fitted.ipriorMod2 <- function(object, intervals = FALSE, alpha = 0.05, ...) {
   res
 }
 
-predict.ipriorMod2 <- function(object, newdata = list(), y.test = NULL,
+predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
                                intervals = FALSE, alpha = 0.05, ...) {
   if (length(newdata) == 0) {
     return(cat("No new data supplied. Use fitted() instead."))

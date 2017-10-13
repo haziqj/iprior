@@ -1,10 +1,101 @@
-kernL2 <- function(...) UseMethod("kernL2")
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
 
+#' Load the kernel matrices for I-prior models
+#'
+#' @param y Vector of response variables
+#' @param ... Only used when fitting using non-formula, enter the variables
+#'   (vectors or matrices) separated by commas.
+#' @param formula The formula to fit when using formula interface.
+#' @param data Data frame containing variables when using formula interface.
+#' @param kernel Character vector indicating the type of kernel for the
+#'   variables. Available choices are: \itemize{ \item{\code{"linear"} -
+#'   (default) for the linear kernel} \item{\code{"canonical"} - alternative
+#'   name for \code{"linear"}} \item{\code{"fbm"}, \code{"fbm,0.5"} - for the
+#'   fBm kernel with Hurst coefficient 0.5 (default)} \item{\code{"se"},
+#'   \code{"se,1"} - for the SE kernel with lengthscale 1 (default)}
+#'   \item{\code{"poly"}, \code{"poly2"}, \code{"poly2,0"} - for the polynomial
+#'   kernel of degree 2 with offset 0 (default)} \item{\code{"pearson" - for the
+#'   Pearson kernel}}} The \code{kernel} argument can also be a vector of length
+#'   equal to the number of variables, therefore it is possible to specify
+#'   different kernels for each variables. Note that factor type variables are
+#'   assigned the Pearson kernel by default, and that non-factor types can be
+#'   forced to use the Pearson kernel (not recommended).
+#' @param interactions Character vector to specify the interaction terms. When
+#'   using formulas, this is specified automatically, so is not required. Syntax
+#'   is \code{"a:b"} to indicate variable \code{a} interacts with variable
+#'   \code{b}.
+#' @param est.lambda Logical. Estimate the scale parameters? Defaults to
+#'   \code{TRUE}.
+#' @param est.hurst Logical. Estimate the Hurst coefficients for fBm kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.lengthscale Logical. Estimate the lengthscales for SE kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.offset Logical. Estimate the offsets for polynomial kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.psi Logical. Estimate the error precision? Defaults to
+#'   \code{TRUE}.
+#' @param fixed.hyp Logical. If \code{TRUE}, then no hyperparameters are
+#'   estimated, i.e. all of the above \code{est.x} are set to \code{FALSE}, and
+#'   vice versa. If \code{NULL} (default) then all of the \code{est.x} defaults
+#'   are respected.
+#' @param lambda Initial/Default scale parameters. Relevant especially if
+#'   \code{est.lambda = FALSE}.
+#' @param psi Initial/Default value for error precision. Relevant especially if
+#'   \code{est.psi = FALSE}.
+#' @param nystrom Either logical or an integer indicating the number of Nystrom
+#'   samples to take. Defaults to \code{FALSE}. If \code{TRUE}, then
+#'   approximately 10\% of the sample size is used for the Nystrom
+#'   approximation.
+#' @param nys.seed The random seed for the Nystrom sampling. Defaults to
+#'   \code{NULL}, which means the random seed is not fixed.
+#' @param model DEPRECATED.
+#' @param one.lam Logical. When using formula input, this is a convenient way of
+#'   letting the function know to treat all variables as a single variable (i.e.
+#'   shared scale parameter). Defaults to \code{FALSE}.
+#'
+#' @return An \code{ipriorKernel2} object which contains the relevant material
+#'   to be passed to the \code{iprior} function for model fitting. See also
+#'   print(), iprior2().
+#'
+#' @export
+kernL2 <- function(
+  y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
+  nys.seed = NULL, model = list()
+) UseMethod("kernL2")
+
+#' @export
 kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           fixed.hyp = NULL, nystrom = FALSE, nys.seed = NULL,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
-                           est.psi = TRUE, lambda = 1, psi = 1) {
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list()) {
+  # Checks ---------------------------------------------------------------------
+  if (is.list(model) & length(model) > 0) {
+    stop("\'model\' option is deprecated. Use the arguments to kernL2 instead. See \'?kernL2\' for details.", call. = FALSE)
+  }
+  kernel <- tolower(kernel)
+
   Xl <- list(...)
   # It is common to make the mistake and type kernels instead of kernel. This
   # corrects it.
@@ -119,15 +210,15 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   }
 
   BlockBStuff <- NULL
+  # Only calculate BlockBStuff when using the closed form EM algorithm.
   # |                 | EM.closed == TRUE |
   # |-----------------|------------------:|
-  # | poly.deg        |                NA |
+  # | poly.deg        |              NULL |
   # | est.lambda      |              TRUE |
   # | est.hurst       |             FALSE |
   # | est.lengthscale |             FALSE |
   # | est.offset      |             FALSE |
   # | est.psi         |              TRUE |
-  # | nys.check        |             FALSE |
   BlockB.cond <- (
     all(is.na(poly.deg)) & !isTRUE(est.hurst) & !isTRUE(est.lengthscale) &
       !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi)) &
@@ -154,7 +245,9 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   res
 }
 
-kernL2.formula <- function(formula, data, kernel = "linear", ...) {
+#' @rdname kernL2
+#' @export
+kernL2.formula <- function(formula, data, ..., one.lam = FALSE) {
   mf <- model.frame(formula = formula, data = data)
   tt <- terms(mf)
   Terms <- delete.response(tt)
@@ -162,6 +255,7 @@ kernL2.formula <- function(formula, data, kernel = "linear", ...) {
   y <- model.response(mf)
   yname <- names(attr(tt, "dataClasses"))[1]
   xname <- names(x)
+  xnl <- length(xname)
   x <- as.list(x)
   attr(x, "terms") <- NULL
   attr(y, "yname") <- yname
@@ -179,13 +273,31 @@ kernL2.formula <- function(formula, data, kernel = "linear", ...) {
   if (any(tmpo > 2)) intr.3plus <- int3
   interactions <- list(intr = interactions, intr.3plus = intr.3plus)
 
-  res <- kernL2.default(y = y, Xl.formula = x, kernel = kernel,
-                        interactions = interactions, ...)
+  # Deal with one.lam option ---------------------------------------------------
+  if (isTRUE(one.lam)) {
+    if (!all(sapply(interactions, is.null))) {
+      stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
+    }
+    if (length(x) == 1) {
+      message("Option one.lam = TRUE used with a single covariate anyway.")
+    }
+    attributes(x)$terms <- attributes(x)$names <- NULL
+    if (xnl <= 3) {
+      xname <- paste(xname, collapse = " + ")
+    } else {
+      xname <- paste(xname[1], "+ ... +", xname[xnl])
+    }
+    x <- list(matrix(unlist(x), ncol = length(x)))
+    names(x) <- xname
+  }
+
+  res <- kernL2.default(y = y, Xl.formula = x, interactions = interactions, ...)
   res$formula <- formula
   res$terms <- tt
   res
 }
 
+#' @export
 print.ipriorKernel2 <- function(x) {
   tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
 
@@ -217,96 +329,4 @@ print_kern <- function(x) {
   res <- capture.output(str(x))[1]
   res <- gsub(" num", kern.type, res)
   res
-}
-
-BlockB_fn <- function(Hl, intr, n, p) {
-  # Initialise -----------------------------------------------------------------
-  Hl <- expand_Hl_and_lambda(Hl, seq_along(Hl), intr, NULL)$Hl
-  environment(index_fn_B) <- environment()
-  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
-  BlockB <- function(k, x = lambda) NULL
-
-  if (length(Hl) == 1L) {
-    # CASE: Single lambda ------------------------------------------------------
-    Pl <- Hl
-    Psql <- list(fastSquare(Pl[[1]]))
-    Sl <- list(matrix(0, nrow = n, ncol = n))
-    BB.msg <- "Single lambda"
-  } else {
-    # Next, prepare the indices required for indxFn().
-    z <- seq_along(Hl)
-    ind1 <- rep(z, times = (length(z) - 1):0)
-    ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
-    # Prepare the cross-product terms of squared kernel matrices
-    for (j in seq_along(ind1)) {
-      H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
-      H2l[[j]] <- H2l.tmp + t(H2l.tmp)
-    }
-
-    if (!is.null(intr)) {
-      # CASE: Parsimonious interactions only ---------------------------------
-      for (k in z) {
-        Hsql[[k]] <- fastSquare(Hl[[k]])
-        if (k <= p) ind[[k]] <- index_fn_B(k)  # only create indices for non-intr
-      }
-      BlockB <- function(k, x = lambda) {
-        # Calculate Psql instead of directly P %*% P because this way
-        # is < O(n^3).
-        indB <- ind[[k]]
-        lambda.P <- c(1, x[indB$k.int.lam])
-        Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
-                                       SIMPLIFY = FALSE))
-        Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
-                                         c(1, x[indB$Psq.lam] ^ 2),
-                                         SIMPLIFY = FALSE))
-        if (!is.null(indB$P2.lam1)) {
-          lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
-          lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
-          Psql[[k]] <<- Psql[[k]] +
-            Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
-        }
-        lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
-        lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
-        Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                       SIMPLIFY = FALSE))
-      }
-      BB.msg <- "Multiple lambda with parsimonious interactions"
-    } else {
-      # CASE: Multiple lambda with no interactions, or with non-parsimonious -
-      # interactions ---------------------------------------------------------
-      for (k in seq_along(Hl)) {
-        Pl[[k]] <- Hl[[k]]
-        Psql[[k]] <- fastSquare(Pl[[k]])
-      }
-      BlockB <- function(k, x = lambda) {
-        ind <- which(ind1 == k | ind2 == k)
-        Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
-      }
-      BB.msg <- "Multiple lambda with no interactions"
-    }
-  }
-
-  list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl, ind1 = ind1,
-       ind2 = ind2, ind = ind, BlockB = BlockB, BB.msg = BB.msg)
-}
-
-# |                 | EM.closed == TRUE |
-# |-----------------|------------------:|
-# | poly.deg        |              NULL |
-# | est.lambda      |              TRUE |
-# | est.hurst       |             FALSE |
-# | est.lengthscale |             FALSE |
-# | est.offset      |             FALSE |
-# | est.psi         |              TRUE |
-
-get_Xl.nys <- function(object) {
-  nys.check <- is.ipriorKernel_nys(object)
-  if (isTRUE(nys.check)) {
-    Xl.nys <- lapply(object$Xl, reorder_x,
-                     smp = seq_len(object$nystroml$nys.size))
-    mostattributes(Xl.nys) <- attributes(object$Xl)
-    return(Xl.nys)
-  } else {
-    stop("Nystrom option not called.", call. = FALSE)
-  }
 }

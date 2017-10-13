@@ -1,62 +1,88 @@
+################################################################################
 #
-# kernel_to_param()
-# param_to_theta()
-# theta_to_param()
-# param_to_kernel()
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
 #
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
+# The main difficulty with estimating I-prior models is the number of
+# hyperparameters to estimate depend on which kernels are used. In kernL2(),
+# kernels are specified by the user, which are then applied to the data x. From
+# this, we create a "param" table which specifies the kernels used for each
+# variable. The param table must be converted to the "theta" vector which is the
+# vector of parameters to estimate. This file contains helper functions to
+# convert between kernels, param, and theta. In particular, we have: 1.
+# param_to_kernel(); 2. theta_to_kernel(); 3. param_to_theta(); 4.
+# kernel_to_param(); 5. theta_to_param(); 6. theta_to_collapsed_param(); 7.
+# theta_to_psi().
+#
+# We then also have several other helper functions, in particular
+# expand_Hl_and_lambda() and get_Hl() which are also used in predict().
 
 param_to_kernel <- function(param) {
+  # Convert param table to vector of kernels.
+  #
+  # Args: param table.
+  #
+  # Output: Vector of kernels.
   as.character(param$kernels)
 }
 
 theta_to_kernel <- function(theta, object) {
+  # Convert theta to vector of kernels.
+  #
+  # Args: theta and an ipriorKernel2 object.
+  #
+  # Output: Vector of kernels.
   param <- theta_to_param(mod$theta, mod$kernL)
   param_to_kernel(param)
 }
 
-get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
-  # Args: List of data Xl and yl (optional), vector of same length of kernel
-  # characters to instruct kernel_translator() which kernels to apply each of
-  # the x and y. lambda is needed for the polynomial kernels.
+param_to_theta <- function(param, est.list, logpsi = 0) {
+  # Convert param table to the theta vector. Note that theta is designed so that
+  # the values are unbounded, i.e. hurst is Phi^{-1}(hurst), lengthscale is
+  # log(lengthscale), etc. theta_to_param() reverses this for final
+  # presentation.
   #
-  # Output: List of kernel matrices.
+  # Args: A param table, the list of parameters to be estimated and optional
+  # logpsi value.
   #
-  # Notes: Except for polynomial kernels, these are not Hlam matrices.
-  mapply(kernel_translator, Xl, yl, kernels, lambda, SIMPLIFY = FALSE)
-}
+  # Output: theta is a vector of parameters to be passed to optim or EM for
+  # optimisation, including the logpsi value.
+  param <- param[, seq_len(4)]  # lambda, hurst, lengthscale, offset
+  param$hurst <- qnorm(param$hurst)
+  param$lengthscale <- log(param$lengthscale)
+  param$offset <- log(param$offset)
+  if (nrow(param) == 1) param$lambda <- log(param$lambda)
 
-expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
-  p <- length(Hl)
-  no.int <- max(0, ncol(intr))
-  no.int.3plus <- max(0, ncol(intr.3plus))
-  if (!is.null(intr) & length(intr) > 0) {
-    for (j in seq_len(no.int)) {
-      ind1 <- intr[1, j]; ind2 <- intr[2, j]
-      lambda[p + j] <- lambda[ind1] * lambda[ind2]
-      Hl[[p + j]] <- Hl[[ind1]] * Hl[[ind2]]
-      attr(Hl[[p + j]], "kernel") <- paste(attr(Hl[[ind2]], "kernel"),
-                                           attr(Hl[[ind2]], "kernel"),
-                                           sep = " x ")
-    }
-  }
-  if (!is.null(no.int.3plus) & length(intr.3plus) > 0) {
-    for (j in seq_len(no.int.3plus)) {
-      lambda[p + no.int + j] <- Reduce("*", lambda[intr.3plus[,j]])
-      Hl[[p + no.int + j]] <- Reduce("*", Hl[intr.3plus[, j]])
-      intr.3plus.kernels <- sapply(Hl[intr.3plus[, j]], attr, "kernel")
-      attr(Hl[[p + no.int + j]], "kernel") <- paste(intr.3plus.kernels,
-                                                    collapse = " x ")
-    }
-  }
+  tmp <- collapse_param(param)
+  theta.full <- c(tmp$param, psi = logpsi)
+  param.na <- tmp$na
+  tmp <- reduce_theta(theta.full, est.list)
+  theta.reduced <- tmp$theta.reduced
+  theta.drop <- tmp$theta.drop
+  theta.omitted <- tmp$theta.omitted
 
-  if (is.null(env)) return(list(Hl = Hl, lambda = lambda))
-  else {
-    assign("Hl", Hl, envir = env)
-    assign("lambda", lambda, envir = env)
-  }
+  list(theta = theta.reduced, param.na = param.na, theta.drop = theta.drop,
+       theta.omitted = theta.omitted)
 }
 
 kernel_to_param <- function(kernels, lambda) {
+  # Convert vector of kernels to a param table.
+  #
   # Args: kernels is a p-vector of kernels to apply on the data. lambda are the
   # scale parameters.
   #
@@ -80,35 +106,16 @@ kernel_to_param <- function(kernels, lambda) {
   res
 }
 
-param_to_theta <- function(param, est.list, logpsi = 0) {
-  # Args: A param table, the list of parameters to be estimated and optional
-  # logpsi value.
-  #
-  # Output: theta is a vector of parameters to be passed to optim or EM for
-  # optimisation, including the logpsi value.
-  #
-  # Notes: theta is designed so that the values are unbounded, i.e. hurst is
-  # Phi^{-1}(hurst), lengthscale is log(lengthscale), etc. theta_to_param()
-  # reverses this for final presentation.
-  param <- param[, seq_len(4)]  # lambda, hurst, lengthscale, offset
-  param$hurst <- qnorm(param$hurst)
-  param$lengthscale <- log(param$lengthscale)
-  param$offset <- log(param$offset)
-  if (nrow(param) == 1) param$lambda <- log(param$lambda)
-
-  tmp <- collapse_param(param)
-  theta.full <- c(tmp$param, psi = logpsi)
-  param.na <- tmp$na
-  tmp <- reduce_theta(theta.full, est.list)
-  theta.reduced <- tmp$theta.reduced
-  theta.drop <- tmp$theta.drop
-  theta.omitted <- tmp$theta.omitted
-
-  list(theta = theta.reduced, param.na = param.na, theta.drop = theta.drop,
-       theta.omitted = theta.omitted)
-}
-
 reduce_theta <- function(theta.full, est.list) {
+  # The user may specify for some of the hyperparameters to not be estimated,
+  # therefore theta vector should be smaller than the full set of
+  # hyperparameters. This function trims theta correctly.
+  #
+  # Args: theta.full is the original and full theta vector. est.list is
+  # generated in kernL2() which is a list telling us which parameters are
+  # estimated and which are not.
+  #
+  # Output: The trimmed theta vector.
   theta.full.orig <- theta.full
 
   # Estimate Hurst coefficient? ------------------------------------------------
@@ -145,6 +152,15 @@ reduce_theta <- function(theta.full, est.list) {
 }
 
 expand_theta <- function(theta.reduced, theta.drop, theta.omitted) {
+  # This convertes the reduced theta vector back to the full theta vector.
+  # Useful in other functions such as theta_to_param().
+  #
+  # Args: theta.reduced is obvious. theta.drop is information on which of the
+  # full theta was not estimated. theta.omitted contains the values for which
+  # theta component that was not estimated. These are all generated by
+  # param_to_theta().
+  #
+  # Output: The full theta.
   theta.full <- theta.drop
   theta.full[!theta.drop] <- theta.reduced
   theta.full[theta.drop] <- theta.omitted
@@ -212,23 +228,12 @@ theta_to_param <- function(theta, object) {
   param
 }
 
-theta_to_psi <- function(theta, object) {
-  # Args: A vector of parameters to be optimised, including logpsi, and an
-  # ipriorKernel2 object.
-  #
-  # Output: psi, the error precision.
-  theta <- expand_theta(theta, object$thetal$theta.drop,
-                        object$thetal$theta.omitted)
-  logpsi <- theta[length(theta)]
-  exp(logpsi)
-}
-
 param_translator <- function(x) {
+  # Helper function in theta_to_param().
+  #
   # Args: Row vector from param table.
   #
   # Output: The kernel used.
-  #
-  # Notes: Used as a helper function in theta_to_param().
   hyperparam <- x[-1]
   if (!is.na(hyperparam[1]))
     return(paste0("fbm,", hyperparam[1]))
@@ -240,27 +245,27 @@ param_translator <- function(x) {
 }
 
 correct_pearson_kernel <- function(x, which.pearson) {
+  # When using theta_to_param(), unable to identify which data x uses the
+  # Pearson kernel. This helper function corrects it by reading from the logical
+  # which.pearson vector.
+  #
   # Args: The kernel vector and which.pearson (logical), indicating which of the
   # x position uses the Pearson kernel.
   #
   # Output: The corrected kernel vector.
-  #
-  # Notes: When using theta_to_param(), unable to identify which data x uses the
-  # Pearson kernel. This helper function corrects it by reading from the logical
-  # which.pearson vector.
   x[which.pearson] <- "pearson"
   x
 }
 
 kernel_translator <- function(x, y = NULL, kernel, lam.poly = 1) {
+  # Used as a helper function in get_Hl() to output list of kernel
+  # matrices in kernL2() and predict(). For future expansion, add new kernels
+  # here.
+  #
   # Args: x, y (optional) data and kernel a character vector indicating which
   # kernel to apply x and y on. lam.poly is the scale for polynomial kernels.
   #
   # Output: A kernel matrix.
-  #
-  # Notes: Used as a helper function in get_Hl() to output list of kernel
-  # matrices in kernL2() and predict(). For future expansion, add new kernels
-  # here.
   if (grepl("linear", kernel)) return(kern_linear(x, y))
   if (grepl("canonical", kernel)) return(kern_linear(x, y))
   if (grepl("fbm", kernel)) {
@@ -295,12 +300,179 @@ kernel_translator <- function(x, y = NULL, kernel, lam.poly = 1) {
 }
 
 theta_to_collapsed_param <- function(theta, object) {
+  # This is a wrapper function for theta_to_param(). It is useful to get
+  # the vector of parameters directly from theta.
+  #
   # Args: theta (usually theta.full) and the ipriorKernel object.
   #
   # Output: A vector of parameters.
-  #
-  # Notes: This is a wrapper function for theta_to_param(). It is useful to get
-  # the vector of parameters directly from theta.
   param <- theta_to_param(theta, object)
   c(collapse_param(param)$param, theta_to_psi(theta, object))
+}
+
+theta_to_psi <- function(theta, object) {
+  # Obtains psi from the theta vector, or if not estimated, from the
+  # ipriorKernel object.
+  #
+  # Args: A vector of parameters to be optimised, including logpsi, and an
+  # ipriorKernel2 object.
+  #
+  # Output: psi, the error precision.
+  theta <- expand_theta(theta, object$thetal$theta.drop,
+                        object$thetal$theta.omitted)
+  logpsi <- theta[length(theta)]
+  exp(logpsi)
+}
+
+get_Xl.nys <- function(object) {
+  # When using the Nystrom method, we calculate the kernel matrix using
+  # get_Hl(Xl, Xl.nys) which produces a smaller m x n matrix. This is the helper
+  # function to obtain Xl.nys.
+  #
+  # Args: An ipriorKernel object with Nystrom option called.
+  #
+  # Output: Xl.nys, a list similar to Xl but only the first m rows are returned
+  # (after sampling that is).
+  nys.check <- is.ipriorKernel_nys(object)
+  if (isTRUE(nys.check)) {
+    Xl.nys <- lapply(object$Xl, reorder_x,
+                     smp = seq_len(object$nystroml$nys.size))
+    mostattributes(Xl.nys) <- attributes(object$Xl)
+    return(Xl.nys)
+  } else {
+    stop("Nystrom option not called.", call. = FALSE)
+  }
+}
+
+get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
+  # Obtain the list of kernel matrices. Except for polynomial kernels, these are
+  # not scaled, i.e. not Hlam matrices.
+  #
+  # Args: List of data Xl and yl (optional), vector of same length of kernel
+  # characters to instruct kernel_translator() which kernels to apply each of
+  # the x and y. lambda is needed for the polynomial kernels.
+  #
+  # Output: List of kernel matrices.
+  mapply(kernel_translator, Xl, yl, kernels, lambda, SIMPLIFY = FALSE)
+}
+
+expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
+  # Helper function to expand Hl (list of kernel matrices) and lambda (scale
+  # parameters) according to any interactions specification.
+  #
+  # Args: List of kernel matrices (Hl) and vector of scale parameters (lambda).
+  # intr and intr.3plus are obtained from kernL2 which specifies the
+  # interactions. env is the environment in which to assign the results.
+  #
+  # Output: A list of expanded Hl and lambda. If env = NULL, then this list is
+  # returned. If an environment is specified, it is directly assigned there.
+  p <- length(Hl)
+  no.int <- max(0, ncol(intr))
+  no.int.3plus <- max(0, ncol(intr.3plus))
+  if (!is.null(intr) & length(intr) > 0) {
+    for (j in seq_len(no.int)) {
+      ind1 <- intr[1, j]; ind2 <- intr[2, j]
+      lambda[p + j] <- lambda[ind1] * lambda[ind2]
+      Hl[[p + j]] <- Hl[[ind1]] * Hl[[ind2]]
+      attr(Hl[[p + j]], "kernel") <- paste(attr(Hl[[ind2]], "kernel"),
+                                           attr(Hl[[ind2]], "kernel"),
+                                           sep = " x ")
+    }
+  }
+  if (!is.null(no.int.3plus) & length(intr.3plus) > 0) {
+    for (j in seq_len(no.int.3plus)) {
+      lambda[p + no.int + j] <- Reduce("*", lambda[intr.3plus[,j]])
+      Hl[[p + no.int + j]] <- Reduce("*", Hl[intr.3plus[, j]])
+      intr.3plus.kernels <- sapply(Hl[intr.3plus[, j]], attr, "kernel")
+      attr(Hl[[p + no.int + j]], "kernel") <- paste(intr.3plus.kernels,
+                                                    collapse = " x ")
+    }
+  }
+
+  if (is.null(env)) return(list(Hl = Hl, lambda = lambda))
+  else {
+    assign("Hl", Hl, envir = env)
+    assign("lambda", lambda, envir = env)
+  }
+}
+
+BlockB_fn <- function(Hl, intr, n, p) {
+  # This is the function which returns the BlockBStuff required for closed-form
+  # EM algorithm.
+  #
+  # Args: The list of kernel matrices, (two-way) interaction specifications
+  # intr, sample size n and number of variables p.
+  #
+  # Output: BlockBStuff - a bunch of precalculated kernel matrices and a
+  # function BlockB which tells iprior_em_closed() how to manipulate these
+  # matrices.
+
+  # Initialise -----------------------------------------------------------------
+  Hl <- expand_Hl_and_lambda(Hl, seq_along(Hl), intr, NULL)$Hl
+  environment(index_fn_B) <- environment()
+  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
+  BlockB <- function(k, x = lambda) NULL
+
+  if (length(Hl) == 1L) {
+    # CASE: Single lambda ------------------------------------------------------
+    Pl <- Hl
+    Psql <- list(fastSquare(Pl[[1]]))
+    Sl <- list(matrix(0, nrow = n, ncol = n))
+    BB.msg <- "Single lambda"
+  } else {
+    # Next, prepare the indices required for indxFn().
+    z <- seq_along(Hl)
+    ind1 <- rep(z, times = (length(z) - 1):0)
+    ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
+    # Prepare the cross-product terms of squared kernel matrices
+    for (j in seq_along(ind1)) {
+      H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
+      H2l[[j]] <- H2l.tmp + t(H2l.tmp)
+    }
+
+    if (!is.null(intr)) {
+      # CASE: Parsimonious interactions only ---------------------------------
+      for (k in z) {
+        Hsql[[k]] <- fastSquare(Hl[[k]])
+        if (k <= p) ind[[k]] <- index_fn_B(k)  # only create indices for non-intr
+      }
+      BlockB <- function(k, x = lambda) {
+        # Calculate Psql instead of directly P %*% P because this way
+        # is < O(n^3).
+        indB <- ind[[k]]
+        lambda.P <- c(1, x[indB$k.int.lam])
+        Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
+                                       SIMPLIFY = FALSE))
+        Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                         c(1, x[indB$Psq.lam] ^ 2),
+                                         SIMPLIFY = FALSE))
+        if (!is.null(indB$P2.lam1)) {
+          lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
+          lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
+          Psql[[k]] <<- Psql[[k]] +
+            Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
+        }
+        lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
+        lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
+                                       SIMPLIFY = FALSE))
+      }
+      BB.msg <- "Multiple lambda with parsimonious interactions"
+    } else {
+      # CASE: Multiple lambda with no interactions, or with non-parsimonious -
+      # interactions ---------------------------------------------------------
+      for (k in seq_along(Hl)) {
+        Pl[[k]] <- Hl[[k]]
+        Psql[[k]] <- fastSquare(Pl[[k]])
+      }
+      BlockB <- function(k, x = lambda) {
+        ind <- which(ind1 == k | ind2 == k)
+        Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
+      }
+      BB.msg <- "Multiple lambda with no interactions"
+    }
+  }
+
+  list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl, ind1 = ind1,
+       ind2 = ind2, ind = ind, BlockB = BlockB, BB.msg = BB.msg)
 }

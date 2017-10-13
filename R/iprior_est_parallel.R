@@ -1,6 +1,39 @@
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
 iprior_parallel <- function(mod, method = "direct",
                             control = list(silent = FALSE, restarts = TRUE,
                                            no.cores = parallel::detectCores())) {
+  # This estimation method is not really any specific method per se, but rather
+  # a  function that enables the selected method to be run multiple times from
+  # different random starting points. The starting point that gives the highest
+  # likelihood value after three iterations is selected.
+  #
+  # Args: An ipriorKernel object (mod), the I-prior esitmation method, and a
+  # list of controls (the some one in the main iprior() function).
+  #
+  # Returns: A list containing the optimised theta and parameters, loglik
+  # values, standard errors, number of iterations, time taken, and convergence
+  # information.
+
+  # Set up controls ------------------------------------------------------------
   if (control$restarts == 1) {
     control$restarts <- parallel::detectCores()
   } else {
@@ -51,7 +84,7 @@ iprior_parallel <- function(mod, method = "direct",
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 
-  # Update time, call, maxit, niter, lb, error, brier --------------------------
+  # Update time taken ----------------------------------------------------------
   res$time <- time.taken
   res$start.time <- start.time
   res$end.time <- end.time
