@@ -108,7 +108,7 @@ summary.ipriorMod <- function(object) {
               error = object$train.error, call = object$call, x.kern = x.kern,
               est.method = object$est.method, est.conv = object$est.conv,
               niter = niter, maxit = maxit, time = object$time)
-  class(res) <- "ipriorMod2_summary"
+  class(res) <- "ipriorMod_summary"
   res
 }
 
@@ -132,7 +132,7 @@ kernel_summary_translator <- function(x) {
   res
 }
 
-print.ipriorMod2_summary <- function(x) {
+print.ipriorMod_summary <- function(x) {
   cat("Call:\n")
   print(x$call)
   cat("\n")

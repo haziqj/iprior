@@ -87,7 +87,7 @@ shared scale parameter). Defaults to \code{FALSE}.}
 \value{
 An \code{ipriorKernel2} object which contains the relevant material
   to be passed to the \code{iprior} function for model fitting. See also
-  print(), iprior2().
+  print(), iprior().
 }
 \description{
 Load the kernel matrices for I-prior models

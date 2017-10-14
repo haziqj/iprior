@@ -90,7 +90,7 @@ update_control <- function(arg.list, default.list) {
 convert_se <- function(se, theta, object) {
   # Converts the standard errors for theta into the standard errors for param
   # using the delta method. These are then used in the summary() method for
-  # ipriorMod2 objects.
+  # ipriorMod objects.
   #
   # Args: se for theta, the optimised theta value, and the ipriorKernel2 object.
   #
@@ -158,7 +158,7 @@ get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE)
 #'
 #' @export
 get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
-  if (is.ipriorMod2(object)) {
+  if (is.ipriorMod(object)) {
     # estl <- object$ipriorKernel$estl
     # til.cond <- (
     #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)

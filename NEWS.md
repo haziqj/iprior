@@ -1,6 +1,17 @@
-# v0.6.5.9001
+# v0.6.5.9003
 
-* Added support for Nystrom kernel approximation. 
+* **This udpate provides a complete redesign of the internals of the package. There are more kernels supported, new estimation methods, and plots are done using the `ggplot2` package.**
+* Enhanced the methods and calculations for the linear (canonical) kernel, the fractional Brownian motion kernel, and the Pearson kernel.
+* Added support for the squared exponential kernel and the `d`-degree polynomial kernel with offset `c`.
+* Newly redesigned kernel loader function `kernL2()`, while still keeping support for the legacy `kernL()` function - although there are plans to phase out this in favour of the new one.
+* The package now supports the following estimation methods: 
+    1. Direct minimisation of the marginal deviance;
+    2. EM algorithm (efficient closed-form version and the "regular" version);
+    3. A fixed estimation method to obtain the posterior regression function without estimating any hyperparameters; and
+    4. The Nystrom kernel approximation method.
+* New plot functions added: `plot_fitted()`, `plot_predict()`, and `plot_iter()`.
+* Updated documentation throughout.
+* New vignette added which gives an overview of regression modelling using I-priors.
 
 # v0.6.5
 

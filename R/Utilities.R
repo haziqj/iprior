@@ -18,8 +18,22 @@
 #
 ################################################################################
 
+#' Cut a numeric vector to a certain number of decimal places
+#'
+#' @param x A numeric vector.
+#' @param k The number of decimal places.
+#'
+#' @return A character vector with the correct number of decimal places.
+#'
+#' @examples
+#' decimal_place(pi, 3)
+#' decimal_place(c(exp(1), pi, sqrt(2)), 4)
+#'
+#' @export
 decimal_place <- function(x, k = 2) format(round(x, k), nsmall = k)
 
+#' @rdname decimal_place
+#' @export
 dec_plac <- decimal_place
 
 #' Convert \code{difftime} class into \code{time} class

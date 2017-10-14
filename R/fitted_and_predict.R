@@ -74,7 +74,7 @@ predict_iprior <- function(y, Hlam, w, intercept) {
   # Output: A list containing the predicted values, residuals and MSE.
   #
   # Notes: This is the main helper function to calculate fitted or predicted
-  # values. It appears in iprior2(), fitted() and predict() for ipriorMod2
+  # values. It appears in iprior(), fitted() and predict() for ipriorMod
   # objects.
   y.hat <- Hlam %*% w
   if (!is.null(y)) {
@@ -101,14 +101,14 @@ se_yhat <- function(Hlam, Hlam.new, psi) {
 }
 
 predict_iprior_quantiles <- function(object, Hlam.new = NULL, y.hat, alpha) {
-  # Args: an ipriorMod2 object; optional Hlam.new if calculating quantiles for
+  # Args: an ipriorMod object; optional Hlam.new if calculating quantiles for
   # new predictions; y.hat are the predicted values for which the quantiles are
   # to be generated; alpha is the significance level.
   #
   # Output: a list containing the lower and upper intervals and the significance
   # level.
   #
-  # Notes: Helper function used in fitted and predict for ipriorMod2 objects.
+  # Notes: Helper function used in fitted and predict for ipriorMod objects.
   Hlam <- get_Hlam(object$ipriorKernel, object$theta)
   if (is.null(Hlam.new)) Hlam.new <- Hlam
   se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$ipriorKernel))

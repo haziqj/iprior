@@ -1,5 +1,5 @@
 plot_predict <- function(x) {
-  # Args: x an ipriorMod2 object.
+  # Args: x an ipriorMod object.
   plot.df <- as.data.frame(fitted(x)[1:2])
   ggplot(plot.df, aes(y, resid)) +
     geom_hline(yintercept = 0, col = "grey50", linetype = "dashed") +

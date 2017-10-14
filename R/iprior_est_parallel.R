@@ -62,7 +62,7 @@ iprior_parallel <- function(mod, method = "direct",
       new.control$restarts <- 0
       new.control$maxit    <- 3
       new.control$silent   <- TRUE
-      tmp <- iprior2(mod, control = new.control, method = method)
+      tmp <- iprior(mod, control = new.control, method = method)
       list(
         theta  = tmp$theta,
         loglik = tmp$loglik[length(tmp$loglik)]
@@ -80,7 +80,7 @@ iprior_parallel <- function(mod, method = "direct",
   control$restarts <- 0
   control$theta0   <- res[[best.run]]$theta
   control$maxit    <- control$maxit - 3
-  res <- iprior2(mod, method = method, control = control)
+  res <- iprior(mod, method = method, control = control)
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 

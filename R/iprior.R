@@ -58,7 +58,8 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   } else {
     theta0 <- control$theta0
     if (length(theta0) != mod$thetal$n.theta) {
-      stop(paste("Incorrect number of parameters specified. Should be", nt))
+      stop(paste("Incorrect number of parameters specified. Should be",
+                 mod$thetal$n.theta))
     }
   }
 
