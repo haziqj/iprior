@@ -218,6 +218,13 @@ ipriorColPal <- function(x) {
 #   colx[x]
 # }
 
+#' @rdname gg_colour_hue
+#' @export
+ggColPal <- function(x) {
+  warning("Deprecated. Use gg_colour_hue() instead.")
+  gg_colour_hue(x)
+}
+
 check_levels <- function(y) {
   # Function used for categorical response model to obtains the levels in the
   # ys.

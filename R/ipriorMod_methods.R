@@ -169,3 +169,34 @@ update.ipriorMod <- function(object, method = NULL, control = list(),
   res <- iprior.ipriorMod(object, method, control, iter.update, ...)
   assign(deparse(substitute(object)), res, envir = parent.frame())
 }
+
+#' Extract the kernel matrix from I-prior models
+#'
+#' @param object An \code{ipriorMod} or \code{ipriorKernel2} object.
+#' @param theta (Optional) Value of hyperparameters to evaluate the kernel
+#'   matrix.
+#' @param xstar (Optional) If not supplied, then a square, symmetric kernel
+#'   matrix is returned using the data as input points. Otherwise, the kernel
+#'   matrix is evaluated with respect to this set of data as well. It must be a
+#'   list of vectors/matrices with similar dimensions to the original data.
+#'
+#' @return A kernel matrix.
+#'
+#' @export
+get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
+  if (is.ipriorMod(object)) {
+    # estl <- object$ipriorKernel$estl
+    # til.cond <- (
+    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
+    # )
+    res <- get_Hlam(object$ipriorKernel, object$theta, xstar, FALSE)
+    return(res)
+  } else if (is.ipriorKernel2(object)) {
+    # estl <- object$estl
+    # til.cond <- (
+    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
+    # )
+    res <- get_Hlam(object, object$theta, xstar, FALSE)
+    return(res)
+  }
+}

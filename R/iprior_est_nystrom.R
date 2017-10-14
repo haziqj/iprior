@@ -39,7 +39,7 @@ loglik_nystrom <- function(theta, object, trace = FALSE, env = NULL,
   n <- object$n
   z <- psi * u ^ 2 + 1 / psi
   logdet <- sum(log(z))
-  Vy.inv.y <- vy_inv_a(1 / z, V, y)
+  Vy.inv.y <- A_times_a(1 / z, V, y)
 
   res <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
 

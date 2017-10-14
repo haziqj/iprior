@@ -144,36 +144,8 @@ get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE)
   res
 }
 
-#' Extract the kernel matrix from I-prior models
-#'
-#' @param object An \code{ipriorMod} or \code{ipriorKernel2} object.
-#' @param theta (Optional) Value of hyperparameters to evaluate the kernel
-#'   matrix.
-#' @param xstar (Optional) If not supplied, then a square, symmetric kernel
-#'   matrix is returned using the data as input points. Otherwise, the kernel
-#'   matrix is evaluated with respect to this set of data as well. It must be a
-#'   list of vectors/matrices with similar dimensions to the original data.
-#'
-#' @return A kernel matrix.
-#'
 #' @export
-get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
-  if (is.ipriorMod(object)) {
-    # estl <- object$ipriorKernel$estl
-    # til.cond <- (
-    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
-    # )
-    res <- get_Hlam(object$ipriorKernel, object$theta, xstar, FALSE)
-    return(res)
-  } else if (is.ipriorKernel2(object)) {
-    # estl <- object$estl
-    # til.cond <- (
-    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
-    # )
-    res <- get_Hlam(object, object$theta, xstar, FALSE)
-    return(res)
-  }
-}
+.get_Hlam <- get_Hlam
 
 eigen_Hlam <- function(Hlam, env = NULL) {
   # The routine for the eigendecomposition of the scaled kernel matrix.
@@ -188,6 +160,9 @@ eigen_Hlam <- function(Hlam, env = NULL) {
   if (is.null(env)) return(res)
   else list2env(res, env)
 }
+
+#' @export
+.eigen_Hlam <- eigen_Hlam
 
 eigen_Hlam_nys <- function(Hlam, env = NULL) {
   # The routine for the eigendecomposition of the scaled kernel matrix using
@@ -220,7 +195,10 @@ eigen_Hlam_nys <- function(Hlam, env = NULL) {
   else list2env(res, env)
 }
 
-vy_inv_a <- function(u, V, a) {
+#' @export
+.eigen_Hlam_nys <- eigen_Hlam_nys
+
+A_times_a <- function(u, V, a) {
   # Calculate A %*% a from the eigendecomposition of A. Mostly used to calculate
   # Vy^{-1} %*% a without having to invert Vy, because the eigendecompostion of
   # Vy would have already been obtained.
@@ -230,6 +208,9 @@ vy_inv_a <- function(u, V, a) {
   # Returns: A vector A %*% a.
   (V * rep(u, each = nrow(V))) %*% crossprod(V, a)
 }
+
+#' @export
+.A_times_a <- A_times_a
 
 em_loop_logical <- function() {
   # Helper function to determine when to stop the while loop for the EM
@@ -256,3 +237,6 @@ em_loop_logical <- function() {
     return(crit1 & crit2)
   }
 }
+
+#' @export
+.em_loop_logical <- em_loop_logical

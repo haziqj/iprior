@@ -5,6 +5,7 @@
 \alias{gg_color_hue}
 \alias{gg_col_hue}
 \alias{ipriorColPal}
+\alias{ggColPal}
 \title{Emulate \code{ggplot2} default colour palette}
 \usage{
 gg_colour_hue(x, h = c(0, 360) + 15, c = 100, l = 65)
@@ -14,6 +15,8 @@ gg_color_hue(x, h = c(0, 360) + 15, c = 100, l = 65)
 gg_col_hue(x, h = c(0, 360) + 15, c = 100, l = 65)
 
 ipriorColPal(x)
+
+ggColPal(x)
 }
 \arguments{
 \item{x}{The number of colours required.}

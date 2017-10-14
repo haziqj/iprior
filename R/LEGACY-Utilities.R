@@ -88,6 +88,47 @@ splitHurst <- function(kernel) {
   H
 }
 
+#' @export
+.lambdaExpand <- function(x = lambda, env = ipriorEM.env) {
+  # Expands lambda from length l to correct size q = p + no.int, first by
+  # expanding the higher order terms (if any), and then by adding the
+  # interaction lambdas after that.
+  lambda.tmp <- rep(NA, q)
+  for (i in 1:q) {
+    if (isTRUE(probit)) {
+      lambda.tmp[i] <- x[as.numeric(order[i])]
+    } else {
+      if (isHOrd(order[i])) {
+        j.and.pow <- splitHOrd(order[i])
+        j <- j.and.pow[1]
+        pow <- j.and.pow[2]
+        lambda.tmp[i] <- x[as.numeric(j)] ^ as.numeric(pow)
+      }
+      else lambda.tmp[i] <- x[as.numeric(order[i])]
+    }
+  }
+  if (parsm && no.int > 0) {
+    for (j in 1:no.int) {
+      add.lam <- lambda.tmp[intr[1, j]] * lambda.tmp[intr[2, j]]
+      lambda.tmp[p + j] <- add.lam
+    }
+  }
+  if (no.int.3plus > 0) {
+    for (j in 1:no.int.3plus) {
+      lambda.tmp[p + j + no.int] <- Reduce("*", lambda.tmp[intr.3plus[, j]])
+    }
+  }
+  assign("lambda", lambda.tmp, envir = env)
+}
+
+#' @export
+.lambdaContract <- function(x = lambda, env = ipriorEM.env) {
+  # The opposite of lambdaExpand(). Looks for model$order vector and extracts
+  # only the l lambdas.
+  assign("lambda", x[whereOrd(order)], envir = env)
+}
+
+
 is.ipriorKernel_Nystrom <- function(x) inherits(x, "ipriorKernel_Nystrom")
 
 isNystrom <- function(x) {

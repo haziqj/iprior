@@ -241,7 +241,7 @@ kern_check_xy <- function(x, y, centre.xy) {
   #
   # Args: Data x and y, and logical centre.xy.
   #
-  # Output: A list of processed data x and y, and the number of data points n
+  # Returns: A list of processed data x and y, and the number of data points n
   # and m for the data respectively.
   if (is.vector(x)) x <- matrix(x)
   else x <- as.matrix(x)

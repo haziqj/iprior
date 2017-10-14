@@ -129,15 +129,14 @@ print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
 }
 
 predict_iprior <- function(y, Hlam, w, intercept) {
+  # This is the main helper function to calculate fitted or predicted values. It
+  # appears in iprior(), fitted() and predict() for ipriorMod objects.
+  #
   # Args: y (data or test data for calculation of errors); Hlam the kernel
   # matrix; w is the posterior mean of I-prior random effects; and the
   # intercept.
   #
-  # Output: A list containing the predicted values, residuals and MSE.
-  #
-  # Notes: This is the main helper function to calculate fitted or predicted
-  # values. It appears in iprior(), fitted() and predict() for ipriorMod
-  # objects.
+  # Returns: A list containing the predicted values, residuals and MSE.
   y.hat <- Hlam %*% w
   if (!is.null(y)) {
     resid <- y - y.hat
@@ -150,27 +149,28 @@ predict_iprior <- function(y, Hlam, w, intercept) {
 }
 
 se_yhat <- function(Hlam, Hlam.new, psi) {
+  # Obtains standard errors for predicted values y.hat (based on Hlam.new). This
+  # is a helper function used in predict_iprior_quantiles().
+  #
   # Args: The Hlam matrix; another Hlam matrix which may be equal to Hlam; and
   # psi the error precision.
   #
-  # Output: Standard errors for predicted values y.hat (based on Hlam.new).
-  #
-  # Notes: Helper function used in predict_iprior_quantiles().
+  # Returns: standard errors for predicted values.
   list2env(eigen_Hlam(Hlam), environment())
   z <- psi * u ^ 2 + 1 / psi
-  Vy.inv.Hlam <- vy_inv_a(1 / z, V, t(Hlam.new))
+  Vy.inv.Hlam <- A_times_a(1 / z, V, t(Hlam.new))
   sqrt(diag(Hlam.new %*% Vy.inv.Hlam) + 1 / psi)
 }
 
 predict_iprior_quantiles <- function(object, Hlam.new = NULL, y.hat, alpha) {
-  # Args: an ipriorMod object; optional Hlam.new if calculating quantiles for
+  # Helper function used in fitted and predict for ipriorMod objects.
+  #
+  # Args: An ipriorMod object; optional Hlam.new if calculating quantiles for
   # new predictions; y.hat are the predicted values for which the quantiles are
   # to be generated; alpha is the significance level.
   #
-  # Output: a list containing the lower and upper intervals and the significance
-  # level.
-  #
-  # Notes: Helper function used in fitted and predict for ipriorMod objects.
+  # Returns: A list containing the lower and upper intervals and the
+  # significance level.
   Hlam <- get_Hlam(object$ipriorKernel, object$theta)
   if (is.null(Hlam.new)) Hlam.new <- Hlam
   se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$ipriorKernel))
