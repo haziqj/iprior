@@ -42,7 +42,7 @@ iprior_fixed <- function(mod) {
   time.taken <- as.time(end.time - start.time)
   param.full <- theta_to_collapsed_param(mod$thetal$theta, mod)
 
-  list(theta = NULL, param.full = param.full, loglik = loglik,
+  list(theta = mod$thetal$theta, param.full = param.full, loglik = loglik,
        se = NA, niter = NA, w = as.numeric(w), start.time = start.time,
        end.time = end.time, time = time.taken, convergence = NA, message = NA,
        niter = NA)

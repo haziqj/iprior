@@ -1,4 +1,4 @@
-iprior_canonical <- function(mod, theta0 = NULL, control) {
+iprior_canonical <- function(mod, theta0 = NULL, control = list()) {
   iprior.env <- environment()
   w <- loglik <- NULL
   start.time <- Sys.time()
@@ -26,10 +26,10 @@ iprior_canonical <- function(mod, theta0 = NULL, control) {
 loglik_canonical <- function(theta, object, trace = FALSE, env = NULL,
                              get.w = FALSE) {
   psi <- theta_to_psi(theta, object)
-  lambda <- theta_to_collapsed_param(theta, mod)[seq_len(object$p)]
+  lambda <- theta_to_collapsed_param(theta, object)[seq_len(object$p)]
   X <- matrix(unlist(object$Xl), nrow = object$n)
   XtX <- crossprod(X)
-  Lambda <- diag(lambda)
+  Lambda <- diag(lambda, ncol(X))
   Vy.inv <- psi * (
     diag(1, object$n) - X %*% solve(solve(psi ^ 2 * Lambda %*% XtX %*% Lambda) + XtX, t(X))
   )

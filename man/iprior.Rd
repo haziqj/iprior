@@ -4,22 +4,24 @@
 \alias{iprior}
 \alias{iprior.default}
 \alias{iprior.formula}
+\alias{iprior.ipriorKernel2}
 \alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
-\method{iprior}{default}(y, ..., kernel = "linear", method = c("direct",
-  "em", "fixed", "canonical", "mixed"), control = list(),
-  interactions = NULL, est.lambda = TRUE, est.hurst = FALSE,
-  est.lengthscale = FALSE, est.offset = FALSE, est.psi = TRUE,
-  fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
-  nys.seed = NULL, model = list())
+\method{iprior}{default}(y, ..., kernel = "linear", method = "direct",
+  control = list(), interactions = NULL, est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
+  nystrom = FALSE, nys.seed = NULL, model = list())
 
 \method{iprior}{formula}(formula, data, kernel = "linear", one.lam = FALSE,
-  method = c("direct", "em", "fixed", "canonical", "mixed"),
-  control = list(), est.lambda = TRUE, est.hurst = FALSE,
-  est.lengthscale = FALSE, est.offset = FALSE, est.psi = TRUE,
-  fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
-  nys.seed = NULL, model = list(), ...)
+  method = "direct", control = list(), est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
+  nystrom = FALSE, nys.seed = NULL, model = list(), ...)
+
+\method{iprior}{ipriorKernel2}(object, method = "direct", control = list(),
+  ...)
 
 \method{iprior}{ipriorMod}(object, method = NULL, control = list(),
   iter.update = 100, ...)
@@ -53,7 +55,21 @@ with fixed hyperparameters (default method when setting \code{fixed.hyp =
 TRUE})} \item{\code{"canonical"} - an efficient estimation method which
 takes advantage of the structure of the linear kernel} }}
 
-\item{control}{1}
+\item{control}{(Optional) A list of control options for the estimation
+procedure: \describe{ \item{\code{maxit}}{The maximum number of iterations
+for the quasi-Newton optimisation or the EM algorithm. Defaults to
+\code{100}.} \item{\code{em.maxit}}{For \code{method = "mixed"}, the number
+of EM steps before switching to direct optimisation. Defaults to \code{5}.}
+\item{\code{stop.crit}}{The EM stopping criterion, which is the difference
+in successive log-likelihood values. Defaults to \code{1e-8}.}
+\item{\code{theta0}}{The initial values for the hyperparameters. Defaults
+to random starting values.} \item{\code{report}}{The interval of reporting
+for the \code{optim()} function.} \item{\code{restarts}}{The number of
+random restarts to perform. Defaults to \code{0}. It's also possible to set
+it to \code{TRUE}, in which case the number of random restarts is set to
+the total number of available cores.} \item{\code{no.cores}}{The number of
+cores in which to do random restarts. Defaults to the total number of
+available cores.} }}
 
 \item{interactions}{Character vector to specify the interaction terms. When
 using formulas, this is specified automatically, so is not required. Syntax
@@ -100,14 +116,20 @@ approximation.}
 
 \item{data}{Data frame containing variables when using formula interface.}
 
-\item{one.lam}{1}
+\item{one.lam}{Logical. When using formula input, this is a convenient way of
+letting the function know to treat all variables as a single variable (i.e.
+shared scale parameter). Defaults to \code{FALSE}.}
 
 \item{object}{An \code{ipriorKernel2} or \code{ipriorMod} object.}
 
-\item{iter.update}{1}
+\item{iter.update}{The number of iterations to perform when calling the
+function on an \code{ipriorMod} object. Defaults to \code{100}.}
 }
 \value{
-1
+An \code{ipriorMod} object. Several accessor functions have been
+  written to obtain pertinent things from the \code{ipriorMod} object. The
+  \code{print()} and \code{summary()} methods display the relevant model
+  information.
 }
 \description{
 A function to perform regression using I-priors. The I-prior model parameters
@@ -127,11 +149,61 @@ to perform the estimation.
 }
 \section{Methods (by class)}{
 \itemize{
+\item \code{ipriorKernel2}: Takes in object of type \code{ipriorKernel2}, a loaded and
+prepared I-prior model, and proceeds to estimate it.
+
 \item \code{ipriorMod}: Re-run or continue running the EM algorithm from last
 attained parameter values in object \code{ipriorMod}.
 }}
 
 \examples{
-1
 
+# Formula based input
+(mod.stackf <- iprior(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc.,
+                      data = stackloss))
+mod.toothf <- iprior(len ~ supp * dose, data = ToothGrowth)
+summary(mod.toothf)
+
+# Non-formula based input
+mod.stacknf <- iprior(y = stackloss$stack.loss,
+                      Air.Flow = stackloss$Air.Flow,
+                      Water.Temp = stackloss$Water.Temp,
+                      Acid.Conc. = stackloss$Acid.Conc.)
+mod.toothnf <- iprior(y = ToothGrowth$len, ToothGrowth$supp, ToothGrowth$dose,
+                      interactions = "1:2")
+
+# Formula based model option one.lam = TRUE
+# Sets a single scale parameter for all variables
+modf <- iprior(stack.loss ~ ., data = stackloss, one.lam = TRUE)
+modnf <- iprior(y = stackloss$stack.loss, X = stackloss[1:3])
+all.equal(coef(modnf), coef(modnf))  # both models are equivalent
+
+# Fit models using different kernels
+dat <- gen_fbm(n = 100)
+mod <- iprior(y ~ X, dat, kernel = "fbm")  # Hurst = 0.5 (default)
+mod <- iprior(y ~ X, dat, kernel = "poly3")  # polynomial degree 3
+
+# Fit models using various estimation methods
+mod1 <- iprior(y ~ X, dat)
+mod2 <- iprior(y ~ X, dat, method = "em")
+mod3 <- iprior(y ~ X, dat, method = "canonical")
+mod4 <- iprior(y ~ X, dat, method = "mixed")
+mod5 <- iprior(y ~ X, dat, method = "fixed", lambda = coef(mod1)[1],
+               psi = coef(mod1)[2])
+all.equal(logLik(mod1), logLik(mod2), logLik(mod3), logLik(mod4),
+          logLik(mod5), tol = 1e-6)
+
+\dontrun{
+
+# For large data sets, it is worth trying the Nystrom method
+mod <- iprior(y ~ X, gen_fbm(5000), kernel = "se", nystrom = 50,
+              est.lengthscale = TRUE)  # a bit slow
+plot_fitted(mod, ci = FALSE)
+}
+
+}
+\seealso{
+\link[=optim]{optim}, \link[=update.ipriorMod]{update},
+  \link[=check_theta]{check_theta}, print, summary, plot, coef, sigma,
+  fitted, predict, logLik, deviance.
 }

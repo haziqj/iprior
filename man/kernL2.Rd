@@ -86,9 +86,31 @@ shared scale parameter). Defaults to \code{FALSE}.}
 }
 \value{
 An \code{ipriorKernel2} object which contains the relevant material
-  to be passed to the \code{iprior} function for model fitting. See also
-  print(), iprior().
+  to be passed to the \code{iprior} function for model fitting.
 }
 \description{
 Load the kernel matrices for I-prior models
+}
+\examples{
+
+str(ToothGrowth)
+(mod <- kernL2(y = ToothGrowth$len,
+               supp = ToothGrowth$supp,
+               dose = ToothGrowth$dose,
+               interactions = "1:2"))
+kernL2(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
+
+# Choosing different kernels
+str(stackloss)
+kernL2(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
+kernL2(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
+kernL2(stack.loss ~ ., stackloss,
+       kernel = c("linear", "se", "poly3")))  # different kernels
+
+# Sometimes the print output is too long, can use str() options here
+print(mod, strict.width = "cut", width = 30)
+
+}
+\seealso{
+\link[=iprior]{iprior}
 }

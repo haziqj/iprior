@@ -72,8 +72,28 @@
 #'   shared scale parameter). Defaults to \code{FALSE}.
 #'
 #' @return An \code{ipriorKernel2} object which contains the relevant material
-#'   to be passed to the \code{iprior} function for model fitting. See also
-#'   print(), iprior().
+#'   to be passed to the \code{iprior} function for model fitting.
+#'
+#' @seealso \link[=iprior]{iprior}
+#'
+#' @examples
+#'
+#' str(ToothGrowth)
+#' (mod <- kernL2(y = ToothGrowth$len,
+#'                supp = ToothGrowth$supp,
+#'                dose = ToothGrowth$dose,
+#'                interactions = "1:2"))
+#' kernL2(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
+#'
+#' # Choosing different kernels
+#' str(stackloss)
+#' kernL2(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
+#' kernL2(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
+#' kernL2(stack.loss ~ ., stackloss,
+#'        kernel = c("linear", "se", "poly3")))  # different kernels
+#'
+#' # Sometimes the print output is too long, can use str() options here
+#' print(mod, strict.width = "cut", width = 30)
 #'
 #' @export
 kernL2 <- function(
@@ -203,6 +223,8 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
                est.lengthscale = est.lengthscale, est.offset = est.offset,
                est.psi = est.psi)
 
+  names(lambda) <- names(psi) <- NULL  # need to clean the names otherwise weird
+                                       # things happen
   param <- kernel_to_param(kernels, lambda)
   poly.deg <- param$deg
   thetal <- param_to_theta(param, estl, log(psi))
@@ -247,14 +269,19 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     xname = xname, yname = yname, formula = NULL, terms = NULL
   )
 
-  cl <- match.call()
-  cl[[1L]] <- as.name("kernL")
-  where.blanks <- grepl("^$", names(cl))[-(1:2)]
-  names(cl)[-(1:2)][where.blanks] <- paste0("X", which(where.blanks))
-  res$call <- cl
+  # Function call --------------------------------------------------------------
+  res$call <- fix_call_default(match.call(), "kernL")
 
   class(res) <- "ipriorKernel2"
   res
+}
+
+fix_call_default <- function(cl = match.call(), new.name = "iprior") {
+  cl[[1L]] <- as.name(new.name)
+  where.blanks <- grepl("^$", names(cl))[-(1:2)]
+  names(cl)[-(1:2)][where.blanks] <- paste0("X", which(where.blanks))
+  # names(cl)[2] <- ""  # get rid of "y ="
+  cl
 }
 
 #' @rdname kernL2
@@ -317,12 +344,14 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                         nystrom = nystrom, nys.seed = nys.seed, model = model)
   res$formula <- formula
   res$terms <- tt
-
-  cl <- match.call()
-  cl[[1L]] <- as.name("kernL")
-  res$call <- cl
+  res$call <- fix_call_formula(match.call(), "kernL")
 
   res
+}
+
+fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
+  cl[[1L]] <- as.name(new.name)
+  cl
 }
 
 #' @export
@@ -342,7 +371,7 @@ print.ipriorKernel2 <- function(x, ...) {
   cat("\n")
   cat("Kernel matrices:\n")
   for (i in seq_along(tmp$Hl)) {
-    cat("", i, print_kern(tmp$Hl[[i]]), "\n")
+    cat("", i, print_kern(tmp$Hl[[i]], ...), "\n")
   }
   cat("\n")
   cat("Hyperparameters to estimate:\n")
@@ -352,9 +381,9 @@ print.ipriorKernel2 <- function(x, ...) {
     cat("none")
 }
 
-print_kern <- function(x) {
+print_kern <- function(x, ...) {
   kern.type <- attr(x, "kernel")
-  res <- capture.output(str(x))[1]
+  res <- capture.output(str(x, ...))[1]
   res <- gsub(" num", kern.type, res)
   res
 }
