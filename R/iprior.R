@@ -18,17 +18,79 @@
 #
 ################################################################################
 
+#' @export
 iprior <- function(...) UseMethod("iprior")
+# iprior <- function(y, ..., kernel = "linear", method = c("direct", "em",
+#                                                          "fixed", "canonical",
+#                                                          "mixed"),
+#                    control = list(), interactions = NULL, est.lambda = TRUE,
+#                    est.hurst = FALSE, est.lengthscale = FALSE,
+#                    est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL,
+#                    lambda = 1, psi = 1, nystrom = FALSE, nys.seed = NULL,
+#                    object, iter.update, model = list()) {
+#   UseMethod("iprior")
+# }
 
-iprior.default <- function(y, ..., kernel = "linear", method = "direct",
-                            control = list()) {
+#' Fit an I-prior regression model
+#'
+#' A function to perform regression using I-priors. The I-prior model parameters
+#' may be estimated in a number of ways: direct minimisation of the marginal
+#' deviance, EM algorithm, fixed hyperparameters, or using a Nystrom kernel
+#' approximation.
+#'
+#' The \code{iprior()} function is able to take formula based input and
+#' non-formula. When not using formula, the syntax is as per the default S3
+#' method. That is, the response variable is the vector \code{y}, and any
+#' explanatory variables should follow this, and separated by commas.
+#'
+#' As described \link[=kernL2]{here}, the model can be loaded first into an
+#' \code{ipriorKernel} object, and then passed to the \code{iprior()} function
+#' to perform the estimation.
+#'
+#' @inheritParams kernL2
+#' @param object An \code{ipriorKernel2} or \code{ipriorMod} object.
+#' @param method The estimation method. One of: \itemize{ \item{\code{"direct"}
+#'   - for the direct minimisation of the marginal deviance using
+#'   \code{optim()}'s L-BFGS method} \item{\code{"em"} - for the EM algorithm}
+#'   \item{\code{"mixed"} - combination of the direct and EM methods}
+#'   \item{\code{"fixed"} - for just obtaining the posterior regression function
+#'   with fixed hyperparameters (default method when setting \code{fixed.hyp =
+#'   TRUE})} \item{\code{"canonical"} - an efficient estimation method which
+#'   takes advantage of the structure of the linear kernel} }
+#' @param control 1
+#' @param one.lam 1
+#' @param iter.update 1
+#'
+#' @return 1
+#'
+#' @examples 1
+#'
+#' @name iprior
+#' @export
+iprior.default <- function(y, ..., kernel = "linear", method = c("direct", "em",
+                                                                 "fixed",
+                                                                 "canonical",
+                                                                 "mixed"),
+                           control = list(), interactions = NULL,
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list()) {
   # Load the I-prior model -----------------------------------------------------
   if (is.ipriorKernel2(y)) {
     mod <- y
   } else {
-    mod <- kernL2(y = y, ..., kernel = kernel)
+    mod <- kernL2(y = y, ..., kernel = kernel, interactions = interactions,
+                  est.lambda = est.lambda, est.hurst = est.hurst,
+                  est.lengthscale = est.lengthscale, est.offset = est.offset,
+                  est.psi = est.psi, fixed.hyp = fixed.hyp, lambda = lambda,
+                  psi = psi, nystrom = nystrom, nys.seed = nys.seed,
+                  model = model)
   }
 
+  # Set up controls ------------------------------------------------------------
+  method <- tolower(method)
   method <- match.arg(method, c("direct", "em", "fixed", "canonical", "mixed"))
 
   control_ <- list(
@@ -134,15 +196,31 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   res
 }
 
-iprior.formula <- function(formula, data, kernel = "linear", method = "direct",
-                            control = list(), ...) {
-  mod <- kernL2.formula(formula, data, kernel = kernel, ...)
+#' @rdname iprior
+#' @export
+iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
+                           method = c("direct", "em", "fixed", "canonical",
+                                      "mixed"), control = list(),
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list(), ...) {
+  # Simply load the kernel and pass to iprior.default() ------------------------
+  mod <- kernL2.formula(formula, data, kernel = kernel, one.lam = one.lam,
+                        est.lambda = est.lambda, est.hurst = est.hurst,
+                        est.lengthscale = est.lengthscale,
+                        est.offset = est.offset, est.psi = est.psi,
+                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
+                        nystrom = nystrom, nys.seed = nys.seed, model = model)
   res <- iprior.default(y = mod, method = method, control = control)
   res
 }
 
+#' @describeIn iprior Re-run or continue running the EM algorithm from last
+#'   attained parameter values in object \code{ipriorMod}.
 iprior.ipriorMod <- function(object, method = NULL, control = list(),
-                               iter.update = 100, ...) {
+                             iter.update = 100, ...) {
   mod           <- object$ipriorKernel
   con           <- object$control
   con$theta0    <- object$theta
