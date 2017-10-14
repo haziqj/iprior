@@ -144,6 +144,18 @@ get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE)
   res
 }
 
+#' Extract the kernel matrix from I-prior models
+#'
+#' @param object An \code{ipriorMod} or \code{ipriorKernel2} object.
+#' @param theta (Optional) Value of hyperparameters to evaluate the kernel
+#'   matrix.
+#' @param xstar (Optional) If not supplied, then a square, symmetric kernel
+#'   matrix is returned using the data as input points. Otherwise, the kernel
+#'   matrix is evaluated with respect to this set of data as well. It must be a
+#'   list of vectors/matrices with similar dimensions to the original data.
+#'
+#' @return A kernel matrix.
+#'
 #' @export
 get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
   if (is.ipriorMod2(object)) {

@@ -3,12 +3,10 @@
 #' @importFrom Rcpp evalCpp
 #'
 # iprior package imports -------------------------------------------------------
-# @importFrom grDevices dev.new hcl
-# @importFrom methods is
-# @importFrom stats coef delete.response deviance dnorm kernel lm logLik
-#   model.extract model.frame model.response optim optimHess pnorm printCoefmat
-#   qnorm rnorm  terms fitted
-# @importFrom utils combn setTxtProgressBar str txtProgressBar
+#' @importFrom stats coef delete.response dnorm fitted logLik model.extract
+#'   model.frame model.response na.action na.omit optim optimHess pnorm
+#'   printCoefmat qnorm resid residuals rnorm rt terms
+# @importFrom utils capture.output combn setTxtProgressBar str txtProgressBar
 #' @import ggplot2
 NULL
 
