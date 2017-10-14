@@ -35,7 +35,7 @@ context("Plots")
 
 test_that("Plots", {
 
-  dat <- gen_fbm(10, seed = 123)
+  dat <- gen_smooth(10, seed = 123)
   mod <- iprior(y ~ ., dat, kernel = "fbm", fixed.hyp = TRUE)
   expect_silent(p <- plot_fitted(mod))
   expect_silent(p <- plot_predict(mod))

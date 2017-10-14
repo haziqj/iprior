@@ -105,7 +105,7 @@ iprior <- function(...) UseMethod("iprior")
 #' all.equal(coef(modnf), coef(modnf))  # both models are equivalent
 #'
 #' # Fit models using different kernels
-#' dat <- gen_fbm(n = 100)
+#' dat <- gen_smooth(n = 100)
 #' mod <- iprior(y ~ X, dat, kernel = "fbm")  # Hurst = 0.5 (default)
 #' mod <- iprior(y ~ X, dat, kernel = "poly3")  # polynomial degree 3
 #'
@@ -122,7 +122,7 @@ iprior <- function(...) UseMethod("iprior")
 #' \dontrun{
 #'
 #' # For large data sets, it is worth trying the Nystrom method
-#' mod <- iprior(y ~ X, gen_fbm(5000), kernel = "se", nystrom = 50,
+#' mod <- iprior(y ~ X, gen_smooth(5000), kernel = "se", nystrom = 50,
 #'               est.lengthscale = TRUE)  # a bit slow
 #' plot_fitted(mod, ci = FALSE)
 #' }

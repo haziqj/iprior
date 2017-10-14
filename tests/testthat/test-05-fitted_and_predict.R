@@ -32,7 +32,7 @@ test_that("Predict (non-formula)", {
 
 test_that("Predict (formula)", {
 
-  dat <- gen_fbm(4, seed = 123)
+  dat <- gen_smooth(4, seed = 123)
   mod <- iprior(y ~ ., dat[1:3, ], kernel = "fbm", control = list(silent = TRUE))
   tmp <- predict(mod, dat[4, ], intervals = TRUE)
 

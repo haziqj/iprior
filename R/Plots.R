@@ -1,3 +1,47 @@
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
+#' Plots for I-prior models
+#'
+#' There are three types of plots that are currently written in the package:
+#' \describe{ \item{\code{plot_fitted}}{Plot the fitted regression line with
+#' credibility bands.} \item{\code{plot_predict}}{Plot residuals against fitted
+#' values.} \item{\code{plot_iter}}{Plot the progression of the log-likelihood
+#' value over time.} } The S3 method \code{plot} for class \code{ipriorMod}
+#' currently returns \code{plot_fitted}.
+#'
+#' @param x An \code{ipriorMod} object.
+#' @param X.var The index of the X variable to plot.
+#' @param ci Logical. Plot the confidence intervals? Defaults to \code{TRUE}.
+#' @param niter.plot (Optional) Vector of length at most two, indicating the
+#'   start and end points of the iterations to plot.
+#' @param lab.pos Adjust the position of the log-likelihood label.
+#' @param ... Not used
+#'
+#' @export
+plot.ipriorMod <- function(x, ...) {
+  plot_predict(x)
+}
+
+#' @rdname plot.ipriorMod
+#' @export
 plot_predict <- function(x) {
   # Args: x an ipriorMod object.
   plot.df <- as.data.frame(fitted(x)[1:2])
@@ -8,6 +52,8 @@ plot_predict <- function(x) {
     theme_bw()
 }
 
+#' @rdname plot.ipriorMod
+#' @export
 plot_fitted <- function(x, X.var = 1, ci = TRUE) {
   fit <- fitted(x, intervals = ci)
   y.hat <- fit$y
@@ -43,6 +89,8 @@ plot_fitted <- function(x, X.var = 1, ci = TRUE) {
     theme_bw()
 }
 
+#' @rdname plot.ipriorMod
+#' @export
 plot_iter <- function(x, niter.plot = NULL, lab.pos = c("up", "down")) {
   # Same code from iprobit, hence the lb references.
 

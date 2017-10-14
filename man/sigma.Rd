@@ -10,14 +10,9 @@
 \arguments{
 \item{object}{An object of class \code{ipriorMod}.}
 
-\item{...}{This is not used here.}
+\item{...}{Not used.}
 }
 \description{
 Extract the standard deviation of the residuals. For I-prior models, this is
 \code{sigma = 1 / sqrt(psi)}.
-}
-\details{
-This basically obtains \code{object$sigma}. For \code{R (>= 3.3.0)} then
-\code{sigma} is an S3 method with the default method coming from the
-\code{stats} package.
 }

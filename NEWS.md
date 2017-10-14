@@ -4,6 +4,8 @@
 * Enhanced the methods and calculations for the linear (canonical) kernel, the fractional Brownian motion kernel, and the Pearson kernel.
 * Added support for the squared exponential kernel and the `d`-degree polynomial kernel with offset `c`.
 * Newly redesigned kernel loader function `kernL2()`, while still keeping support for the legacy `kernL()` function - although there are plans to phase out this in favour of the new one.
+* There is now a `summary` method for `ipriorKernel2` objects. 
+* The legacy kernels `Canonical`, `FBM` and `Pearson` are now referred to as `linear`, `fbm` and `pearson`, but there is backward compatability with the old references. 
 * The package now supports the following estimation methods: 
     1. Direct minimisation of the marginal deviance;
     2. EM algorithm (efficient closed-form version and the "regular" version);

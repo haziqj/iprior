@@ -105,7 +105,7 @@ str(stackloss)
 kernL2(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
 kernL2(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
 kernL2(stack.loss ~ ., stackloss,
-       kernel = c("linear", "se", "poly3")))  # different kernels
+       kernel = c("linear", "se", "poly3"))  # different kernels
 
 # Sometimes the print output is too long, can use str() options here
 print(mod, strict.width = "cut", width = 30)

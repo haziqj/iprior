@@ -1,4 +1,36 @@
-gen_fbm <- function(n = 150, seed = NULL) {
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
+#' Generate simulated data for smoothing models
+#'
+#' @param n Sample size.
+#' @param seed (Optional) Random seed.
+#'
+#' @return A dataframe containing the response variable \code{y} and
+#'   unidimensional explanatory variable \code{X}.
+#'
+#' @examples
+#' gen_smooth(10)
+#'
+#' @export
+gen_smooth <- function(n = 150, seed = NULL) {
   if (!is.null(seed)) set.seed(seed)
   f <- function(x, truth = FALSE) {
     35 * dnorm(x, mean = 1, sd = 0.8) +
@@ -14,24 +46,6 @@ gen_fbm <- function(n = 150, seed = NULL) {
   y <- f(x) + sign(y.err) * pmin(abs(y.err), rnorm(n, mean = 4.1))  # adding random
   data.frame(y = y, X = x)
 }
-
-
-#' Simulated data to illustrate one-dimensional smoothing
-#'
-#' Data generated from a mixed Gaussian density function \eqn{f(x) = 0.65 N(2,1)
-#' + 0.35 N(7, 1.5^2)}, where \eqn{N(x, y)} is the density function for a Normal
-#' distribution with mean \eqn{x} and variance \eqn{y}.
-#'
-#' @format A data frame with 53940 rows and 10 variables:
-#' \describe{
-#'   \item{\code{y}}{Response variable}
-#'   \item{\code{x}}{Explanatory variable}
-#' }
-#'
-#' @examples
-#' data(simdat)
-#' str(simdat)
-"datfbm"
 
 #' Random slopes model simulated data
 #'

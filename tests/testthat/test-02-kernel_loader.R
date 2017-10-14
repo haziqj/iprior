@@ -90,7 +90,7 @@ test_that("Fixed hyperparameter option", {
 
 test_that("Formula input", {
 
-  dat <- gen_fbm(3)
+  dat <- gen_smooth(3)
   mod1 <- kernL2(y ~ ., dat, kernel = "poly")
   mod2 <- kernL2(dat$y, dat$X, kernel = "poly")
   tmp1 <- capture.output(print(mod1))
