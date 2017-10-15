@@ -1,6 +1,6 @@
 Package: iprior
 Title: Regression using Priors with Fisher Information Covariance Kernels (I-Priors)
-Version: 0.6.5.9004
+Version: 0.6.5.9005
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
@@ -16,6 +16,7 @@ Imports:
   doSNOW,
   foreach,
   ggplot2,
+  mvtnorm,
   Rcpp (>= 0.12.5),
   scales
 LinkingTo:

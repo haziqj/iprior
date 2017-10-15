@@ -1,4 +1,4 @@
-# v0.6.5.9003
+# v0.6.5.9005
 
 * **This udpate provides a complete redesign of the internals of the package. There are more kernels supported, new estimation methods, and plots are done using the `ggplot2` package.**
 * Enhanced the methods and calculations for the linear (canonical) kernel, the fractional Brownian motion kernel, and the Pearson kernel.
@@ -6,6 +6,9 @@
 * Newly redesigned kernel loader function `kernL2()`, while still keeping support for the legacy `kernL()` function - although there are plans to phase out this in favour of the new one.
 * There is now a `summary` method for `ipriorKernel2` objects. 
 * The legacy kernels `Canonical`, `FBM` and `Pearson` are now referred to as `linear`, `fbm` and `pearson`, but there is backward compatability with the old references. 
+* `parsm` option for interactions has been removed - It's hardly likely that this is ever useful.
+* `rootkern` option for Gaussian process regression has been removed. Should use specialised GPR software for this and keep this package for I-priors only.
+* `order` option to specify higher order terms has been removed in favour of polynomial kernels.
 * The package now supports the following estimation methods: 
     1. Direct minimisation of the marginal deviance;
     2. EM algorithm (efficient closed-form version and the "regular" version);

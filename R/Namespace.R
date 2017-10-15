@@ -11,6 +11,8 @@
 NULL
 
 # Hacky way to pass R CMD CHECK "no visible binding",note ----------------------
-globalVariables(c("BlockBStuff", "estl", "ind1", "ind2", "intr", "Iteration",
-                  "kernels", "lambda", "loglik", "m", "maxit", "mod", "n",
-                  "niter", "p","Pl","Psql", "Sl","stop.crit", "u", "V", "y"))
+globalVariables(c("BlockBStuff", "estl", "ind1", "ind2", "intr", "intr.3plus",
+                  "ipriorEM.env", "Iteration", "kernels", "lambda", "loglik",
+                  "m", "maxit", "mod", "n", "niter", "no.int", "no.int.3plus",
+                  "p", "parsm", "Pl", "probit",  "Psql", "Sl","stop.crit", "u",
+                  "V", "y"))
