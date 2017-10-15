@@ -29,9 +29,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   # argument used internally to determine whether this EM routine is part of the
   # iprior_mixed() routine or not.
   #
-  # Returns: A list containing the optimised theta and parameters, loglik
-  # values, standard errors, number of iterations, time taken, and convergence
-  # information.
+  # Returns: A list containing the optimised theta and parameters, y.hat and w,
+  # loglik values, standard errors, number of iterations, time taken, and
+  # convergence information.
 
   # Declare all variables and functions to be used into environment ------------
   y <- mod$y
@@ -54,10 +54,10 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     # Block A ------------------------------------------------------------------
     if (is.ipriorKernel_nys(mod)) {
       Hlam <- get_Hlam(mod, theta, get_Xl.nys(mod))
-      eigen_Hlam_nys(Hlam, environment())
+      eigen_Hlam_nys(Hlam, environment())  # assign u and V to environment
     } else {
       Hlam <- get_Hlam(mod, theta)
-      eigen_Hlam(Hlam, environment())
+      eigen_Hlam(Hlam, environment())  # assign u and V to environment
     }
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
@@ -86,7 +86,8 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
     # Calculate log-likelihood ---------------------------------------------------
     logdet <- sum(log(z))
-    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
+    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 -
+      crossprod(y, Vy.inv.y) / 2
 
     niter <- niter + 1
     if (!silent) setTxtProgressBar(pb, niter)
@@ -94,6 +95,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
+
+  # Calculate fitted values  ---------------------------------------------------
+  y.hat <- get_y.hat(u, V, w)
 
   # Calculate standard errors --------------------------------------------------
   if (!isTRUE(mixed)) {
@@ -119,9 +123,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     else cat("Converged after", niter, "iterations.\n")
   }
 
-  list(theta = theta, param.full = param.full,
-       loglik = as.numeric(na.omit(loglik)), se = se, niter = niter,
-       w = as.numeric(w), start.time = start.time, end.time = end.time,
+  list(theta = theta, param.full = param.full, se = se,
+       loglik = as.numeric(na.omit(loglik)), w = as.numeric(w), y.hat = y.hat,
+       niter = niter, start.time = start.time, end.time = end.time,
        time = time.taken, convergence = convergence, message = NULL)
 }
 

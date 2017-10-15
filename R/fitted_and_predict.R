@@ -128,16 +128,16 @@ print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
   cat("\n")
 }
 
-predict_iprior <- function(y, Hlam, w, intercept) {
+predict_iprior <- function(y, Hlam = NULL, w = NULL, intercept, y.hat = NULL) {
   # This is the main helper function to calculate fitted or predicted values. It
   # appears in iprior(), fitted() and predict() for ipriorMod objects.
   #
   # Args: y (data or test data for calculation of errors); Hlam the kernel
-  # matrix; w is the posterior mean of I-prior random effects; and the
-  # intercept.
+  # matrix; w is the posterior mean of I-prior random effects; the intercept;
+  # and y.hat optional if already calculated, then no need for Hlam and w.
   #
   # Returns: A list containing the predicted values, residuals and MSE.
-  y.hat <- Hlam %*% w
+  if (is.null(y.hat)) y.hat <- Hlam %*% w
   if (!is.null(y)) {
     resid <- y - y.hat
     train.error <- mean(resid ^ 2)
@@ -148,7 +148,7 @@ predict_iprior <- function(y, Hlam, w, intercept) {
        train.error = train.error)
 }
 
-se_yhat <- function(Hlam, Hlam.new, psi) {
+se_yhat <- function(Hlam, Hlam.new, psi, nystrom = FALSE) {
   # Obtains standard errors for predicted values y.hat (based on Hlam.new). This
   # is a helper function used in predict_iprior_quantiles().
   #
@@ -156,7 +156,11 @@ se_yhat <- function(Hlam, Hlam.new, psi) {
   # psi the error precision.
   #
   # Returns: standard errors for predicted values.
-  list2env(eigen_Hlam(Hlam), environment())
+  if (isTRUE(nystrom)) {
+    eigen_Hlam_nys(Hlam, environment())  # assign u and V to environment
+  } else {
+    eigen_Hlam(Hlam, environment())  # assign u and V to environment
+  }
   z <- psi * u ^ 2 + 1 / psi
   Vy.inv.Hlam <- A_times_a(1 / z, V, t(Hlam.new))
   sqrt(diag(Hlam.new %*% Vy.inv.Hlam) + 1 / psi)
@@ -173,7 +177,8 @@ predict_iprior_quantiles <- function(object, Hlam.new = NULL, y.hat, alpha) {
   # significance level.
   Hlam <- get_Hlam(object$ipriorKernel, object$theta)
   if (is.null(Hlam.new)) Hlam.new <- Hlam
-  se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$ipriorKernel))
+  se <- se_yhat(Hlam, Hlam.new, theta_to_psi(object$theta, object$ipriorKernel),
+                is.nystrom(object))
   names(se) <- NULL
   lower <- y.hat + qnorm(alpha / 2) * se
   upper <- y.hat + qnorm(1 - alpha / 2) * se

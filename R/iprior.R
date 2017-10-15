@@ -238,7 +238,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   if (is.null(intercept)) intercept <- mean(mod$y)
   res$intercept <- intercept
   res$coefficients <- reduce_theta(res$param.full, mod$estl)$theta.reduced
-  tmp <- predict_iprior(mod$y, get_Hlam(mod, res$theta), res$w, res$intercept)
+  tmp <- predict_iprior(mod$y, intercept = res$intercept, y.hat = res$y.hat)
   res$fitted.values <- tmp$y
   names(res$fitted.values) <- attr(mod$y, "dimnames")[[1]]
   res$residuals <- tmp$resid

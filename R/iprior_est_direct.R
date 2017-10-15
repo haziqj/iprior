@@ -26,46 +26,52 @@ iprior_direct <- function(mod, estimation.method, theta0, control) {
   # e.g. loglik_direct or loglik_nystrom, the initial values (theta0) and a list
   # of control options to pass to optim.
   #
-  # Returns: A list containing the optimised theta and parameters, loglik values,
-  # standard errors, number of iterations, time taken, and convergence
-  # information.
+  # Returns: A list containing the optimised theta and parameters, y.hat and w,
+  # loglik values, standard errors, number of iterations, time taken, and
+  # convergence information.
   iprior.env <- environment()
   w <- loglik <- NULL
 
   start.time <- Sys.time()
   res <- optim(theta0, estimation.method, object = mod, env = iprior.env,
-               trace = TRUE, get.w = TRUE, method = "L-BFGS", control = control,
+               trace = TRUE, method = "L-BFGS", control = control,
                hessian = TRUE)
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 
+  # Calculate fitted values  ---------------------------------------------------
+  w <- get_w(u, V, Vy.inv.y, psi)  # NOTE: psi, V, u and Vy.inv.y have been
+  y.hat <- get_y.hat(u, V, w)      # assigned to environment by loglik
+
+  # Calculate standard errors --------------------------------------------------
   tmp <- eigenCpp(-res$hessian)
   u <- tmp$val + 1e-9
   V <- tmp$vec
-  Fi.inv <- V %*% t(V) / u
+  Fi.inv <- V %*% (t(V) / u)
   se <- sqrt(diag(Fi.inv))
   se <- convert_se(se, res$par, mod)  # delta method to convert to parameter s.e.
+
+  # Clean up and close ---------------------------------------------------------
   loglik <- as.numeric(na.omit(loglik))
   param.full <- theta_to_collapsed_param(res$par, mod)
 
-  list(theta = res$par, param.full = param.full, loglik = loglik,
-       se = se, niter = res$count[1], w = as.numeric(w), start.time = start.time,
+  list(theta = res$par, param.full = param.full, se = se, loglik = loglik,
+       w = w, y.hat = y.hat, niter = res$count[1], start.time = start.time,
        end.time = end.time, time = time.taken, convergence = res$convergence,
        message = res$message)
 }
 
-loglik_iprior <- function(theta, object, trace = FALSE, env = NULL,
-                          get.w = FALSE) {
+loglik_iprior <- function(theta, object, trace = FALSE, env = NULL) {
   # The log-likelihood function for I-prior models.
   #
-  # Args: theta (hyperparameters), object (an ipriorKernel object), and options
-  # trace (logical) and env (the environment of optim) to be used with optim to
-  # get the log-likelihood values and w (if get.w == TRUE)
+  # Args: theta (hyperparameters), object (an ipriorKernel object), and optional
+  # trace (logical) and env (the environment of optim) to be used with optim in
+  # order to append the log-likelihood value to the existing vector, and also
+  # obtain the stuff required to calculate w and y.hat in the env environment.
   #
   # Returns: The log-likelihood value given theta of the I-prior model. Also, if
   # trace = TRUE then a vector of loglik values is written to the env
-  # environment. If get.w = TRUE then a vector of w (posterior mean of the
-  # I-prior random effects) are written to env as well.
+  # environment, along with Vy.invy, u, V and psi.
   psi <- theta_to_psi(theta, object)
   eigen_Hlam(get_Hlam(object, theta), environment())
 
@@ -81,11 +87,10 @@ loglik_iprior <- function(theta, object, trace = FALSE, env = NULL,
     loglik <- get("loglik", envir = env)
     loglik <- c(loglik, res)
     assign("loglik", loglik, envir = env)
-  }
-
-  if (isTRUE(get.w)) {
-    w <- psi * (V %*% ((t(V) * u) %*% Vy.inv.y))
-    assign("w", w, envir = env)
+    assign("Vy.inv.y", Vy.inv.y, envir = env)
+    assign("u", u, envir = env)
+    assign("V", V, envir = env)
+    assign("psi", psi, envir = env)
   }
 
   as.numeric(res)

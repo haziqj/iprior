@@ -31,9 +31,9 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   # argument used internally to determine whether this EM routine is part of the
   # iprior_mixed() routine or not.
   #
-  # Returns: A list containing the optimised theta and parameters, loglik
-  # values, standard errors, number of iterations, time taken, and convergence
-  # information.
+  # Returns: A list containing the optimised theta and parameters, y.hat and w,
+  # loglik values, standard errors, number of iterations, time taken, and
+  # convergence information.
 
   # Declare all variables and functions to be used into environment ------------
   iprior.env <- environment()
@@ -64,7 +64,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   while (em_loop_logical()) {
     # Block A ------------------------------------------------------------------
     Hlam <- get_Hlam(mod, lambda, theta.is.lambda = TRUE)
-    eigen_Hlam(Hlam, environment())
+    eigen_Hlam(Hlam, iprior.env)  # assign u and V to environment
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
     # Block C ------------------------------------------------------------------
@@ -100,6 +100,9 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 
+  # Calculate fitted values  ---------------------------------------------------
+  y.hat <- get_y.hat(u, V, w)
+
   # Calculate standard errors --------------------------------------------------
   if (!isTRUE(mixed)) {
     Vy.inv <- V %*% zinv.Vt
@@ -132,9 +135,8 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     else cat("Converged after", niter, "iterations.\n")
   }
 
-  list(theta = theta, param.full = param.full,
-       loglik = as.numeric(na.omit(loglik)),
-       se = se, niter = niter, w = as.numeric(w), start.time = start.time,
-       end.time = end.time, time = time.taken, convergence = convergence,
-       message = NULL)
+  list(theta = theta, param.full = param.full, se = se,
+       loglik = as.numeric(na.omit(loglik)), w = as.numeric(w), y.hat = y.hat,
+       niter = niter,  start.time = start.time, end.time = end.time,
+       time = time.taken, convergence = convergence, message = NULL)
 }

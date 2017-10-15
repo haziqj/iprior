@@ -116,11 +116,10 @@ convert_se <- function(se, theta, object) {
 get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   # Obtain the scaled kernel matrix Hlam.
   #
-  # Args: An ipriorKernel2 object, theta values to calculate Hlam at, optional
-  # xstar (list of new data or when using Nystrom method - to calculate a m x n
-  # Hlam matrix), and a logical argument theta.is.lambda. If theta.is.lambda =
-  # TRUE, then it is just a matter of taking the sumproduct of Hl and theta.
-  # Otherwise, Hl will be re-calculated everytime this function is called.
+  # Args: An ipriorKernel2 object, theta values to calculate Hlam at, and a
+  # logical argument theta.is.lambda. If theta.is.lambda = TRUE, then it is just
+  # a matter of taking the sumproduct of Hl and theta. Otherwise, Hl will be
+  # re-calculated everytime this function is called.
   #
   # Returns: The scaled kernel matrix. This has a "kernel" attribute indicating
   # which kernels were used to generate it.
@@ -148,14 +147,40 @@ get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
 }
 
 get_Htildelam <- function(object, theta, xstar) {
+  # A helper function to calculate Hlam given a new set of data. This is similar
+  # to get_Hlam().
+  #
+  # Args: An ipriorKernel2 object, theta values to calculate Hlam at, and a list
+  # of new data.
+  #
+  # Returns: Assuming m new data points, then an m x n matrix is returned.
   tmp <- theta_to_param(theta, object)
   kernels <- tmp$kernels
   lambda <- tmp$lambda
-  Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
-  calc_Hlam(Hl, lambda, object)
+
+  # if (is.nystrom(object)) {
+  #   m <- object$nystroml$nys.size
+  #   Hlam <- get_Hlam(object, theta)  # [A B]
+  #   A <- Hlam[1:m, 1:m]
+  #   Hl <- get_Hl(get_Xl.nys(object), xstar, kernels, lambda)
+  #   Hlam.new <- calc_Hlam(Hl, lambda, object)
+  #   res <- Hlam.new %*% solve(A, Hlam)
+  # } else {
+    Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+    res <- calc_Hlam(Hl, lambda, object)
+  # }
+
+  res
 }
 
 calc_Hlam <- function(Hl, lambda, object) {
+  # Helper function to get the sumproduct of the list of kernel matrices and the
+  # scale parameters.
+  #
+  # Args: Hl list of kernel matrices, scale parameters lambda, and ipriorKernel2
+  # object.
+  #
+  # Returns: Hlam matrix.
   expand_Hl_and_lambda(Hl, lambda, object$intr, object$intr.3plus,
                        environment())
   res <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
@@ -166,6 +191,12 @@ calc_Hlam <- function(Hl, lambda, object) {
 
 #' @export
 .get_Hlam <- get_Hlam
+
+#' @export
+.get_Htildelam <- get_Htildelam
+
+#' @export
+.calc_Hlam <- calc_Hlam
 
 eigen_Hlam <- function(Hlam, env = NULL) {
   # The routine for the eigendecomposition of the scaled kernel matrix.

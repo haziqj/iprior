@@ -18,19 +18,18 @@
 #
 ################################################################################
 
-loglik_nystrom <- function(theta, object, trace = FALSE, env = NULL,
-                           get.w = FALSE) {
+loglik_nystrom <- function(theta, object, trace = FALSE, env = NULL) {
   # The log-likelihood function for I-prior model using Nystrom approximation of
   # the kernel matrices.
   #
-  # Args: theta (hyperparameters), object (an ipriorKernel object), and options
-  # trace (logical) and env (the environment of optim) to be used with optim to
-  # get the log-likelihood values and w (if get.w == TRUE)
+  # Args: theta (hyperparameters), object (an ipriorKernel object), and optional
+  # trace (logical) and env (the environment of optim) to be used with optim in
+  # order to append the log-likelihood value to the existing vector, and also
+  # obtain the stuff required to calculate w and y.hat in the env environment.
   #
   # Returns: The log-likelihood value given theta of the I-prior model. Also, if
   # trace = TRUE then a vector of loglik values is written to the env
-  # environment. If get.w = TRUE then a vector of w (posterior mean of the
-  # I-prior random effects) are written to env as well.
+  # environment, along with Vy.invy, u, V and psi.
   psi <- theta_to_psi(theta, object)
   AB <- get_Hlam(object, theta)
   list2env(eigen_Hlam_nys(AB), environment())
@@ -47,11 +46,10 @@ loglik_nystrom <- function(theta, object, trace = FALSE, env = NULL,
     loglik <- get("loglik", envir = env)
     loglik <- c(loglik, res)
     assign("loglik", loglik, envir = env)
-  }
-
-  if (isTRUE(get.w)) {
-    w <- psi * (V %*% ((t(V) * u) %*% Vy.inv.y))
-    assign("w", w, envir = env)
+    assign("Vy.inv.y", Vy.inv.y, envir = env)
+    assign("u", u, envir = env)
+    assign("V", V, envir = env)
+    assign("psi", psi, envir = env)
   }
 
   as.numeric(res)
