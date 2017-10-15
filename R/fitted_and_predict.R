@@ -88,7 +88,7 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
     xrownames <- rownames(do.call(cbind, newdata))
   }
 
-  Hlam.new <- get_Hlam(object$ipriorKernel, object$theta, xstar = xstar)
+  Hlam.new <- get_Htildelam(object$ipriorKernel, object$theta, xstar)
   res <- predict_iprior(y.test, Hlam.new, object$w, object$intercept)
   names(res$y) <- xrownames
   names(res)[grep("train.error", names(res))] <- "test.error"

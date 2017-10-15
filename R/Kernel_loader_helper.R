@@ -410,7 +410,7 @@ expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
       ind1 <- intr[1, j]; ind2 <- intr[2, j]
       lambda[p + j] <- lambda[ind1] * lambda[ind2]
       Hl[[p + j]] <- Hl[[ind1]] * Hl[[ind2]]
-      attr(Hl[[p + j]], "kernel") <- paste(attr(Hl[[ind2]], "kernel"),
+      attr(Hl[[p + j]], "kernel") <- paste(attr(Hl[[ind1]], "kernel"),
                                            attr(Hl[[ind2]], "kernel"),
                                            sep = " x ")
     }
@@ -610,7 +610,7 @@ reorder_x <- function(x, smp) {
   # Args: x (vector or matrix), and smp is the sequence of reordering.
   #
   # Returns: A reordered vector or matrix x.
-  if (is.vector(x)) res <- x[smp]
+  if (is.null(nrow(x))) res <- x[smp]
   else res <- x[smp, ]
   mostattributes(res) <- attributes(x)
   res

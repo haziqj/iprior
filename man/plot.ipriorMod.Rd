@@ -3,6 +3,7 @@
 \name{plot.ipriorMod}
 \alias{plot.ipriorMod}
 \alias{plot_predict}
+\alias{plot_fitted_multilevel}
 \alias{plot_fitted}
 \alias{plot_iter}
 \title{Plots for I-prior models}
@@ -11,7 +12,11 @@
 
 plot_predict(x)
 
-plot_fitted(x, X.var = 1, ci = TRUE)
+plot_fitted_multilevel(x, X.var = 1, grp = 1, facet = c(2, 3),
+  cred.bands = TRUE, show.legend = TRUE, show.points = TRUE,
+  x.lab = NULL, y.lab = NULL, grp.lab = NULL)
+
+plot_fitted(x, X.var = 1, cred.bands = TRUE)
 
 plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 }
@@ -22,7 +27,23 @@ plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 
 \item{X.var}{The index of the X variable to plot.}
 
-\item{ci}{Logical. Plot the confidence intervals? Defaults to \code{TRUE}.}
+\item{grp}{The index of the groups.}
+
+\item{facet}{The index of the X variable in which to facet. This is a vector
+of maximum length 2.}
+
+\item{cred.bands}{Logical. Plot the confidence intervals? Defaults to \code{TRUE}.}
+
+\item{show.legend}{Logical. Show legend?}
+
+\item{show.points}{Logical. Show data points?}
+
+\item{x.lab}{(Optional) X axis label.}
+
+\item{y.lab}{(Optional) Y axis label.}
+
+\item{grp.lab}{(Optional) The name for the groups, which is also the legend
+title.}
 
 \item{niter.plot}{(Optional) Vector of length at most two, indicating the
 start and end points of the iterations to plot.}

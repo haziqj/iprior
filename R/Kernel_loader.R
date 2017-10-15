@@ -156,7 +156,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     if (!is.null(nys.seed)) set.seed(nys.seed)
     nys.samp <- sample(seq_along(y))
     y <- y[nys.samp]
-    tmp <- lapply(Xl, reorder_x, smp = nys.samp)  # defined in .reorder_ipriorKernel()
+    tmp <- lapply(Xl, reorder_x, smp = nys.samp)
     mostattributes(tmp) <- attributes(Xl)
     Xl <- tmp
     Xl.nys <- lapply(Xl, reorder_x, smp = seq_len(nystrom))

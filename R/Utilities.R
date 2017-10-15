@@ -174,6 +174,28 @@ is.kern_se <- function(x) is.kern_type(x, type = "se")
 #' @export
 is.kern_poly <- function(x) is.kern_type(x, type = "poly")
 
+is.theta_lambda <- function(x) {
+  # Helper function to determine whether or not a given set of hyperparameter
+  # consists only of lambdas.
+  #
+  # Args: an ipriorMod or ipriorKernel2 object.
+  #
+  # Returns: Logical.
+  if (is.ipriorMod(x)) x <- x$ipriorKernel
+  if (is.ipriorKernel2(x)) {
+    theta <- names(x$thetal$theta)
+    any.hurst       <- any(grepl("hurst"      , theta))
+    any.lengthscale <- any(grepl("lengthscale", theta))
+    any.offset      <- any(grepl("offset"     , theta))
+    any.lambda      <- any(grepl("lambda"     , theta))
+    return(
+      all(!any.hurst, !any.lengthscale, !any.offset, any.lambda)
+    )
+  } else {
+    stop("Not an ipriorX object.", call. = FALSE)
+  }
+}
+
 #' Emulate \code{ggplot2} default colour palette
 #'
 #' Emulate \code{ggplot2} default colour palette.

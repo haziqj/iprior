@@ -32,7 +32,7 @@ loglik_nystrom <- function(theta, object, trace = FALSE, env = NULL,
   # environment. If get.w = TRUE then a vector of w (posterior mean of the
   # I-prior random effects) are written to env as well.
   psi <- theta_to_psi(theta, object)
-  AB <- get_Hlam(object, theta, get_Xl.nys(object))
+  AB <- get_Hlam(object, theta)
   list2env(eigen_Hlam_nys(AB), environment())
 
   y <- object$y  # y has already been standardised!

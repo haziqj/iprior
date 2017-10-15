@@ -29,15 +29,33 @@
 #'
 #' @param x An \code{ipriorMod} object.
 #' @param X.var The index of the X variable to plot.
-#' @param ci Logical. Plot the confidence intervals? Defaults to \code{TRUE}.
+#' @param cred.bands Logical. Plot the confidence intervals? Defaults to \code{TRUE}.
 #' @param niter.plot (Optional) Vector of length at most two, indicating the
 #'   start and end points of the iterations to plot.
 #' @param lab.pos Adjust the position of the log-likelihood label.
 #' @param ... Not used
+#' @param grp The index of the groups.
+#' @param facet The index of the X variable in which to facet. This is a vector
+#'   of maximum length 2.
+#' @param show.legend Logical. Show legend?
+#' @param show.points Logical. Show data points?
+#' @param x.lab (Optional) X axis label.
+#' @param y.lab (Optional) Y axis label.
+#' @param grp.lab (Optional) The name for the groups, which is also the legend
+#'   title.
 #'
 #' @export
 plot.ipriorMod <- function(x, ...) {
-  plot_predict(x)
+  which.pearson <- x$ipriorKernel$which.pearson
+  if (sum(which.pearson) > 0) {
+    if (sum(which.pearson) == length(which.pearson)) {
+      stop("Not available yet.", call. = FALSE)
+    } else {
+      plot_fitted_multilevel(x)
+    }
+  } else {
+    plot_fitted(x)
+  }
 }
 
 #' @rdname plot.ipriorMod
@@ -54,8 +72,68 @@ plot_predict <- function(x) {
 
 #' @rdname plot.ipriorMod
 #' @export
-plot_fitted <- function(x, X.var = 1, ci = TRUE) {
-  fit <- fitted(x, intervals = ci)
+plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
+                                   cred.bands = TRUE, show.legend = TRUE,
+                                   show.points = TRUE, x.lab = NULL,
+                                   y.lab = NULL, grp.lab = NULL) {
+  fit <- fitted(x, intervals = cred.bands)
+  y.hat <- fit$y
+
+  which.pearson <- x$ipriorKernel$which.pearson
+  cat.x <- which(which.pearson)
+  cts.x <- which(!which.pearson)
+  X      <- x$ipriorKernel$Xl[[cts.x[X.var]]]
+  grp    <- x$ipriorKernel$Xl[[cat.x[grp]]]
+  plot.df <- data.frame(y.hat = y.hat, x = X, grp = grp,
+                        y = as.numeric(x$ipriorKernel$y) + x$intercept)
+  if (length(cat.x) == 2) {
+    plot.df <- cbind(plot.df, facet1 = x$ipriorKernel$Xl[[cat.x[facet[1]]]])
+  }
+  if (length(cat.x) == 3) {
+    plot.df <- cbind(plot.df, facet2 = x$ipriorKernel$Xl[[cat.x[facet[2]]]])
+  }
+
+  if (is.null(x.lab)) x.lab <- x$ipriorKernel$xname[X.var]
+  if (is.null(y.lab)) y.lab <- x$ipriorKernel$yname
+  if (is.null(grp.lab)) grp.lab <- names(cat.x[grp])
+  nys.check <- is.ipriorKernel_nys(x$ipriorKernel)
+
+  p <- ggplot(plot.df)
+
+  if (isTRUE(cred.bands)) {
+    p <- p + geom_ribbon(aes(x = X, ymin = fit$lower, ymax = fit$upper,
+                             fill = grp), alpha = 0.15) +
+      scale_fill_discrete(name = grp.lab)
+  }
+
+  if (isTRUE(show.points)) {
+    p <- p + geom_point(aes(x, y, col = grp))
+  }
+
+  p <- p +
+    geom_line(aes(x, y.hat, col = grp)) +
+    labs(x = x.lab, y = y.lab) +
+    scale_colour_discrete(name = grp.lab) +
+    theme_bw()
+
+  if (length(cat.x) == 2) {
+    p <- p + facet_grid(. ~ facet1)
+  }
+  if (length(cat.x) == 3) {
+    p <- p + facet_grid(facet2 ~ facet1)
+  }
+
+  if (!isTRUE(show.legend)) {
+    p <- p + theme(legend.position = "none")
+  }
+
+  p
+}
+
+#' @rdname plot.ipriorMod
+#' @export
+plot_fitted <- function(x, X.var = 1, cred.bands = TRUE) {
+  fit <- fitted(x, intervals = cred.bands)
   y.hat <- fit$y
   X <- x$ipriorKernel$Xl[[X.var]]
   plot.df <- data.frame(y.hat = y.hat, x = X,
@@ -66,7 +144,7 @@ plot_fitted <- function(x, X.var = 1, ci = TRUE) {
 
   p <- ggplot(plot.df)
 
-  if (isTRUE(ci)) {
+  if (isTRUE(cred.bands)) {
     p <- p + geom_ribbon(aes(x = X, ymin = fit$lower, ymax = fit$upper),
                          fill = "grey", alpha = 0.5)
   }

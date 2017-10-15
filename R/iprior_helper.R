@@ -113,7 +113,7 @@ convert_se <- function(se, theta, object) {
   res
 }
 
-get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE) {
+get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   # Obtain the scaled kernel matrix Hlam.
   #
   # Args: An ipriorKernel2 object, theta values to calculate Hlam at, optional
@@ -125,22 +125,42 @@ get_Hlam <- function(object, theta, xstar = list(NULL), theta.is.lambda = FALSE)
   # Returns: The scaled kernel matrix. This has a "kernel" attribute indicating
   # which kernels were used to generate it.
   if (isTRUE(theta.is.lambda)) {
-    Hl <- object$Hl
-    lambda <- theta[seq_along(Hl)]  # in case theta constains psi
+    lambda <- theta
+    lambda.only <- TRUE
   } else {
     tmp <- theta_to_param(theta, object)
     kernels <- tmp$kernels
     lambda <- tmp$lambda
-    Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+    lambda.only <- is.theta_lambda(object)
   }
 
+  if (isTRUE(lambda.only)) {
+    Hl <- object$Hl
+  } else {
+    if (is.nystrom(object)) {
+      Hl <- get_Hl(object$Xl, get_Xl.nys(object), kernels = kernels,
+                   lambda = lambda)
+    } else {
+      Hl <- get_Hl(object$Xl, list(NULL), kernels = kernels, lambda = lambda)
+    }
+  }
+  calc_Hlam(Hl, lambda[seq_along(Hl)], object)
+}
+
+get_Htildelam <- function(object, theta, xstar) {
+  tmp <- theta_to_param(theta, object)
+  kernels <- tmp$kernels
+  lambda <- tmp$lambda
+  Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+  calc_Hlam(Hl, lambda, object)
+}
+
+calc_Hlam <- function(Hl, lambda, object) {
   expand_Hl_and_lambda(Hl, lambda, object$intr, object$intr.3plus,
                        environment())
-
   res <- Reduce("+", mapply("*", Hl, lambda, SIMPLIFY = FALSE))
   kernels.to.add <- sapply(Hl, attr, "kernel")
   attr(res ,"kernel") <- paste(kernels.to.add, collapse = " + ")
-
   res
 }
 

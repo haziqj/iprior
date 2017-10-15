@@ -47,6 +47,65 @@ gen_smooth <- function(n = 150, seed = NULL) {
   data.frame(y = y, X = x)
 }
 
+#' Generate simulated data for multilevel models
+#'
+#' @param n Sample size. Input either a single number for a balanced data set,
+#'   or a vector of length \code{m} indicating the sample size in each group.
+#' @param seed (Optional) Random seed.
+#' @param m Number of groups/levels.
+#' @param sigma_e The standard deviation of the errors.
+#' @param sigma_u1 The standard deviation of the random intercept.
+#' @param sigma_u2 The standard deviation of the random slopes.
+#' @param sigma_u12 The covariance of between the random intercept and the
+#'   random slope.
+#' @param beta0 The mean of the random intercept.
+#' @param beta1 The mean of the random slope.
+#' @param x.jitter A small amount of jitter is added to the \code{X} variables
+#'   generated from a normal distribution with mean zero and standard deviation
+#'   equal to \code{x.jitter}.
+#'
+#' @return A dataframe containing the response variable \code{y}, the
+#'   unidimensional explanatory variables \code{X}, and the levels/groups
+#'   (factors).
+#'
+#' @examples
+#' gen_multilevel()
+#'
+#' @export
+gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u1 = 2,
+                           sigma_u2 = 2, sigma_u12 = -2, beta0 = 0, beta1 = 2,
+                           x.jitter = 0.5, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  beta <- mvtnorm::rmvnorm(m, c(beta0, beta1),
+                           sigma = matrix(c(sigma_u1 ^ 2, sigma_u12,
+                                            sigma_u12, sigma_u2 ^ 2), nrow = 2))
+  if (length(n) == 1) {
+    n <- rep(n, m)
+  } else if (length(n) != m) {
+    stop("n must have length equal to the number of groups (m).", call. = FALSE)
+  }
+  dat <- as.data.frame(matrix(NA, nrow = sum(n), ncol = 3))
+  n.cum <- c(0, cumsum(n))
+  for (j in seq_len(m)) {
+    x <- seq(0, 5, length = n[j]) + rnorm(n[j], sd = x.jitter)
+    y <- beta[j, 1] + beta[j, 2] * x + rnorm(n[j], sd = sigma_e)
+    dat[(n.cum[j] + 1):n.cum[j + 1], ] <- cbind(y, x, j)
+  }
+  names(dat) <- c("y", "X", "grp")
+  dat$grp <- factor(dat$grp)
+  dat
+}
+
+# x.new <- c(min(dat$x), max(dat$x))
+# dat.new <- as.data.frame(matrix(NA, nrow = 2 * m, ncol = 3))
+# dat.new[, 2] <- rep(x.new, m)
+# dat.new[, 3] <- rep(1:m, each = 2)
+# dat.new[, 1] <- 1
+# names(dat.new) <- c("y", "x", "grp")
+# dat.new$grp <- factor(dat.new$grp)
+
+
+
 #' Random slopes model simulated data
 #'
 #' A simulated dataset to illustrate multilevel modelling using I-priors.
