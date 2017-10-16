@@ -279,14 +279,6 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   res
 }
 
-fix_call_default <- function(cl = match.call(), new.name = "iprior") {
-  cl[[1L]] <- as.name(new.name)
-  where.blanks <- grepl("^$", names(cl))[-(1:2)]
-  names(cl)[-(1:2)][where.blanks] <- paste0("X", which(where.blanks))
-  # names(cl)[2] <- ""  # get rid of "y ="
-  cl
-}
-
 #' @rdname kernL2
 #' @export
 kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
@@ -350,9 +342,4 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
   res$call <- fix_call_formula(match.call(), "kernL")
 
   res
-}
-
-fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
-  cl[[1L]] <- as.name(new.name)
-  cl
 }

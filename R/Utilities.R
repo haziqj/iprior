@@ -299,6 +299,30 @@ check_levels <- function(y) {
 #' @export
 .checkLevels <- check_levels
 
+fix_call_default <- function(cl = match.call(), new.name = "iprior") {
+  # Replace the default call name with a new name. When using the default call,
+  # it is possible that some of the X names are blank. This fixes that too.
+  #
+  # Args: The call and the new.name.
+  #
+  # Returns: The fixed call.
+  cl[[1L]] <- as.name(new.name)
+  where.blanks <- grepl("^$", names(cl))[-(1:2)]
+  names(cl)[-(1:2)][where.blanks] <- paste0("X", which(where.blanks))
+  # names(cl)[2] <- ""  # get rid of "y ="
+  cl
+}
+
+fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
+  # Replace the formula call name with a new name.
+  #
+  # Args: The call and the new.name.
+  #
+  # Returns: The fixed call.
+  cl[[1L]] <- as.name(new.name)
+  cl
+}
+
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
   # yourself when your package is unloaded.
