@@ -38,11 +38,7 @@ A dataframe containing the response variable \code{y}, the
   (factors).
 }
 \description{
-Generates a data set according to the model \deqn{y_{ij} = \beta_{0j} +
-\beta{1j}X_{ij} + \epsilon_{ij}} \deqn{\beta_{0j} \sim \text{N}(0,
-\sigma_{u0}^2)} \deqn{\beta_{1j} \sim \text{N}(0, \sigma_{u1}^2)}
-\deqn{\text{Cov}(\beta_{0j}, \beta_{1j}) = \sigma_{u01}} with
-\eqn{i=1,\dots,n_j}  samples and \eqn{j=1,\dots,m} groups.
+Generate simulated data for multilevel models
 }
 \examples{
 gen_multilevel()

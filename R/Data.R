@@ -49,12 +49,6 @@ gen_smooth <- function(n = 150, seed = NULL) {
 
 #' Generate simulated data for multilevel models
 #'
-#' Generates a data set according to the model \deqn{y_{ij} = \beta_{0j} +
-#' \beta{1j}X_{ij} + \epsilon_{ij}} \deqn{\beta_{0j} \sim \text{N}(0,
-#' \sigma_{u0}^2)} \deqn{\beta_{1j} \sim \text{N}(0, \sigma_{u1}^2)}
-#' \deqn{\text{Cov}(\beta_{0j}, \beta_{1j}) = \sigma_{u01}} with
-#' \eqn{i=1,\dots,n_j}  samples and \eqn{j=1,\dots,m} groups.
-#'
 #' @param n Sample size. Input either a single number for a balanced data set,
 #'   or a vector of length \code{m} indicating the sample size in each group.
 #' @param seed (Optional) Random seed.
@@ -81,6 +75,11 @@ gen_smooth <- function(n = 150, seed = NULL) {
 gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
                            sigma_u1 = 2, sigma_u01 = -2, beta0 = 0, beta1 = 2,
                            x.jitter = 0.5, seed = NULL) {
+  # Generates a data set according to the model \deqn{y_{ij} = \beta_{0j} +
+  # \beta{1j}X_{ij} + \epsilon_{ij}} \deqn{\beta_{0j} \sim \text{N}(0,
+  # \sigma_{u0}^2)} \deqn{\beta_{1j} \sim \text{N}(0, \sigma_{u1}^2)}
+  # \deqn{\text{Cov}(\beta_{0j}, \beta_{1j}) = \sigma_{u01}} with
+  # \eqn{i=1,\dots,n_j}  samples and \eqn{j=1,\dots,m} groups.
   if (!is.null(seed)) set.seed(seed)
   beta <- mvtnorm::rmvnorm(m, c(beta0, beta1),
                            sigma = matrix(c(sigma_u0 ^ 2, sigma_u01,
