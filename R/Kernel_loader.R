@@ -134,10 +134,14 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   yname <- attr(y, "yname")
   if (is.factor(y)) {
     probit <- TRUE
+    tmp <- get_y_and_levels(y)
+    y <- tmp$y
+    y.levels <- tmp$levels
   } else {
     probit <- FALSE
-    y <- scale(y, scale = FALSE)  # centre variables
+    y.levels <- NULL
   }
+  y <- scale(y, scale = FALSE)  # centre variables
   intercept <- attr(y, "scaled:center")
 
   # Meta -----------------------------------------------------------------------
@@ -269,7 +273,8 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     BlockBStuff = BlockBStuff,
     # Meta
     n = n, p = p, no.int = no.int, no.int.3plus = no.int.3plus,
-    xname = xname, yname = yname, formula = NULL, terms = NULL
+    xname = xname, yname = yname, formula = NULL, terms = NULL,
+    y.levels = y.levels
   )
 
   # Function call --------------------------------------------------------------
@@ -297,7 +302,7 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
   xnl <- length(xname)
   x <- as.list(x)
   attr(x, "terms") <- NULL
-  attr(y, "yname") <- yname
+  # attr(y, "yname") <- yname
 
   # Interactions ---------------------------------------------------------------
   interactions <- NULL
@@ -337,9 +342,73 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                         est.offset = est.offset, est.psi = est.psi,
                         fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
                         nystrom = nystrom, nys.seed = nys.seed, model = model)
+  res$yname <- yname
   res$formula <- formula
   res$terms <- tt
   res$call <- fix_call_formula(match.call(), "kernL")
 
+  res
+}
+
+#' @export
+print.ipriorKernel2 <- function(x, units = "MB", standard = "SI", ...) {
+  tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
+
+  # if (isTRUE(x$probit)) {
+  #   cat("Categorical response variables\n")
+  # } else if (is.ipriorKernel_nys(x)) {
+  #   cat("Nystrom kernel approximation ()\n")
+  # }
+
+  cat("Sample size:", x$n, "\n")
+  cat("No. of covariates:", length(x$Xl), "\n")
+  # cat("No. of interactions:", x$no.int + x$no.int.3plus, "\n")
+  cat("Object size: ")
+  print(object.size(x), units = units, standard = standard)
+
+  cat("\n")
+  cat("Kernel matrices:\n")
+  for (i in seq_along(tmp$Hl)) {
+    cat("", i, print_kern(tmp$Hl[[i]], ...), "\n")
+  }
+  cat("\n")
+  cat("Hyperparameters to estimate:\n")
+  if (x$thetal$n.theta > 0)
+    cat(paste(names(x$thetal$theta), collapse = ", "))
+  else
+    cat("none")
+  cat("\n")
+
+  cat("\n")
+  methods <- c("direct", "em", "canonical", "mixed", "fixed")
+  poss.method <- NULL
+  for (i in seq_along(methods)) {
+    suppressWarnings(tmp <-  iprior_method_checker(x, methods[i]))
+    poss.method <- c(poss.method, names(which(tmp)))
+  }
+  poss.method <- gsub("em.closed", "em", poss.method)
+  poss.method <- gsub("em.reg", "em", poss.method)
+  poss.method <- gsub("nystrom", "direct", poss.method)
+  if (is.nystrom(x)) {
+    poss.method <- paste(poss.method, "(Nystrom)")
+  }
+  if (is.iprobit(x)) {
+    poss.method <- c(poss.method, "iprobit (recommended)")
+  }
+  poss.method <- paste0(unique(poss.method), collapse = ", ")
+  cat("Estimation methods available:\n")
+  cat(poss.method)
+}
+
+print_kern <- function(x, ...) {
+  # Helper function to prettify the print output of kernel matrices.
+  #
+  # Args: x is a kernel matrix obtained from one of the kern_x() functions.
+  # Additional ... are passed to str().
+  #
+  # Returns: Prettified kernel matrix str() print ouput.
+  kern.type <- attr(x, "kernel")
+  res <- capture.output(str(x, ...))[1]
+  res <- gsub(" num", kern.type, res)
   res
 }

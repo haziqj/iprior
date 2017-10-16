@@ -25,5 +25,10 @@ get_intercept <- function(object) {
 
 get_y <- function(object) {
   check_and_get_ipriorKernel(object)
-  object$y + get_intercept(object)
+  if (is.iprobit(object)) {
+    warning("Numerised categorical variables.", call. = FALSE)
+  }
+  res <- as.numeric(object$y + get_intercept(object))
+  names(res) <- rownames(object$y)
+  res
 }

@@ -167,6 +167,13 @@ is.ipriorKernel_nys <- function(x) {
 #' @export
 is.nystrom <- is.ipriorKernel_nys
 
+#' @rdname is.iprior_x
+#' @export
+is.iprobit <- function(x) {
+  check_and_get_ipriorKernel(x)
+  isTRUE(x$probit)
+}
+
 #' Test kernel attributes
 #'
 #' Test whether an object uses a specific type of kernel.
@@ -286,7 +293,7 @@ ggColPal <- function(x) {
   gg_colour_hue(x)
 }
 
-check_levels <- function(y) {
+get_y_and_levels <- function(y) {
   # Function used for categorical response model to obtains the levels in the
   # ys.
   #
@@ -297,7 +304,7 @@ check_levels <- function(y) {
 }
 
 #' @export
-.checkLevels <- check_levels
+.checkLevels <- get_y_and_levels
 
 fix_call_default <- function(cl = match.call(), new.name = "iprior") {
   # Replace the default call name with a new name. When using the default call,

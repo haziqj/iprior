@@ -60,16 +60,16 @@ procedure: \describe{ \item{\code{maxit}}{The maximum number of iterations
 for the quasi-Newton optimisation or the EM algorithm. Defaults to
 \code{100}.} \item{\code{em.maxit}}{For \code{method = "mixed"}, the number
 of EM steps before switching to direct optimisation. Defaults to \code{5}.}
-\item{\code{stop.crit}}{The EM stopping criterion, which is the difference
-in successive log-likelihood values. Defaults to \code{1e-8}.}
-\item{\code{theta0}}{The initial values for the hyperparameters. Defaults
-to random starting values.} \item{\code{report}}{The interval of reporting
-for the \code{optim()} function.} \item{\code{restarts}}{The number of
-random restarts to perform. Defaults to \code{0}. It's also possible to set
-it to \code{TRUE}, in which case the number of random restarts is set to
-the total number of available cores.} \item{\code{no.cores}}{The number of
-cores in which to do random restarts. Defaults to the total number of
-available cores.} }}
+\item{\code{stop.crit}}{The stopping criterion for the EM and L-BFGS
+algorithm, which is the difference in successive log-likelihood values.
+Defaults to \code{1e-8}.} \item{\code{theta0}}{The initial values for the
+hyperparameters. Defaults to random starting values.}
+\item{\code{report}}{The interval of reporting for the \code{optim()}
+function.} \item{\code{restarts}}{The number of random restarts to perform.
+Defaults to \code{0}. It's also possible to set it to \code{TRUE}, in which
+case the number of random restarts is set to the total number of available
+cores.} \item{\code{no.cores}}{The number of cores in which to do random
+restarts. Defaults to the total number of available cores.} }}
 
 \item{interactions}{Character vector to specify the interaction terms. When
 using formulas, this is specified automatically, so is not required. Syntax

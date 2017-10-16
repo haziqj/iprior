@@ -60,16 +60,16 @@ iprior <- function(...) UseMethod("iprior")
 #'   for the quasi-Newton optimisation or the EM algorithm. Defaults to
 #'   \code{100}.} \item{\code{em.maxit}}{For \code{method = "mixed"}, the number
 #'   of EM steps before switching to direct optimisation. Defaults to \code{5}.}
-#'   \item{\code{stop.crit}}{The EM stopping criterion, which is the difference
-#'   in successive log-likelihood values. Defaults to \code{1e-8}.}
-#'   \item{\code{theta0}}{The initial values for the hyperparameters. Defaults
-#'   to random starting values.} \item{\code{report}}{The interval of reporting
-#'   for the \code{optim()} function.} \item{\code{restarts}}{The number of
-#'   random restarts to perform. Defaults to \code{0}. It's also possible to set
-#'   it to \code{TRUE}, in which case the number of random restarts is set to
-#'   the total number of available cores.} \item{\code{no.cores}}{The number of
-#'   cores in which to do random restarts. Defaults to the total number of
-#'   available cores.} }
+#'   \item{\code{stop.crit}}{The stopping criterion for the EM and L-BFGS
+#'   algorithm, which is the difference in successive log-likelihood values.
+#'   Defaults to \code{1e-8}.} \item{\code{theta0}}{The initial values for the
+#'   hyperparameters. Defaults to random starting values.}
+#'   \item{\code{report}}{The interval of reporting for the \code{optim()}
+#'   function.} \item{\code{restarts}}{The number of random restarts to perform.
+#'   Defaults to \code{0}. It's also possible to set it to \code{TRUE}, in which
+#'   case the number of random restarts is set to the total number of available
+#'   cores.} \item{\code{no.cores}}{The number of cores in which to do random
+#'   restarts. Defaults to the total number of available cores.} }
 #' @param iter.update The number of iterations to perform when calling the
 #'   function on an \code{ipriorMod} object. Defaults to \code{100}.
 #'
@@ -147,6 +147,10 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
                   psi = psi, nystrom = nystrom, nys.seed = nys.seed,
                   model = model)
   }
+  if (is.iprobit(mod)) {
+    warning("Categorical responses loaded. Consider using iprobit package.",
+            call. = FALSE)
+  }
 
   # Set up controls ------------------------------------------------------------
   method <- tolower(method)
@@ -155,7 +159,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   control_ <- list(
     maxit     = 100,
     em.maxit  = 5,  # for mixed method
-    stop.crit = 1e-8,  # sqrt(.Machine$double.eps), roughly 1e-8
+    stop.crit = 1e-8,
     theta0    = NULL,
     # lambda0   = NULL,
     # psi0      = NULL,
@@ -170,7 +174,8 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     fnscale = -2,
     trace   = ifelse(isTRUE(control$silent), 0, 1),
     maxit   = max(0, control$maxit - 1),
-    REPORT  = control$report
+    REPORT  = control$report,
+    factr   = control$stop.crit / .Machine$double.eps
   )
 
   # Starting values ------------------------------------------------------------
@@ -227,10 +232,10 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
       if (res$conv == 0)
         res$est.conv <- paste0("Converged to within ", control$stop.crit,
                                " tolerance.")
-      if (res$conv == 1)
+      else if (res$conv == 1)
         res$est.conv <- "Convergence criterion not met."
       else
-        res$est.conv <- "Error - abnormal termination."
+        res$est.conv <- res$message
     }
   }
 
