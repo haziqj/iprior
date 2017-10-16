@@ -6,7 +6,8 @@
 #' @importFrom stats coef delete.response dnorm fitted logLik model.extract
 #'   model.frame model.response na.action na.omit optim optimHess pnorm
 #'   printCoefmat qnorm resid residuals rnorm rt terms
-#' @importFrom utils capture.output combn setTxtProgressBar str txtProgressBar
+#' @importFrom utils capture.output combn object.size setTxtProgressBar str
+#'   txtProgressBar
 #' @import ggplot2
 NULL
 
