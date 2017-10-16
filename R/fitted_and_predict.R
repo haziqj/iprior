@@ -89,7 +89,8 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
   }
 
   Hlam.new <- get_Htildelam(object$ipriorKernel, object$theta, xstar)
-  res <- predict_iprior(y.test, Hlam.new, object$w, object$intercept)
+  y.hat.new <- get_intercept(object) + Hlam.new %*% object$w
+  res <- predict_iprior(y.test, y.hat.new)
   names(res$y) <- xrownames
   names(res)[grep("train.error", names(res))] <- "test.error"
   if (isTRUE(intervals)) {
@@ -128,24 +129,22 @@ print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
   cat("\n")
 }
 
-predict_iprior <- function(y, Hlam = NULL, w = NULL, intercept, y.hat = NULL) {
+predict_iprior <- function(y, y.hat) {
   # This is the main helper function to calculate fitted or predicted values. It
   # appears in iprior(), fitted() and predict() for ipriorMod objects.
   #
-  # Args: y (data or test data for calculation of errors); Hlam the kernel
-  # matrix; w is the posterior mean of I-prior random effects; the intercept;
-  # and y.hat optional if already calculated, then no need for Hlam and w.
+  # Args: y (data or test data for calculation of errors); y.hat is the
+  # predicted y values.
   #
   # Returns: A list containing the predicted values, residuals and MSE.
-  if (is.null(y.hat)) y.hat <- Hlam %*% w
+  y.hat <- as.numeric(y.hat)
   if (!is.null(y)) {
     resid <- y - y.hat
     train.error <- mean(resid ^ 2)
   } else {
     resid <- train.error <- NA
   }
-  list(y = as.numeric(y.hat + intercept), resid = as.numeric(resid),
-       train.error = train.error)
+  list(y = y.hat, resid = as.numeric(resid), train.error = train.error)
 }
 
 se_yhat <- function(Hlam, Hlam.new, psi, nystrom = FALSE) {

@@ -234,12 +234,9 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     }
   }
 
-  intercept <- attr(mod$y, "scaled:center")
-  if (is.null(intercept)) intercept <- mean(mod$y)
-  res$intercept <- intercept
   res$coefficients <- reduce_theta(res$param.full, mod$estl)$theta.reduced
-  tmp <- predict_iprior(mod$y, intercept = res$intercept, y.hat = res$y.hat)
-  res$fitted.values <- tmp$y
+  tmp <- predict_iprior(mod$y, y.hat = res$y.hat)  # no intercept added
+  res$fitted.values <- tmp$y + get_intercept(mod)
   names(res$fitted.values) <- attr(mod$y, "dimnames")[[1]]
   res$residuals <- tmp$resid
   res$train.error <- tmp$train.error

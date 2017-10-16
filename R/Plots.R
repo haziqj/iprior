@@ -84,8 +84,7 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
   cts.x <- which(!which.pearson)
   X      <- x$ipriorKernel$Xl[[cts.x[X.var]]]
   grp    <- x$ipriorKernel$Xl[[cat.x[grp]]]
-  plot.df <- data.frame(y.hat = y.hat, x = X, grp = grp,
-                        y = as.numeric(x$ipriorKernel$y) + x$intercept)
+  plot.df <- data.frame(y.hat = y.hat, x = X, grp = grp, y = get_y(x))
   if (length(cat.x) == 2) {
     plot.df <- cbind(plot.df, facet1 = x$ipriorKernel$Xl[[cat.x[facet[1]]]])
   }
@@ -136,8 +135,7 @@ plot_fitted <- function(x, X.var = 1, cred.bands = TRUE) {
   fit <- fitted(x, intervals = cred.bands)
   y.hat <- fit$y
   X <- x$ipriorKernel$Xl[[X.var]]
-  plot.df <- data.frame(y.hat = y.hat, x = X,
-                        y = as.numeric(x$ipriorKernel$y) + x$intercept)
+  plot.df <- data.frame(y.hat = y.hat, x = X, y = get_y(x))
   x.lab <- x$ipriorKernel$xname[X.var]
   y.lab <- x$ipriorKernel$yname
   nys.check <- is.ipriorKernel_nys(x$ipriorKernel)

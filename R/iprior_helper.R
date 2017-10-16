@@ -291,3 +291,25 @@ em_loop_logical <- function() {
 
 #' @export
 .em_loop_logical <- em_loop_logical
+
+get_w <- function(u, V, Vy.inv.y, psi) {
+  # Helper function to obtain posterior mean of I-prior random effects. It is
+  # calculated as psi * Hlam %*% Vy.inv %*% y.
+  #
+  # Args: u and V are the eigendecomposition of Hlam, Vy.inv.y and psi are
+  # self-explanatory.
+  #
+  # Returns: Numeric w.
+  as.numeric(psi * A_times_a(u, V, Vy.inv.y))
+}
+
+get_y.hat <- function(u, V, w) {
+  # Obtain fitted values after estimation procedures. This is calculated as
+  # y.hat = Hlam %*% w. Note that intercepts have NOT been added.
+  #
+  # Args: u and V are the eigendecomposition of Hlam, and the rest are
+  # self-explanatory.
+  #
+  # Returns: Numeric y.hat.
+  as.numeric(A_times_a(u, V, w))
+}

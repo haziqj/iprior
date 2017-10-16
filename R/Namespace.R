@@ -14,5 +14,5 @@ NULL
 globalVariables(c("BlockBStuff", "estl", "ind1", "ind2", "intr", "intr.3plus",
                   "ipriorEM.env", "Iteration", "kernels", "lambda", "loglik",
                   "m", "maxit", "mod", "n", "niter", "no.int", "no.int.3plus",
-                  "p", "parsm", "Pl", "probit",  "Psql", "Sl","stop.crit", "u",
-                  "V", "y"))
+                  "p", "parsm", "Pl", "probit", "psi", "Psql", "Sl","stop.crit",
+                  "u", "V", "Vy.inv.y", "X", "y"))

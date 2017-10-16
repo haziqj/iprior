@@ -138,6 +138,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     probit <- FALSE
     y <- scale(y, scale = FALSE)  # centre variables
   }
+  intercept <- attr(y, "scaled:center")
 
   # Meta -----------------------------------------------------------------------
   n <- length(y)
@@ -155,7 +156,9 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
     if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
     if (!is.null(nys.seed)) set.seed(nys.seed)
     nys.samp <- sample(seq_along(y))
-    y <- y[nys.samp]
+    y.tmp <- y[nys.samp]
+    mostattributes(y.tmp) <- attributes(y)
+    y <- y.tmp
     tmp <- lapply(Xl, reorder_x, smp = nys.samp)
     mostattributes(tmp) <- attributes(Xl)
     Xl <- tmp
@@ -258,7 +261,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
 
   res <- list(
     # Data
-    y = y, Xl = Xl, Hl = Hl,
+    y = y, Xl = Xl, Hl = Hl, intercept = intercept,
     # Model
     kernels = kernels, which.pearson = which.pearson, probit = probit,
     poly.deg = poly.deg, thetal = thetal, estl = estl,
@@ -352,38 +355,4 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
 fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   cl[[1L]] <- as.name(new.name)
   cl
-}
-
-#' @export
-print.ipriorKernel2 <- function(x, ...) {
-  tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
-
-  # if (isTRUE(x$probit)) {
-  #   cat("Categorical response variables\n")
-  # } else if (is.ipriorKernel_nys(x)) {
-  #   cat("Nystrom kernel approximation ()\n")
-  # }
-
-  cat("Sample size:", x$n, "\n")
-  cat("No. of covariates:", length(x$Xl), "\n")
-  cat("No. of interactions:", x$no.int + x$no.int.3plus, "\n")
-
-  cat("\n")
-  cat("Kernel matrices:\n")
-  for (i in seq_along(tmp$Hl)) {
-    cat("", i, print_kern(tmp$Hl[[i]], ...), "\n")
-  }
-  cat("\n")
-  cat("Hyperparameters to estimate:\n")
-  if (x$thetal$n.theta > 0)
-    cat(paste(names(x$thetal$theta), collapse = ", "))
-  else
-    cat("none")
-}
-
-print_kern <- function(x, ...) {
-  kern.type <- attr(x, "kernel")
-  res <- capture.output(str(x, ...))[1]
-  res <- gsub(" num", kern.type, res)
-  res
 }

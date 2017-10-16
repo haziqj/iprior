@@ -91,6 +91,45 @@ check_theta <- function(object) {
   }
 }
 
+check_and_get_ipriorKernel <- function(object, assign.to.env = FALSE) {
+  # Helper function to check whether object is of ipriorMod or ipriorKernel
+  # class, and if so, replaces the object in environment with ipriorKernel.
+  #
+  # Args: An ipriorMod or ipriorKernel2 object; logical assign.to.env.
+  #
+  # Returns: Replacement of object with ipriorKernel2 object if necessary, or
+  # assignment of ipriorKernel2 object to environment.
+  if (is.ipriorMod(object)) {
+    if (isTRUE(assign.to.env)) {
+      list2env(object$ipriorKernel, parent.frame())
+    } else {
+      assign(deparse(substitute(object)), object$ipriorKernel,
+           envir = parent.frame())
+    }
+  } else if (is.ipriorKernel2(object)) {
+    if (isTRUE(assign.to.env)) {
+      list2env(object, parent.frame())
+    } else {
+      assign(deparse(substitute(object)), object, envir = parent.frame())
+    }
+  } else {
+    stop("Input an I-prior object.", call. = FALSE)
+  }
+}
+
+check_and_get_ipriorMod <- function(object, assign.to.env = FALSE) {
+  # Helper function to check whether object is of ipriorMod class.
+  #
+  # Args: An ipriorMod or ipriorKernel2 object; logical assign.to.env.
+  #
+  # Returns: Nothing - just checks. Unless assign.to.env is TRUE.
+  if (is.ipriorMod(object)) {
+    if (isTRUE(assign.to.env)) list2env(object$ipriorKernel, parent.frame())
+  } else {
+    stop("Input an ipriorMod object.", call. = FALSE)
+  }
+}
+
 #' Test \code{iprior} objects
 #'
 #' Test whether an object is an \code{ipriorMod}, \code{ipriorKernel}, or either
