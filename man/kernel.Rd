@@ -2,56 +2,81 @@
 % Please edit documentation in R/Kernel_functions.R
 \name{kernel}
 \alias{kernel}
-\alias{Canonical}
-\alias{FBM}
-\alias{Pearson}
-\alias{fnH1}
-\alias{fnH2}
-\alias{fnH3}
+\alias{kernels}
+\alias{kern_canonical}
+\alias{kern_linear}
+\alias{kern_pearson}
+\alias{kern_fbm}
+\alias{kern_se}
+\alias{kern_poly}
 \title{Reproducing kernels for the I-prior package}
 \usage{
-fnH1(x, y = NULL)
+kern_canonical(x, y = NULL, centre = TRUE)
 
-fnH2(x, y = NULL)
+kern_linear(x, y = NULL, centre = TRUE)
 
-fnH3(x, y = NULL, gamma = NULL)
+kern_pearson(x, y = NULL)
+
+kern_fbm(x, y = NULL, gamma = 0.5, centre = TRUE)
+
+kern_se(x, y = NULL, l = 1, centre = TRUE)
+
+kern_poly(x, y = NULL, c = 0, d = 2, lam.poly = 1, centre = TRUE)
 }
 \arguments{
-\item{x, y}{A vector, matrix or data frame. \code{x} and \code{y} must have
-similar dimensions.}
+\item{x}{A vector, matrix or data frame.}
 
-\item{gamma}{The Hurst coefficient when using the FBM kernel.}
+\item{y}{(Optional) vector, matrix or data frame. \code{x} and \code{y} must
+have identical column sizes.}
+
+\item{centre}{Logical. Whether to centre the data (default) or not.}
+
+\item{gamma}{The Hurst coefficient for the fBm kernel.}
+
+\item{l}{The lengthscale for the SE kernel.}
+
+\item{c}{The offset for the polynomial kernel. This is a value greater than
+zero.}
+
+\item{d}{The degree for the polynomial kernel. This is an integer value
+greater than oe equal to two.}
+
+\item{lam.poly}{The scale parameter for the polynomial kernel.}
 }
 \value{
-A matrix with class of either \code{"Canonical"}, \code{"FBM,gamma"},
-  or \code{"Pearson"} whose \code{[i, j]} entries are \eqn{h(}\code{y[i]},
-  \code{x[j]}\eqn{)}, with \eqn{h} being the kernel function. The matrix has
-  dimensions \code{m} by \code{n} according to the lengths of \code{y} and
-  \code{x} which has lengths \code{m} and \code{n} respectively. When a
-  single vector argument \code{x} is supplied, then \code{y} is taken to be
-  equal to \code{x}, and a symmetric \code{n} by \code{n} matrix is returned.
+A matrix whose \code{[i, j]} entries are given by \eqn{h(\code{x[i]},
+  \code{y[j]})}, with \code{h} being the appropriate kernel function. The
+  matrix has dimensions \code{m} by \code{n} according to the lengths of
+  \code{y} and \code{x} respectively. When a single argument \code{x} is
+  supplied, then \code{y} is taken to be equal to \code{x}, and a symmetric
+  \code{n} by \code{n} matrix is returned.
 
-  If \code{x} is a matrix or data frame with \code{p} columns, then the
-  kernel matrix returned is \code{fnH(x[, 1]) + ... + fnH(x[, p])}.
+  The matrix has a \code{"kernel"} attribute indicating which type of kernel
+  function was called.
 }
 \description{
-The three kernel functions used in this package are the Canonical kernel
-\code{fnH2}, Fractional Brownian Motion (FBM) kernel \code{fnH3} (with a
-default Hurst coefficient of 0.5), and the Pearson kernel \code{fnH1}.
+The kernel functions used in this package are: \itemize{ \item{The
+(canonical) linear kernel} \item{The fractional Brownian motion (fBm) kernel
+with Hurst index \eqn{\gamma}} \item{The Pearson kernel} \item{The (scaled)
+\eqn{d}-degree polynomial kernel with offset \eqn{c}} \item{The squared
+exponential (SE) kernel with lengthscale \eqn{l}} }
 }
 \details{
-The Pearson kernel is used for nominal-type variables, and in R,
-\code{\link{factor}}-type objects are treated with the Pearson kernel
-automatically. The other two kernel types are for continuous variables, with
-the Canonical kernel used for "straight-line" effects and the FBM for
-smoothing effects. The smoothness is controlled somewhat by the Hurst
-coefficient.
+The Pearson kernel is used for nominal-type variables, and thus
+\code{\link{factor}}-type variables are treated with the Pearson kernel
+automatically when fitting I-prior models. The other kernels are for
+continuous variables, and each emits different properties of functions.
 
-More information is available from the
-\href{https://github.com/haziqjamil/iprior/wiki/Kernel-functions}{Wiki}.
+The linear kernel is used for "straight-line" functions. In addition, if
+squared, cubic, or higher order terms are to be modelled, then the polynomial
+kernel is suitable for this purpose. For smoothing models, the fBm kernel is
+preferred, although the SE kernel may be used as well.
 }
-\seealso{
-The
-  \href{https://en.wikipedia.org/wiki/Fractional_Brownian_motion}{Wikipedia}
-  page on the Fractional Brownian Motion.
+\examples{
+kern_linear(1:3)
+kern_fbm(1:5, 1:3, gamma = 0.7)
+
+}
+\references{
+\url{http://phd.haziqj.ml/intro/}
 }

@@ -1,7 +1,7 @@
 ################################################################################
 #
 #   iprior: Linear Regression using I-priors
-#   Copyright (C) 2016  Haziq Jamil
+#   Copyright (C) 2017  Haziq Jamil
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,406 +18,280 @@
 #
 ################################################################################
 
-#'Load the kernel matrices of an I-prior model
+#' Load the kernel matrices for I-prior models
 #'
-#'Prepare the kernel matrices according to a user available model options list.
-#'This is then passed to the \code{\link{iprior}} function for model fitting.
-#'Both formula and non-formula input are supported.
+#' @param y Vector of response variables
+#' @param ... Only used when fitting using non-formula, enter the variables
+#'   (vectors or matrices) separated by commas.
+#' @param formula The formula to fit when using formula interface.
+#' @param data Data frame containing variables when using formula interface.
+#' @param kernel Character vector indicating the type of kernel for the
+#'   variables. Available choices are: \itemize{ \item{\code{"linear"} -
+#'   (default) for the linear kernel} \item{\code{"canonical"} - alternative
+#'   name for \code{"linear"}} \item{\code{"fbm"}, \code{"fbm,0.5"} - for the
+#'   fBm kernel with Hurst coefficient 0.5 (default)} \item{\code{"se"},
+#'   \code{"se,1"} - for the SE kernel with lengthscale 1 (default)}
+#'   \item{\code{"poly"}, \code{"poly2"}, \code{"poly2,0"} - for the polynomial
+#'   kernel of degree 2 with offset 0 (default)} \item{\code{"pearson" - for the
+#'   Pearson kernel}}} The \code{kernel} argument can also be a vector of length
+#'   equal to the number of variables, therefore it is possible to specify
+#'   different kernels for each variables. Note that factor type variables are
+#'   assigned the Pearson kernel by default, and that non-factor types can be
+#'   forced to use the Pearson kernel (not recommended).
+#' @param interactions Character vector to specify the interaction terms. When
+#'   using formulas, this is specified automatically, so is not required. Syntax
+#'   is \code{"a:b"} to indicate variable \code{a} interacts with variable
+#'   \code{b}.
+#' @param est.lambda Logical. Estimate the scale parameters? Defaults to
+#'   \code{TRUE}.
+#' @param est.hurst Logical. Estimate the Hurst coefficients for fBm kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.lengthscale Logical. Estimate the lengthscales for SE kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.offset Logical. Estimate the offsets for polynomial kernels?
+#'   Defaults to \code{FALSE}.
+#' @param est.psi Logical. Estimate the error precision? Defaults to
+#'   \code{TRUE}.
+#' @param fixed.hyp Logical. If \code{TRUE}, then no hyperparameters are
+#'   estimated, i.e. all of the above \code{est.x} are set to \code{FALSE}, and
+#'   vice versa. If \code{NULL} (default) then all of the \code{est.x} defaults
+#'   are respected.
+#' @param lambda Initial/Default scale parameters. Relevant especially if
+#'   \code{est.lambda = FALSE}.
+#' @param psi Initial/Default value for error precision. Relevant especially if
+#'   \code{est.psi = FALSE}.
+#' @param nystrom Either logical or an integer indicating the number of Nystrom
+#'   samples to take. Defaults to \code{FALSE}. If \code{TRUE}, then
+#'   approximately 10\% of the sample size is used for the Nystrom
+#'   approximation.
+#' @param nys.seed The random seed for the Nystrom sampling. Defaults to
+#'   \code{NULL}, which means the random seed is not fixed.
+#' @param model DEPRECATED.
+#' @param one.lam Logical. When using formula input, this is a convenient way of
+#'   letting the function know to treat all variables as a single variable (i.e.
+#'   shared scale parameter). Defaults to \code{FALSE}.
 #'
-#'When using non-formula to load the model, the explanatory variables can either
-#'be vectors, matrices or data frames. These need to be entered one by one in
-#'the function call, separated by commas. This is because each entry will have
-#'one scale parameter attached to it. Like the \code{\link{iprior}} function,
-#'grouping the scale parameters can only be done using non-formula input (see
-#'examples).
+#' @return An \code{ipriorKernel2} object which contains the relevant material
+#'   to be passed to the \code{iprior} function for model fitting.
 #'
-#'Sometimes, the model to be fitted can be quite complex and heavy for the EM
-#'algorithm. Loading the data into an \code{ipriorKernel} object does the heavy
-#'matrix matrix operations upfront, and passed on to the EM routine when
-#'\code{\link{iprior}} is called.
-#'
-#'One advantage of having a saved \code{ipriorKernel} object is that we are able
-#'to use any R optimiser and maximise the log-likelihood of the I-prior model in
-#'conjunction with \code{\link{logLik}} or \code{\link{deviance}} functions.
-#'
-#'@param y Vector of response variables.
-#'@param ... Only used for when fitting using non-formula, enter the variables
-#'  (vectors or matrices) separated by commas. No other options applicable here.
-#'@param model List of model options. Not used for \code{ipriorKernel} or
-#'  \code{ipriorModel} objects. Available options are:
-#'  \describe{\item{\code{kernel}}{Vector of character strings of either
-#'  \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
-#'  \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
-#'  type objects. To specify a Hurst coefficient, use \code{"FBM,<value>"};
-#'  otherwise the default of 0.5 is used. Alternatively, see \code{Hurst} option
-#'  below.} \item{\code{Hurst}}{Set the value of the Hurst coefficient for all
-#'  \code{FBM} kernels used, rather than one by one. This is a value between 0
-#'  and 1, and defaults to 0.5.}\item{\code{order}}{Character vector of length
-#'  equal to the number of explanatory variables used, indicating specification
-#'  of higher order scale parameters. The syntax is \code{"a^b"}, for parameter
-#'  \code{a} raised to the power \code{b}. For regular order terms, then just
-#'  input "a".} \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to
-#'  \code{FALSE} to assign one scale parameter for all kernel matrices.}
-#'  \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
-#'  using the formula call. Should all the variable share the same scale
-#'  parameter?}\item{\code{rootkern}}{Logical, defaults to \code{FALSE}. Setting to \code{TRUE} is equivalent to Gaussian process regression.}}
-#'
-#'  These options are also available, but are only relevant when calling using
-#'  non-formula: \describe{\item{\code{yname}}{Character vector to set the name
-#'  of the response variable. It is set to the object name which contains the
-#'  response variables by default.} \item{\code{xname}}{Character vector to set
-#'  the name of the explanatory variables. This is also set to the object name
-#'  by default.} \item{\code{interactions}}{Character vector to specify the
-#'  interaction terms. When using formulas, this is specified automatically.
-#'  Syntax is \code{"a:b"} to indicate variable \code{a} interacts with variable
-#'  \code{b}.}}
-#'@param formula The formula to fit when using formula interface.
-#'@param data Data frame containing variables when using formula interface.
-#'
-#'@return A list of 11 items. Some of the more important ones are described
-#'  below. \describe{ \item{\code{Y}}{The response variable.}
-#'  \item{\code{x}}{The explanatory variables in list form. Each element of the
-#'  list corresponds to each variable. If \code{one.lam = TRUE} was called, then
-#'  you should see a single element in this list.} \item{\code{Hl}}{A list of
-#'  the kernel matrices calculated from the explanatory variables according to
-#'  the model options.} \item{\code{n, p, l, r, no.int, q}}{These are,
-#'  respectively, the sample size, the number of explanatory variables, the
-#'  number of unique scale parameters, the number of higher order terms, the
-#'  number of interacting variables, and the number of kernel matrices.}}
-#'
-#'  The rest of the list are unimportant to the end-user, but they are passed to
-#'  the EM routine via a call to \code{\link{iprior}}.
+#' @seealso \link[=iprior]{iprior}
 #'
 #' @examples
+#'
 #' str(ToothGrowth)
-#' mod <- kernL(y = ToothGrowth$len,
-#'              supp = ToothGrowth$supp,
-#'              dose = ToothGrowth$dose,
-#'              model = list(interactions="1:2"))
-#' mod
-#' kernL(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
-#' kernL(len ~ supp * dose, data = ToothGrowth,
-#'       model = list(parsm = TRUE))  # non-parsimonious option
+#' (mod <- kernL2(y = ToothGrowth$len,
+#'                supp = ToothGrowth$supp,
+#'                dose = ToothGrowth$dose,
+#'                interactions = "1:2"))
+#' kernL2(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
 #'
 #' # Choosing different kernels
 #' str(stackloss)
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(kernel = "FBM"))  # all FBM
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(kernel = c("Canonical", "FBM", "Canonical")))
-#'
-#' # Specifying higher order terms
-#' kernL(stack.loss ~ Air.Flow + I(Air.Flow^2) + ., data = stackloss,
-#'       model = list(order = c("1", "1^2", "2", "3")))
-#'
-#' # If all scale parameters are the same, then use one.lam = TRUE
-#' kernL(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
-#'
-#' # You can rename the variables too
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(yname = "response", xname = c("air", "water", "acid")))
+#' kernL2(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
+#' kernL2(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
+#' kernL2(stack.loss ~ ., stackloss,
+#'        kernel = c("linear", "se", "poly3"))  # different kernels
 #'
 #' # Sometimes the print output is too long, can use str() options here
-#' print(mod, strict.width = "cut", width = 50)
+#' print(mod, strict.width = "cut", width = 30)
 #'
-#'@name kernL
-#'@export
-kernL <- function(y, ..., model = list()) UseMethod("kernL")
+#' @export
+kernL2 <- function(
+  y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
+  nys.seed = NULL, model = list()
+) UseMethod("kernL2")
 
 #' @export
-kernL.default <- function(y, ..., model = list()) {
-  x <- list(...)  # don't list if updating ipriorKernel
-  if (length(x) == 1 && is.ipriorX(x[[1]])) x <- unlist(x, recursive = FALSE)
-  if (testXForm(x)) x <- unlist(x, recursive = FALSE)
-  x <- lapply(x, as.matrix)
-  class(x) <- "ipriorX"
-  n <- length(y)
-  p <- length(x)
-
-  # Model options and checks ---------------------------------------------------
-  mod <- list(kernel = "Canonical", Hurst = NULL, interactions = NULL,
-              parsm = TRUE, one.lam = FALSE, yname = NULL, xname = NULL,
-              order = as.character(1:p), intr.3plus = NULL, rootkern = FALSE,
-              probit = FALSE, Nys.kern = FALSE, Nys.samp = NULL)
-  mod_names <- names(mod)
-  mod[(model_names <- names(model))] <- model
-  if (length(noNms <- model_names[!model_names %in% mod_names])) {
-    warning("Unknown names in model options: ", paste(noNms, collapse = ", "),
-            call. = FALSE)
+kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list()) {
+  # Checks ---------------------------------------------------------------------
+  if (is.list(model) & length(model) > 0) {
+    stop("\'model\' option is deprecated. Use the arguments to kernL2 instead. See \'?kernL2\' for details.", call. = FALSE)
   }
+  kernel <- tolower(kernel)
 
-  # This part is for Nystrom (when called from ipriorNystrom function) ---------
-  if (as.numeric(mod$Nys.kern) > 0) {
-    if (is.null(mod$Nys.samp)) mod$Nys.samp <- sample(seq_len(n))
-    y <- y[mod$Nys.samp]
-    tmp <- lapply(x, rwa_1, smp = mod$Nys.samp)  # defined in .reorder_ipriorKernel()
-    mostattributes(tmp) <- attributes(x)
-    x <- tmp
-    tmp <- lapply(x, rwa_1, smp = seq_len(mod$Nys.kern))
-    mostattributes(tmp) <- attributes(x)
-    x.Nys <- tmp
+  Xl <- list(...)
+  # It is common to make the mistake and type kernels instead of kernel. This
+  # corrects it.
+  Xl.kernel.mistake <- match("kernels", names(Xl))
+  if ("kernels" %in% names(Xl)) {
+    kernel <- Xl[[Xl.kernel.mistake]]
+    Xl[[Xl.kernel.mistake]] <- NULL
   }
-
-  # This part is for categorical response models -------------------------------
-  y.levels <- NULL
+  Xl.formula <- match("Xl.formula", names(Xl))
+  formula.method <- FALSE
+  if ("Xl.formula" %in% names(Xl)) {
+    Xl <- Xl[[Xl.formula]]
+    formula.method <- TRUE
+  }
+  xname <- names(Xl)
+  yname <- attr(y, "yname")
   if (is.factor(y)) {
-    mod$probit <- TRUE
-    tmp <- .checkLevels(y)  # Utilities.R
+    probit <- TRUE
+    tmp <- get_y_and_levels(y)
     y <- tmp$y
     y.levels <- tmp$levels
+  } else {
+    probit <- FALSE
+    y.levels <- NULL
+  }
+  y <- scale(y, scale = FALSE)  # centre variables
+  intercept <- attr(y, "scaled:center")
+
+  # Meta -----------------------------------------------------------------------
+  n <- length(y)
+  p <- length(Xl)
+  if (is.null(xname)) {
+    xname <- paste0("X", seq_len(p))
+  } else {
+    where.blanks <- grepl("^$", xname)
+    xname[where.blanks] <- paste0("X", which(where.blanks))
+  }
+  if (is.null(yname)) yname <- "y"
+
+  # For Nystrom method: Reorder data and create Xl.Nys -------------------------
+  if (as.numeric(nystrom) > 0 & as.numeric(nystrom) != n) {
+    if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
+    if (!is.null(nys.seed)) set.seed(nys.seed)
+    nys.samp <- sample(seq_along(y))
+    y.tmp <- y[nys.samp]
+    mostattributes(y.tmp) <- attributes(y)
+    y <- y.tmp
+    tmp <- lapply(Xl, reorder_x, smp = nys.samp)
+    mostattributes(tmp) <- attributes(Xl)
+    Xl <- tmp
+    Xl.nys <- lapply(Xl, reorder_x, smp = seq_len(nystrom))
+    mostattributes(Xl.nys) <- attributes(Xl)
+    nys.check <- TRUE
+  } else {
+    nys.check <- FALSE
   }
 
   # What types of kernels? -----------------------------------------------------
-  if (length(mod$kernel) < p && length(mod$kernel) > 1) {
+  if (length(kernel) < p && length(kernel) > 1) {
     warning(paste0("Incomplete kernel specification (not of length ", p, ")"),
             call. = FALSE)
   }
-  if (length(mod$kernel) > p && length(mod$kernel) > 1) {
-    warning(paste0("Too many kernel options specification (not of length ", p, ")"),
+  if (length(kernel) > p && length(kernel) > 1) {
+    warning(paste0("Too many kernel options specification (not of length ", p,
+                   ")"),
             call. = FALSE)
   }
-  Hurst <- kernel <- rep(NA, p)
-  suppressWarnings(kernel[] <- splitKernel(mod$kernel))
+  kernels <- rep(NA, p)
+  suppressWarnings(kernels[1:p] <- kernel)
   # The next two lines ensure that the Pearson kernel is used for factors
-  whichPearson <- unlist(lapply(x, function(x) {is.factor(x) | is.character(x)}))
-  kernel[whichPearson] <- "Pearson"
-  check.kern <- match(kernel, c("FBM", "Canonical", "Pearson"))
-  if (any(is.na(check.kern))) {
-    stop("kernel should be one of \"Canonical\", \"Pearson\", or \"FBM\".",
-         call. = FALSE)
-  }
-  suppressWarnings(Hurst[] <- splitHurst(mod$kernel))
-  if (!is.null(mod$Hurst)) {
-    # User has set a single Hurst coefficient for all FBM kernels
-    if (any(!is.na(Hurst))) {
-      warning("Overriding Hurst setting.", call. = FALSE)
-    }
-    suppressWarnings(Hurst[] <- mod$Hurst)
-  }
-  Hurst[is.na(Hurst)] <- 0.5
-  mod$Hurst <- Hurst
-  mod$kernel <- kernel
+  which.pearson <- unlist(lapply(Xl, function(x) {is.factor(x) |
+      is.character(x)}))
+  kernels <- correct_pearson_kernel(kernels, which.pearson)
 
-  # Check for higher order terms -----------------------------------------------
-  mod$order <- as.character(mod$order)
-  suppressWarnings(hord.check <- all(sort(as.numeric(mod$order)) == 1:p))
-  if (!hord.check) {
-    hord.check1 <- length(mod$order) != p
-    hord.check2 <- any(grepl("\\^", mod$order))
-    if (hord.check1 | !hord.check2) {
-      stop("Incorrect prescription of higher order terms.", call. = FALSE)
-    }
-  }
-  r <- lenHOrd(mod$order)
-
-  # Set up interactions, p and q -----------------------------------------------
-  names(mod)[3] <- "intr"  #rename to something simpler
-  if (!is.null(mod$intr)) {
-    # Interactions present
-    if (!is.matrix(mod$intr)) {
-      # Not fitted using formula
-      intr.check1 <- is.character(mod$intr)
-      intr.check2 <- all(grepl(":", mod$intr))
-      if (!intr.check1 | !intr.check2) {
-        stop("Incorrect prescription of interactions.", call. = FALSE)
-      }
-      ind.intr.3plus <- whichIntr3Plus(mod$intr)
-      mod$intr.3plus <- mod$intr[ind.intr.3plus]
-      mod$intr <- mod$intr[!ind.intr.3plus]
-      mod$intr <- sapply(strsplit(mod$intr, ":"), as.numeric)
-    }
-    if (length(mod$intr) == 0) {
-      mod[match("intr", names(mod))] <- list(NULL)
-      no.int <- 0
+  # Interactions ---------------------------------------------------------------
+  intr <- intr.3plus <- NULL
+  no.int.3plus <- no.int <- 0
+  if (!is.null(interactions)) {
+    if (isTRUE(formula.method)) {
+      intr <- interactions$intr
+      intr.3plus <- interactions$intr.3plus
     } else {
-      no.int <- ncol(mod$intr)
+      ind.intr.3plus <- which_intr_3plus(interactions)
+      intr.3plus <- interactions[ind.intr.3plus]
+      intr <- interactions[!ind.intr.3plus]
+      intr <- sapply(strsplit(intr, ":"), as.numeric)
     }
+    if (length(intr > 0)) no.int <- ncol(intr)
+  }
+  if (length(intr.3plus) == 0) intr.3plus <- NULL
+  if (!is.null(intr.3plus)) {
+    if (!isTRUE(formula.method)) intr.3plus <- tab_intr_3plus(intr.3plus)
+    no.int.3plus <- ncol(intr.3plus)
+  }
+
+  if (isTRUE(nys.check)) {
+    Hl <- get_Hl(Xl, Xl.nys, kernels, lambda)
   } else {
-    # No interactions
-    no.int <- 0L
+    Hl <- get_Hl(Xl, list(NULL), kernels, lambda)
   }
-  if (any(mod$intr > p | mod$intr < 1)) {
-    stop("Prescribed interactions out of bounds.")
-  }
-  q <- p + no.int
-  if (!mod$parsm) {
-    l <- q
-    mod$order <- as.character(1:l)
-  } else {
-    l <- p - r
-  }
-  # For clarity, the definitions of p, q, r, and l are
-  # p = Number of x variables used
-  # l = Number of unique lambdas (= q when parsm = FALSE)
-  # r = Number of higher order terms
-  # q = Length of expanded lambda = p + no.int
-  # h = length(H.mat)
+  kernels <- get_kernels_from_Hl(Hl)
 
-  # More interactions ----------------------------------------------------------
-  no.int.3plus <- 0
-  if (!is.null(mod$intr.3plus) & length(mod$intr.3plus) > 0) {
-    if (!is.matrix(mod$intr.3plus)) {
-      mod$intr.3plus <- addZeroesIntr3Plus(mod$intr.3plus)
+  if (!is.null(fixed.hyp)) {
+    if (isTRUE(fixed.hyp)) {
+      est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- FALSE
     }
-    no.int.3plus <- ncol(mod$intr.3plus)
-    q <- q + no.int.3plus
-  }
-
-  # Set up names for x variables -----------------------------------------------
-  if (is.null(mod$xname)) mod$xname <- names(x)
-  else names(x) <- mod$xname[1:p]
-  suppressWarnings(cond1 <- is.null(mod$xname))
-  suppressWarnings(cond2 <- any(names(x) == ""))
-  suppressWarnings(cond3 <- any(is.na(names(x))))
-  cl <- match.call(); cl[[1L]] <- as.name("kernL")
-  if (cond1 | cond2 | cond3) {
-    m <- match(c("y", "model", "control"), names(cl), 0L)
-    xnamefromcall <- as.character(cl[-m])[-1]
-    mod$xname <- xnamefromcall
-  }
-  suppressWarnings(here <- which((names(x) != "") & !is.na(names(x))))
-  mod$xname[here] <- names(x)[here]
-  names(x) <- mod$xname[1:p]
-
-  # Set up name for y variable -------------------------------------------------
-  ynamefromcall <- as.character(cl[2])
-  check.yname <- is.null(mod$yname)
-  if (check.yname) mod$yname <- ynamefromcall
-
-  # The following chunk checks whether the prescriped level 1 terms are --------
-  # in order -------------------------------------------------------------------
-  ord.ind <- whereOrd(mod$order)
-  order.noh <- mod$order[ord.ind]
-  hord.check3 <- any(order.noh != as.character(1:l))
-  hord.check4 <- any(sort(as.numeric(order.noh)) != 1:l)
-  if (hord.check3 | hord.check4) {
-    warning("Incorrect prescription of level 1 terms - automatically fixed.", call. = FALSE)
-  }
-  mod$order[ord.ind] <- as.character(1:l)
-  # Next check if higher order terms' kernels similar to the level 1 terms. Test
-  # when parsm = TRUE.
-  if (r > 0 && mod$parsm) {
-    order.h <- mod$order[-ord.ind]
-    index.h <- which(isHOrd(mod$order))
-    for (i in 1:r) {
-      j <- as.numeric(splitHOrd(order.h[i]))[1]
-      if (mod$kernel[j] != mod$kernel[index.h[i]]) {
-        warning(paste("Kernel for variable", mod$xname[index.h[i]], "not the same as ", mod$xname[j]), call. = FALSE)
-      }
+    if (!isTRUE(fixed.hyp)) {
+      est.lambda <- est.hurst <- est.lengthscale <- est.offset <- est.psi <- TRUE
     }
   }
+  estl <- list(est.lambda = est.lambda, est.hurst = est.hurst,
+               est.lengthscale = est.lengthscale, est.offset = est.offset,
+               est.psi = est.psi)
 
-  # Set up list of H matrices --------------------------------------------------
-  # note: hMatList() is in Utitilities.R
-  if (as.numeric(mod$Nys.kern) > 0) {
-    Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
-                    gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
-                    rootkern = mod$rootkern, xstar = x.Nys)
-  } else {
-    Hl <- .hMatList(x = x, kernel = mod$kernel, intr = mod$intr, no.int = no.int,
-                    gamma = mod$Hurst, intr.3plus = mod$intr.3plus,
-                    rootkern = mod$rootkern)
-  }
-  h <- length(Hl)
-  names(Hl) <- mod$xname[1:h]
-  if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr)) {
-    for (i in 1:no.int) {
-      mod$xname <- c(mod$xname, paste(mod$xname[mod$intr[1, i]],
-                                      mod$xname[mod$intr[2, i]], sep = ":"))
-    }
-  }
-  if (length(mod$xname) < h && !mod$one.lam && !is.null(mod$intr.3plus)) {
-    for (i in 1:no.int.3plus) {
-      mod$xname <- c(mod$xname, paste(mod$xname[mod$intr.3plus[, i]],
-                                      collapse = ":"))
-    }
-  }
-  names(Hl) <- mod$xname
+  names(lambda) <- names(psi) <- NULL  # need to clean the names otherwise weird
+                                       # things happen
+  param <- kernel_to_param(kernels, lambda)
+  poly.deg <- param$deg
+  thetal <- param_to_theta(param, estl, log(psi))
+  thetal$n.theta <- length(thetal$theta)
 
-  # Set up names for lambda parameters -----------------------------------------
-  mod$lamnamesx <- mod$xname[whereOrd(mod$order)]
-
-  # Block B update function ----------------------------------------------------
-  intr <- mod$intr
-  environment(indxFn) <- environment()
-  H2l <- Hsql <- Pl <- Psql <- Sl <- ind <- ind1 <- ind2 <- NULL
-  BlockB <- function(k, x = lambda) NULL
-  if (r == 0L & no.int.3plus == 0L & as.numeric(mod$Nys.kern) == 0L) {
-    # No need to do all the below Block B stuff if higher order terms involved.
-    # Also no need if Nys.kern option called.
-    if (q == 1L) {
-      Pl <- Hl
-      Psql <- list(fastSquare(Pl[[1]]))
-      Sl <- list(matrix(0, nrow = n, ncol = n))
-    } else {
-      # Next, prepare the indices required for indxFn().
-      z <- 1:h
-      ind1 <- rep(z, times = (length(z) - 1):0)
-      ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)]))
-      # Prepare the cross-product terms of squared kernel matrices. This is a
-      # list of q_choose_2.
-      for (j in 1:length(ind1)) {
-        H2l.tmp <- Hl[[ind1[j]]] %*% Hl[[ind2[j]]]
-        H2l[[j]] <- H2l.tmp + t(H2l.tmp)
-      }
-
-      if (!is.null(intr) && mod$parsm) {
-        # CASE: Parsimonious interactions only ---------------------------------
-        for (k in z) {
-          Hsql[[k]] <- fastSquare(Hl[[k]])
-          if (k <= p) ind[[k]] <- indxFn(k)  # only create indices for non-intr
-        }
-        BlockB <- function(k, x = lambda) {
-          # Calculate Psql instead of directly P %*% P because this way
-          # is < O(n^3).
-          indB <- ind[[k]]
-          lambda.P <- c(1, x[indB$k.int.lam])
-          Pl[[k]] <<- Reduce("+", mapply("*", Hl[c(k, indB$k.int)], lambda.P,
-                                         SIMPLIFY = FALSE))
-          Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
-                                           c(1, x[indB$Psq.lam] ^ 2),
-                                           SIMPLIFY = FALSE))
-          if (!is.null(indB$P2.lam1)) {
-            lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), x[indB$P2.lam1])
-            lambda.P2 <- lambda.P2 * x[indB$P2.lam2]
-            Psql[[k]] <<- Psql[[k]] +
-              Reduce("+", mapply("*", H2l[indB$P2], lambda.P2, SIMPLIFY = FALSE))
-          }
-          lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), x[indB$PRU.lam1])
-          lambda.PRU <- lambda.PRU * x[indB$PRU.lam2]
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU,
-                                       SIMPLIFY = FALSE))
-        }
-      } else {
-        # CASE: Multiple lambda with no interactions, or with non-parsimonious -
-        # interactions ---------------------------------------------------------
-        for (k in 1:q) {
-          Pl[[k]] <- Hl[[k]]
-          Psql[[k]] <- fastSquare(Pl[[k]])
-        }
-        BlockB <- function(k, x = lambda) {
-          ind <- which(ind1 == k | ind2 == k)
-          Sl[[k]] <<- Reduce("+", mapply("*", H2l[ind], x[-k], SIMPLIFY = FALSE))
-        }
-      }
-    }
+  nystroml <- NULL
+  if (isTRUE(as.logical(nystrom))) {
+    nystroml <- list(nys.samp = nys.samp, nys.seed = nys.seed,
+                     nys.size = as.numeric(nystrom))
   }
 
-  BlockBstuff <- list(H2l = H2l, Hsql = Hsql, Pl = Pl, Psql = Psql, Sl = Sl,
-                      ind1 = ind1, ind2 = ind2, ind = ind, BlockB = BlockB)
-  kernelLoaded <- list(Y = y, x = x, Hl = Hl, n = n, p = p, l = l, r = r,
-                       no.int = no.int, q = q, Nystrom = FALSE, y.levels = y.levels,
-                       BlockBstuff = BlockBstuff, model = mod, call = cl,
-                       no.int.3plus = no.int.3plus)
-  class(kernelLoaded) <- "ipriorKernel"
-  if (as.numeric(mod$Nys.kern) > 0L)
-    class(kernelLoaded) <- c("ipriorKernel_Nystrom")
-  kernelLoaded
+  BlockBStuff <- NULL
+  # Only calculate BlockBStuff when using the closed form EM algorithm.
+  # |                 | EM.closed == TRUE |
+  # |-----------------|------------------:|
+  # | poly.deg        |              NULL |
+  # | est.lambda      |              TRUE |
+  # | est.hurst       |             FALSE |
+  # | est.lengthscale |             FALSE |
+  # | est.offset      |             FALSE |
+  # | est.psi         |              TRUE |
+  # | intr.3plus      |              NULL |
+  BlockB.cond <- (
+    all(is.na(poly.deg)) & !isTRUE(est.hurst) & !isTRUE(est.lengthscale) &
+      !isTRUE(est.offset) & (isTRUE(est.lambda) | isTRUE(est.psi)) &
+      !isTRUE(nys.check) & is.null(intr.3plus)
+  )
+  if (isTRUE(BlockB.cond)) {
+    BlockBStuff <- BlockB_fn(Hl, intr, n, p)
+  }
+
+  res <- list(
+    # Data
+    y = y, Xl = Xl, Hl = Hl, intercept = intercept,
+    # Model
+    kernels = kernels, which.pearson = which.pearson, probit = probit,
+    poly.deg = poly.deg, thetal = thetal, estl = estl,
+    intr = intr, intr.3plus = intr.3plus, nystroml = nystroml,
+    BlockBStuff = BlockBStuff,
+    # Meta
+    n = n, p = p, no.int = no.int, no.int.3plus = no.int.3plus,
+    xname = xname, yname = yname, formula = NULL, terms = NULL,
+    y.levels = y.levels
+  )
+
+  # Function call --------------------------------------------------------------
+  res$call <- fix_call_default(match.call(), "kernL")
+
+  class(res) <- "ipriorKernel2"
+  res
 }
 
-#' @rdname kernL
+#' @rdname kernL2
 #' @export
-kernL.formula <- function(formula, data, model = list(), ...) {
+kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
+                           est.lambda = TRUE, est.hurst = FALSE,
+                           est.lengthscale = FALSE, est.offset = FALSE,
+                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                           psi = 1, nystrom = FALSE, nys.seed = NULL,
+                           model = list(), ...) {
   mf <- model.frame(formula = formula, data = data)
   tt <- terms(mf)
   Terms <- delete.response(tt)
@@ -426,32 +300,29 @@ kernL.formula <- function(formula, data, model = list(), ...) {
   yname <- names(attr(tt, "dataClasses"))[1]
   xname <- names(x)
   xnl <- length(xname)
+  x <- as.list(x)
+  attr(x, "terms") <- NULL
+  # attr(y, "yname") <- yname
 
-  # For interactions -----------------------------------------------------------
+  # Interactions ---------------------------------------------------------------
   interactions <- NULL
   tmpo <- attr(tt, "order")
-  # if (any(tmpo > 2)) {
-  #   stop("iprior does not currently work with higher order interactions.")
-  # }
   tmpf <- attr(tt, "factors")
   tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  # this obtains 2nd order interactions
   int2 <- apply(tmpf2, 2, function(x) which(x == 1))
   if (any(tmpo == 2)) interactions <- int2
-
-  # > 2-way interactions -------------------------------------------------------
   intr.3plus <- NULL
   tmpf3 <- as.matrix(tmpf[-1, tmpo > 2])
   int3 <- apply(tmpf3, 2, whereInt)
   if (any(tmpo > 2)) intr.3plus <- int3
+  interactions <- list(intr = interactions, intr.3plus = intr.3plus)
 
   # Deal with one.lam option ---------------------------------------------------
-  one.lam <- FALSE
-  if (any(names(model) == "one.lam")) one.lam <- model$one.lam
-  if (one.lam) {
-    if (!is.null(interactions)) {
+  if (isTRUE(one.lam)) {
+    if (!all(sapply(interactions, is.null))) {
       stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
     }
-    if (ncol(x) == 1) {
+    if (length(x) == 1) {
       message("Option one.lam = TRUE used with a single covariate anyway.")
     }
     attributes(x)$terms <- attributes(x)$names <- NULL
@@ -460,44 +331,84 @@ kernL.formula <- function(formula, data, model = list(), ...) {
     } else {
       xname <- paste(xname[1], "+ ... +", xname[xnl])
     }
-    x <- as.data.frame(x)
+    x <- list(matrix(unlist(x), ncol = length(x)))
+    names(x) <- xname
   }
 
-  kernelLoaded <- kernL(y = y, x, model = c(model,
-                                            list(interactions = interactions,
-                                                 intr.3plus = intr.3plus,
-                                                 yname = yname, xname = xname)))
+  res <- kernL2.default(y = y, Xl.formula = x, interactions = interactions,
+                        kernel = kernel, est.lambda = est.lambda,
+                        est.hurst = est.hurst,
+                        est.lengthscale = est.lengthscale,
+                        est.offset = est.offset, est.psi = est.psi,
+                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
+                        nystrom = nystrom, nys.seed = nys.seed, model = model)
+  res$yname <- yname
+  res$formula <- formula
+  res$terms <- tt
+  res$call <- fix_call_formula(match.call(), "kernL")
 
-  # Changing the call to simply kernL ------------------------------------------
-  cl <- match.call()
-  cl[[1L]] <- as.name("kernL")
-  m <- match(c("formula", "data"), names(cl), 0L)
-  cl <- cl[c(1L, m)]
-  kernelLoaded$call <- cl
-  names(kernelLoaded$call)[2] <- "formula"
-  kernelLoaded$terms <- tt
-  kernelLoaded$formula <- formula
-  kernelLoaded
+  res
 }
 
 #' @export
-print.ipriorKernel <- function(x, ...) {
+print.ipriorKernel2 <- function(x, units = "MB", standard = "SI", ...) {
+  tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
+
+  # if (isTRUE(x$probit)) {
+  #   cat("Categorical response variables\n")
+  # } else if (is.ipriorKernel_nys(x)) {
+  #   cat("Nystrom kernel approximation ()\n")
+  # }
+
+  cat("Sample size:", x$n, "\n")
+  cat("No. of covariates:", length(x$Xl), "\n")
+  # cat("No. of interactions:", x$no.int + x$no.int.3plus, "\n")
+  cat("Object size: ")
+  print(object.size(x), units = units, standard = standard)
+
   cat("\n")
-  # if (x$model$kernel == 'Canonical') CanOrFBM <- 'Canonical' else CanOrFBM <-
-  # paste0('Fractional Brownian Motion with Hurst coef. ', x$gamfbm) kerneltypes <-
-  # c(CanOrFBM, 'Pearson', paste(CanOrFBM, '& Pearson')) if (all(x$whichPearson))
-  # cat(kerneltypes[2], 'RKHS loaded') else { if (!all(x$whichPearson) &&
-  # !any(x$whichPearson)) cat(kerneltypes[1], 'RKHS loaded') else
-  # cat(kerneltypes[3], 'RKHS loaded') } if (x$q == 1 | x$model$one.lam) cat(',
-  # with a single scale parameter.\n') else cat(', with', x$q, 'scale
-  # parameters.\n')
-  if (isTRUE(x$model$probit)) cat("Categorical response variables\n")
-  cat("Sample size = ", x$n, "\n")
-  cat("Number of x variables, p = ", x$p, "\n")
-  cat("Number of scale parameters, l = ", x$l, "\n")
-  cat("Number of interactions = ", x$no.int + x$no.int.3plus, "\n")
-  if (x$model$rootkern) cat("\nInfo on root H matrix:\n\n")
-  else cat("\nInfo on H matrix:\n\n")
-  str(x$Hl, ...)
+  cat("Kernel matrices:\n")
+  for (i in seq_along(tmp$Hl)) {
+    cat("", i, print_kern(tmp$Hl[[i]], ...), "\n")
+  }
   cat("\n")
+  cat("Hyperparameters to estimate:\n")
+  if (x$thetal$n.theta > 0)
+    cat(paste(names(x$thetal$theta), collapse = ", "))
+  else
+    cat("none")
+  cat("\n")
+
+  cat("\n")
+  methods <- c("direct", "em", "canonical", "mixed", "fixed")
+  poss.method <- NULL
+  for (i in seq_along(methods)) {
+    suppressWarnings(tmp <-  iprior_method_checker(x, methods[i]))
+    poss.method <- c(poss.method, names(which(tmp)))
+  }
+  poss.method <- gsub("em.closed", "em", poss.method)
+  poss.method <- gsub("em.reg", "em", poss.method)
+  poss.method <- gsub("nystrom", "direct", poss.method)
+  if (is.nystrom(x)) {
+    poss.method <- paste(poss.method, "(Nystrom)")
+  }
+  if (is.iprobit(x)) {
+    poss.method <- c(poss.method, "iprobit (recommended)")
+  }
+  poss.method <- paste0(unique(poss.method), collapse = ", ")
+  cat("Estimation methods available:\n")
+  cat(poss.method)
+}
+
+print_kern <- function(x, ...) {
+  # Helper function to prettify the print output of kernel matrices.
+  #
+  # Args: x is a kernel matrix obtained from one of the kern_x() functions.
+  # Additional ... are passed to str().
+  #
+  # Returns: Prettified kernel matrix str() print ouput.
+  kern.type <- attr(x, "kernel")
+  res <- capture.output(str(x, ...))[1]
+  res <- gsub(" num", kern.type, res)
+  res
 }

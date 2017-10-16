@@ -1,19 +1,110 @@
-#' Simulated data to illustrate one-dimensional smoothing
+################################################################################
+#
+#   iprior: Linear Regression using I-priors
+#   Copyright (C) 2017  Haziq Jamil
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+
+#' Generate simulated data for smoothing models
 #'
-#' Data generated from a mixed Gaussian density function \eqn{f(x) = 0.65 N(2,1)
-#' + 0.35 N(7, 1.5^2)}, where \eqn{N(x, y)} is the density function for a Normal
-#' distribution with mean \eqn{x} and variance \eqn{y}.
+#' @param n Sample size.
+#' @param seed (Optional) Random seed.
 #'
-#' @format A data frame with 53940 rows and 10 variables:
-#' \describe{
-#'   \item{\code{y}}{Response variable}
-#'   \item{\code{x}}{Explanatory variable}
-#' }
+#' @return A dataframe containing the response variable \code{y} and
+#'   unidimensional explanatory variable \code{X}.
 #'
 #' @examples
-#' data(simdat)
-#' str(simdat)
-"datfbm"
+#' gen_smooth(10)
+#'
+#' @export
+gen_smooth <- function(n = 150, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  f <- function(x, truth = FALSE) {
+    35 * dnorm(x, mean = 1, sd = 0.8) +
+      65 * dnorm(x, mean = 4, sd = 1.5) +
+      (x > 4.5) * (exp((1.25 * (x - 4.5))) - 1) +
+      3 * dnorm(x, mean = 2.5, sd = 0.3)
+  }
+  x <- c(seq(0.2, 1.9, length = n * 5 / 8), seq(3.7, 4.6, length = n * 3 / 8))
+  x <- sample(x, size = n)
+  x <- x + rnorm(n, sd = 0.65)  # adding random fluctuation to the x
+  x <- sort(x)
+  y.err <- rt(n, df = 1)
+  y <- f(x) + sign(y.err) * pmin(abs(y.err), rnorm(n, mean = 4.1))  # adding random
+  data.frame(y = y, X = x)
+}
+
+#' Generate simulated data for multilevel models
+#'
+#' @param n Sample size. Input either a single number for a balanced data set,
+#'   or a vector of length \code{m} indicating the sample size in each group.
+#' @param seed (Optional) Random seed.
+#' @param m Number of groups/levels.
+#' @param sigma_e The standard deviation of the errors.
+#' @param sigma_u1 The standard deviation of the random intercept.
+#' @param sigma_u2 The standard deviation of the random slopes.
+#' @param sigma_u12 The covariance of between the random intercept and the
+#'   random slope.
+#' @param beta0 The mean of the random intercept.
+#' @param beta1 The mean of the random slope.
+#' @param x.jitter A small amount of jitter is added to the \code{X} variables
+#'   generated from a normal distribution with mean zero and standard deviation
+#'   equal to \code{x.jitter}.
+#'
+#' @return A dataframe containing the response variable \code{y}, the
+#'   unidimensional explanatory variables \code{X}, and the levels/groups
+#'   (factors).
+#'
+#' @examples
+#' gen_multilevel()
+#'
+#' @export
+gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u1 = 2,
+                           sigma_u2 = 2, sigma_u12 = -2, beta0 = 0, beta1 = 2,
+                           x.jitter = 0.5, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  beta <- mvtnorm::rmvnorm(m, c(beta0, beta1),
+                           sigma = matrix(c(sigma_u1 ^ 2, sigma_u12,
+                                            sigma_u12, sigma_u2 ^ 2), nrow = 2))
+  if (length(n) == 1) {
+    n <- rep(n, m)
+  } else if (length(n) != m) {
+    stop("n must have length equal to the number of groups (m).", call. = FALSE)
+  }
+  dat <- as.data.frame(matrix(NA, nrow = sum(n), ncol = 3))
+  n.cum <- c(0, cumsum(n))
+  for (j in seq_len(m)) {
+    x <- seq(0, 5, length = n[j]) + rnorm(n[j], sd = x.jitter)
+    y <- beta[j, 1] + beta[j, 2] * x + rnorm(n[j], sd = sigma_e)
+    dat[(n.cum[j] + 1):n.cum[j + 1], ] <- cbind(y, x, j)
+  }
+  names(dat) <- c("y", "X", "grp")
+  dat$grp <- factor(dat$grp)
+  dat
+}
+
+# x.new <- c(min(dat$x), max(dat$x))
+# dat.new <- as.data.frame(matrix(NA, nrow = 2 * m, ncol = 3))
+# dat.new[, 2] <- rep(x.new, m)
+# dat.new[, 3] <- rep(1:m, each = 2)
+# dat.new[, 1] <- 1
+# names(dat.new) <- c("y", "x", "grp")
+# dat.new$grp <- factor(dat.new$grp)
+
+
 
 #' Random slopes model simulated data
 #'

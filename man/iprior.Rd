@@ -4,102 +4,138 @@
 \alias{iprior}
 \alias{iprior.default}
 \alias{iprior.formula}
-\alias{iprior.ipriorKernel}
+\alias{iprior.ipriorKernel2}
 \alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
-\method{iprior}{default}(y, ..., model = list(), control = list())
+\method{iprior}{default}(y, ..., kernel = "linear", method = "direct",
+  control = list(), interactions = NULL, est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
+  nystrom = FALSE, nys.seed = NULL, model = list())
 
-\method{iprior}{formula}(formula, data = parent.frame(), model = list(),
-  control = list(), ...)
+\method{iprior}{formula}(formula, data, kernel = "linear", one.lam = FALSE,
+  method = "direct", control = list(), est.lambda = TRUE,
+  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
+  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
+  nystrom = FALSE, nys.seed = NULL, model = list(), ...)
 
-\method{iprior}{ipriorKernel}(object, control = list(), ...)
+\method{iprior}{ipriorKernel2}(object, method = "direct", control = list(),
+  ...)
 
-\method{iprior}{ipriorMod}(object, control = list(), ...)
+\method{iprior}{ipriorMod}(object, method = NULL, control = list(),
+  iter.update = 100, ...)
 }
 \arguments{
-\item{y}{Vector of response variables.}
+\item{y}{Vector of response variables}
 
-\item{...}{Only used for when fitting using non-formula, enter the variables
-(vectors or matrices) separated by commas. No other options applicable here.}
+\item{...}{Only used when fitting using non-formula, enter the variables
+(vectors or matrices) separated by commas.}
 
-\item{model}{List of model options. Not used for \code{ipriorKernel} or
- \code{ipriorModel} objects. Available options are:
- \describe{\item{\code{kernel}}{Vector of character strings of either
- \code{"Canonical"}, \code{"FBM"}, or \code{"Pearson"}. Defaults to
- \code{"Canonical"} for continuous variables, and \code{"Pearson"} for factor
- type objects. To specify a Hurst coefficient, use \code{"FBM,<value>"};
- otherwise the default of 0.5 is used. Alternatively, see \code{Hurst} option
- below.} \item{\code{Hurst}}{Set the value of the Hurst coefficient for all
- \code{FBM} kernels used, rather than one by one. This is a value between 0
- and 1, and defaults to 0.5.}\item{\code{order}}{Character vector of length
- equal to the number of explanatory variables used, indicating specification
- of higher order scale parameters. The syntax is \code{"a^b"}, for parameter
- \code{a} raised to the power \code{b}. For regular order terms, then just
- input "a".} \item{\code{parsm}}{Logical, defaults to \code{TRUE}. Set to
- \code{FALSE} to assign one scale parameter for all kernel matrices.}
- \item{\code{one.lam}}{Logical, defaults to \code{FALSE}. Only relevant when
- using the formula call. Should all the variable share the same scale
- parameter?}\item{\code{rootkern}}{Logical, defaults to \code{FALSE}. Setting to \code{TRUE} is equivalent to Gaussian process regression.}}
+\item{kernel}{Character vector indicating the type of kernel for the
+variables. Available choices are: \itemize{ \item{\code{"linear"} -
+(default) for the linear kernel} \item{\code{"canonical"} - alternative
+name for \code{"linear"}} \item{\code{"fbm"}, \code{"fbm,0.5"} - for the
+fBm kernel with Hurst coefficient 0.5 (default)} \item{\code{"se"},
+\code{"se,1"} - for the SE kernel with lengthscale 1 (default)}
+\item{\code{"poly"}, \code{"poly2"}, \code{"poly2,0"} - for the polynomial
+kernel of degree 2 with offset 0 (default)} \item{\code{"pearson" - for the
+Pearson kernel}}} The \code{kernel} argument can also be a vector of length
+equal to the number of variables, therefore it is possible to specify
+different kernels for each variables. Note that factor type variables are
+assigned the Pearson kernel by default, and that non-factor types can be
+forced to use the Pearson kernel (not recommended).}
 
- These options are also available, but are only relevant when calling using
- non-formula: \describe{\item{\code{yname}}{Character vector to set the name
- of the response variable. It is set to the object name which contains the
- response variables by default.} \item{\code{xname}}{Character vector to set
- the name of the explanatory variables. This is also set to the object name
- by default.} \item{\code{interactions}}{Character vector to specify the
- interaction terms. When using formulas, this is specified automatically.
- Syntax is \code{"a:b"} to indicate variable \code{a} interacts with variable
- \code{b}.}}}
+\item{method}{The estimation method. One of: \itemize{ \item{\code{"direct"}
+- for the direct minimisation of the marginal deviance using
+\code{optim()}'s L-BFGS method} \item{\code{"em"} - for the EM algorithm}
+\item{\code{"mixed"} - combination of the direct and EM methods}
+\item{\code{"fixed"} - for just obtaining the posterior regression function
+with fixed hyperparameters (default method when setting \code{fixed.hyp =
+TRUE})} \item{\code{"canonical"} - an efficient estimation method which
+takes advantage of the structure of the linear kernel} }}
 
-\item{control}{(optional) A list of control options for the EM algorithm and
-output: \describe{\item{\code{maxit}}{The maximum number of iterations
-until the EM stops. Defaults to \code{50000}.} \item{\code{stop.crit}.}{The
-EM stopping criteria, which is the difference in succesive log-likelihood
-values. Defaults to \code{1e-7}.} \item{\code{progress}}{Option for the
-reporting of the EM while the function is running. Choose from one of
-\code{"lite"} (default), \code{"full"} (log-likelihood and parameters
-trace), \code{"predloglik"} (log-likelihood trace only) or \code{"none"}.
-Visit the
-\href{https://github.com/haziqjamil/iprior/wiki/The-predicted-log-likelihood-feature}{Wiki}
-page for more information.} \item{\code{report}}{The EM reports every
-\code{report} iterations. Defaults to \code{100}.}
-\item{\code{silent}}{(logical) Should the EM report should be printed or
-not? This is the same as setting \code{progress = "none"}.}
-\item{\code{lambda, psi, sigma}}{These are options to set the initial
-values of the parameters. For convenience, the user may choose to input one
-of \code{psi} or \code{sigma}, but not both, since \code{psi = 1 / sigma ^
-2}.} \item{\code{intercept}}{It is possible to set a fixed value for the
-intercept (not recommended).}}}
+\item{control}{(Optional) A list of control options for the estimation
+procedure: \describe{ \item{\code{maxit}}{The maximum number of iterations
+for the quasi-Newton optimisation or the EM algorithm. Defaults to
+\code{100}.} \item{\code{em.maxit}}{For \code{method = "mixed"}, the number
+of EM steps before switching to direct optimisation. Defaults to \code{5}.}
+\item{\code{stop.crit}}{The stopping criterion for the EM and L-BFGS
+algorithm, which is the difference in successive log-likelihood values.
+Defaults to \code{1e-8}.} \item{\code{theta0}}{The initial values for the
+hyperparameters. Defaults to random starting values.}
+\item{\code{report}}{The interval of reporting for the \code{optim()}
+function.} \item{\code{restarts}}{The number of random restarts to perform.
+Defaults to \code{0}. It's also possible to set it to \code{TRUE}, in which
+case the number of random restarts is set to the total number of available
+cores.} \item{\code{no.cores}}{The number of cores in which to do random
+restarts. Defaults to the total number of available cores.} }}
+
+\item{interactions}{Character vector to specify the interaction terms. When
+using formulas, this is specified automatically, so is not required. Syntax
+is \code{"a:b"} to indicate variable \code{a} interacts with variable
+\code{b}.}
+
+\item{est.lambda}{Logical. Estimate the scale parameters? Defaults to
+\code{TRUE}.}
+
+\item{est.hurst}{Logical. Estimate the Hurst coefficients for fBm kernels?
+Defaults to \code{FALSE}.}
+
+\item{est.lengthscale}{Logical. Estimate the lengthscales for SE kernels?
+Defaults to \code{FALSE}.}
+
+\item{est.offset}{Logical. Estimate the offsets for polynomial kernels?
+Defaults to \code{FALSE}.}
+
+\item{est.psi}{Logical. Estimate the error precision? Defaults to
+\code{TRUE}.}
+
+\item{fixed.hyp}{Logical. If \code{TRUE}, then no hyperparameters are
+estimated, i.e. all of the above \code{est.x} are set to \code{FALSE}, and
+vice versa. If \code{NULL} (default) then all of the \code{est.x} defaults
+are respected.}
+
+\item{lambda}{Initial/Default scale parameters. Relevant especially if
+\code{est.lambda = FALSE}.}
+
+\item{psi}{Initial/Default value for error precision. Relevant especially if
+\code{est.psi = FALSE}.}
+
+\item{nystrom}{Either logical or an integer indicating the number of Nystrom
+samples to take. Defaults to \code{FALSE}. If \code{TRUE}, then
+approximately 10\% of the sample size is used for the Nystrom
+approximation.}
+
+\item{nys.seed}{The random seed for the Nystrom sampling. Defaults to
+\code{NULL}, which means the random seed is not fixed.}
+
+\item{model}{DEPRECATED.}
 
 \item{formula}{The formula to fit when using formula interface.}
 
 \item{data}{Data frame containing variables when using formula interface.}
 
-\item{object}{This is either an object of class formula (when fitting using
-formula interface), \code{ipriorKernel} or \code{ipriorModel}. This is used
-when not using formula or \code{"y, x"} input.}
+\item{one.lam}{Logical. When using formula input, this is a convenient way of
+letting the function know to treat all variables as a single variable (i.e.
+shared scale parameter). Defaults to \code{FALSE}.}
+
+\item{object}{An \code{ipriorKernel2} or \code{ipriorMod} object.}
+
+\item{iter.update}{The number of iterations to perform when calling the
+function on an \code{ipriorMod} object. Defaults to \code{100}.}
 }
 \value{
-An object of class \code{ipriorMod} which is a list of 24 items. The
-  more important items are described below. \describe{ \item{\code{alpha,
-  lambda, psi, coefficients, sigma}}{The last attained parameter values after
-  running the EM algorithm. This can also be extracted via \code{coef()}}
-  \item{\code{log.lik}}{The last attained log-likelihood value. This can also
-  be extracted via \code{logLik()}.} \item{\code{no.iter}}{The number of
-  iterations the EM algorithm ran for.} \item{\code{Hlam.mat}}{This is the
-  scaled kernel matrix of dimension \code{n} by \code{n}.}
-  \item{\code{VarY.inv}}{The variance-covariance matrix of the marginal
-  distribution of \code{y}.} \item{\code{w.hat}}{The vector of posterior mean
-  estimates of the I-prior random effects.} \item{\code{fitted.values}}{These
-  are posterior estimates of \code{y}, i.e. the fitted values. This can also
-  be extracted via \code{fitted()} or \code{\link{predict}()}}
-  \item{\code{residuals}}{The vector of residuals. This can also be extracted
-  via \code{resid()}.} }
+An \code{ipriorMod} object. Several accessor functions have been
+  written to obtain pertinent things from the \code{ipriorMod} object. The
+  \code{print()} and \code{summary()} methods display the relevant model
+  information.
 }
 \description{
-A function to perform linear regression using I-priors. The I-prior model is
-fitted via maximum likelihood using an EM algorithm.
+A function to perform regression using I-priors. The I-prior model parameters
+may be estimated in a number of ways: direct minimisation of the marginal
+deviance, EM algorithm, fixed hyperparameters, or using a Nystrom kernel
+approximation.
 }
 \details{
 The \code{iprior()} function is able to take formula based input and
@@ -107,30 +143,21 @@ non-formula. When not using formula, the syntax is as per the default S3
 method. That is, the response variable is the vector \code{y}, and any
 explanatory variables should follow this, and separated by commas.
 
-As described \link[=kernL]{here}, the model can be loaded first into an
+As described \link[=kernL2]{here}, the model can be loaded first into an
 \code{ipriorKernel} object, and then passed to the \code{iprior()} function
-to perform the EM algorithm.
-
-If an \code{ipriorMod} object is input, then the EM starts from the last
-obtained parameter values. This is particularly useful for very heavy models,
-or models which have not yet converged after reaching the maximum number of
-iterations. Running \code{iprior()} just continues the EM algorithm.
-
-There are several model options available which primarily controls the number
-and placement of scale parameters \code{lambda} in the model, although these
-are not applicable when running the function on \code{ipriorMod} or
-\code{ipriorKernel} objects.
+to perform the estimation.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ipriorKernel}: Takes in object of type \code{ipriorKernel} and estimates
-the parameters of the model via the EM algorithm.
+\item \code{ipriorKernel2}: Takes in object of type \code{ipriorKernel2}, a loaded and
+prepared I-prior model, and proceeds to estimate it.
 
 \item \code{ipriorMod}: Re-run or continue running the EM algorithm from last
 attained parameter values in object \code{ipriorMod}.
 }}
 
 \examples{
+
 # Formula based input
 (mod.stackf <- iprior(stack.loss ~ Air.Flow + Water.Temp + Acid.Conc.,
                       data = stackloss))
@@ -142,21 +169,41 @@ mod.stacknf <- iprior(y = stackloss$stack.loss,
                       Air.Flow = stackloss$Air.Flow,
                       Water.Temp = stackloss$Water.Temp,
                       Acid.Conc. = stackloss$Acid.Conc.)
-mod.toothnf <- iprior(y = ToothGrowth$len,
-                      supp = ToothGrowth$supp,
-                      dose = ToothGrowth$dose,
-                      model = list(interactions = "1:2"))
+mod.toothnf <- iprior(y = ToothGrowth$len, ToothGrowth$supp, ToothGrowth$dose,
+                      interactions = "1:2")
 
 # Formula based model option one.lam = TRUE
 # Sets a single scale parameter for all variables
-modf <- iprior(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
-modnf <- iprior(y = stackloss$stack.loss, x = stackloss[1:3])
+modf <- iprior(stack.loss ~ ., data = stackloss, one.lam = TRUE)
+modnf <- iprior(y = stackloss$stack.loss, X = stackloss[1:3])
+all.equal(coef(modnf), coef(modnf))  # both models are equivalent
 
-# Example of using the FBM kernel for smoothing models
-mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM"))  # Hurst = 0.5 (default)
-mod <- kernL(y ~ x, datfbm, model = list(kernel = "FBM,0.75"))  # custom Hurst
+# Fit models using different kernels
+dat <- gen_smooth(n = 100)
+mod <- iprior(y ~ X, dat, kernel = "fbm")  # Hurst = 0.5 (default)
+mod <- iprior(y ~ X, dat, kernel = "poly3")  # polynomial degree 3
 
-# Fit the model using EM starting at a specific parameter value
-mod.fit <- iprior(mod, control = list(lambda = 8.41, psi = 0.33))
+# Fit models using various estimation methods
+mod1 <- iprior(y ~ X, dat)
+mod2 <- iprior(y ~ X, dat, method = "em")
+mod3 <- iprior(y ~ X, dat, method = "canonical")
+mod4 <- iprior(y ~ X, dat, method = "mixed")
+mod5 <- iprior(y ~ X, dat, method = "fixed", lambda = coef(mod1)[1],
+               psi = coef(mod1)[2])
+all.equal(logLik(mod1), logLik(mod2), logLik(mod3), logLik(mod4),
+          logLik(mod5), tol = 1e-6)
 
+\dontrun{
+
+# For large data sets, it is worth trying the Nystrom method
+mod <- iprior(y ~ X, gen_smooth(5000), kernel = "se", nystrom = 50,
+              est.lengthscale = TRUE)  # a bit slow
+plot_fitted(mod, ci = FALSE)
+}
+
+}
+\seealso{
+\link[=optim]{optim}, \link[=update.ipriorMod]{update},
+  \link[=check_theta]{check_theta}, print, summary, plot, coef, sigma,
+  fitted, predict, logLik, deviance.
 }
