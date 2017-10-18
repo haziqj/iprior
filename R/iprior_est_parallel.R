@@ -60,7 +60,7 @@ iprior_parallel <- function(mod, method = "direct",
     ), {
       new.control          <- control
       new.control$restarts <- 0
-      new.control$maxit    <- 3
+      new.control$maxit    <- min(control$maxit, 10)
       new.control$silent   <- TRUE
       tmp <- iprior(mod, control = new.control, method = method)
       list(

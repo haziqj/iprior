@@ -67,6 +67,7 @@ summary.ipriorMod <- function(object, ...) {
     xs <- paste0(object$ipriorKernel$xname[ind], collapse = ", ")
     x.kern[i] <- paste0(unique.kernels[i], " (", xs, ")\n")
   }
+  x.kern <- paste0(x.kern, collapse = "")
 
   if (object$method == "mixed") {
     maxit <- object$control$maxit + object$control$em.maxit
@@ -166,6 +167,7 @@ sigma.ipriorMod <- function(object, ...) {
 #' @export
 update.ipriorMod <- function(object, method = NULL, control = list(),
                              iter.update = 100, ...) {
+  control$restarts <- 0
   res <- iprior.ipriorMod(object, method, control, iter.update, ...)
   assign(deparse(substitute(object)), res, envir = parent.frame())
 }
