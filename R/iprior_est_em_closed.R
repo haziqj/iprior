@@ -56,6 +56,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   lambda <- theta_to_collapsed_param(theta0, mod)[seq_len(mod$p)]
   niter <- 0
   loglik <- rep(NA, maxit)
+  Hl <- expand_Hl_and_lambda(Hl, rep(1, p), intr, intr.3plus)$Hl  # expand Hl
 
   # The EM loop ----------------------------------------------------------------
   if (!silent) pb <- txtProgressBar(min = 0, max = maxit, style = 1)

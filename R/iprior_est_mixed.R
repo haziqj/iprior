@@ -38,7 +38,8 @@ iprior_mixed <- function(mod, theta0 = NULL, em.maxit = 5, stop.crit = 1e-5,
     fnscale = -2,
     trace   = ifelse(isTRUE(silent), 0, 1),
     maxit   = 100,
-    REPORT  = 10
+    REPORT  = 10,
+    factr   = 1e7
   )
   control.optim <- update_control(control.optim, control.optim_)
 

@@ -92,9 +92,9 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
     plot.df <- cbind(plot.df, facet2 = x$ipriorKernel$Xl[[cat.x[facet[2]]]])
   }
 
-  if (is.null(x.lab)) x.lab <- x$ipriorKernel$xname[X.var]
+  if (is.null(x.lab)) x.lab <- x$ipriorKernel$xname[cts.x[X.var]]
   if (is.null(y.lab)) y.lab <- x$ipriorKernel$yname
-  if (is.null(grp.lab)) grp.lab <- names(cat.x[grp])
+  if (is.null(grp.lab)) grp.lab <- x$ipriorKernel$xname[cat.x[X.var]]
   nys.check <- is.ipriorKernel_nys(x$ipriorKernel)
 
   p <- ggplot(plot.df)
