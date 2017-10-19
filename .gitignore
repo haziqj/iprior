@@ -7,3 +7,11 @@ Rmd
 other
 tests/testthat/Rplots.pdf
 vignettes/iprior2_test.Rmd
+vignettes/cache
+*.aux
+*.bbl
+*.blg
+*.log
+*.synctex.gz
+*.tex
+*.texpadtmp

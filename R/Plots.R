@@ -27,6 +27,8 @@
 #' value over time.} } The S3 method \code{plot} for class \code{ipriorMod}
 #' currently returns \code{plot_fitted}.
 #'
+#' See ggplot2 documentation for the plotting parameters.
+#'
 #' @param x An \code{ipriorMod} object.
 #' @param X.var The index of the X variable to plot.
 #' @param cred.bands Logical. Plot the confidence intervals? Defaults to \code{TRUE}.
@@ -43,6 +45,8 @@
 #' @param y.lab (Optional) Y axis label.
 #' @param grp.lab (Optional) The name for the groups, which is also the legend
 #'   title.
+#' @param size Size of the fitted line
+#' @param linetype Type of the fitted line
 #'
 #' @export
 plot.ipriorMod <- function(x, ...) {
@@ -131,7 +135,8 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
 
 #' @rdname plot.ipriorMod
 #' @export
-plot_fitted <- function(x, X.var = 1, cred.bands = TRUE) {
+plot_fitted <- function(x, X.var = 1, cred.bands = TRUE, size = 1,
+                        linetype = "solid") {
   fit <- fitted(x, intervals = cred.bands)
   y.hat <- fit$y
   X <- x$ipriorKernel$Xl[[X.var]]
@@ -154,13 +159,14 @@ plot_fitted <- function(x, X.var = 1, cred.bands = TRUE) {
     #     size = 2.5, col = "darkorange"
     # ) +
       geom_point(
-        data = plot.df[seq_len(x$ipriorKernel$nystroml$nys.size), ], aes(x, y)
+        data = plot.df[seq_len(x$ipriorKernel$nystroml$nys.size), ], aes(x, y),
+        size = 2, shape = 1, stroke = 1
       )
   } else {
     p <- p + geom_point(aes(x, y))
   }
 
-  p + geom_line(aes(x, y.hat), col = "red3") +
+  p + geom_line(aes(x, y.hat), col = "red3", size = size, linetype = linetype) +
     labs(x = x.lab, y = y.lab) +
     theme_bw()
 }

@@ -16,7 +16,8 @@ plot_fitted_multilevel(x, X.var = 1, grp = 1, facet = c(2, 3),
   cred.bands = TRUE, show.legend = TRUE, show.points = TRUE,
   x.lab = NULL, y.lab = NULL, grp.lab = NULL)
 
-plot_fitted(x, X.var = 1, cred.bands = TRUE)
+plot_fitted(x, X.var = 1, cred.bands = TRUE, size = 1,
+  linetype = "solid")
 
 plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 }
@@ -45,6 +46,10 @@ of maximum length 2.}
 \item{grp.lab}{(Optional) The name for the groups, which is also the legend
 title.}
 
+\item{size}{Size of the fitted line}
+
+\item{linetype}{Type of the fitted line}
+
 \item{niter.plot}{(Optional) Vector of length at most two, indicating the
 start and end points of the iterations to plot.}
 
@@ -57,4 +62,7 @@ credibility bands.} \item{\code{plot_predict}}{Plot residuals against fitted
 values.} \item{\code{plot_iter}}{Plot the progression of the log-likelihood
 value over time.} } The S3 method \code{plot} for class \code{ipriorMod}
 currently returns \code{plot_fitted}.
+}
+\details{
+See ggplot2 documentation for the plotting parameters.
 }

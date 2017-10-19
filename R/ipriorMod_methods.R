@@ -45,16 +45,13 @@ print.ipriorMod <- function(x, digits = 5, ...) {
 summary.ipriorMod <- function(object, ...) {
   resid.summ <- round(summary(residuals(object))[-4], 4)
 
-  # need to use delta method here!
   coef <- object$param.full
-  se <- expand_theta(object$se, object$ipriorKernel$thetal$theta.drop, NA)
+  se <- get_se(object)
   zval <- coef / se
   tab <- cbind(Estimate   = round(coef, 4),
                S.E.       = round(se, 4),
                z          = round(zval, 3),
                `P[|Z>z|]` = round(2 * pnorm(-abs(zval)), 3))
-
-  # rename rownames, remove psi
 
   param.tab <- theta_to_param(object$theta, object$ipriorKernel)
   kernels.used <- rep(NA, nrow(param.tab))
@@ -77,8 +74,10 @@ summary.ipriorMod <- function(object, ...) {
     niter <- object$niter
   }
 
+  cl <- capture.output(object$call)
+
   res <- list(resid.summ = resid.summ, tab = tab, loglik = logLik(object),
-              error = object$train.error, call = object$call, x.kern = x.kern,
+              error = object$train.error, call = cl, x.kern = x.kern,
               est.method = object$est.method, est.conv = object$est.conv,
               niter = niter, maxit = maxit, time = object$time)
   class(res) <- "ipriorMod_summary"
@@ -106,10 +105,12 @@ kernel_summary_translator <- function(x) {
 }
 
 #' @export
-print.ipriorMod_summary <- function(x, ...) {
+print.ipriorMod_summary <- function(x, wrap = FALSE, ...) {
   cat("Call:\n")
-  print(x$call)
-  cat("\n")
+  cl <- x$call
+  if (isTRUE(wrap)) cl <- paste0(strwrap(cl, ...), collapse = "\n  ")
+  cat(cl)
+  cat("\n\n")
   cat("RKHS used:\n")
   cat(x$x.kern)
   cat("\n")
@@ -170,35 +171,4 @@ update.ipriorMod <- function(object, method = NULL, control = list(),
   control$restarts <- 0
   res <- iprior.ipriorMod(object, method, control, iter.update, ...)
   assign(deparse(substitute(object)), res, envir = parent.frame())
-}
-
-#' Extract the kernel matrix from I-prior models
-#'
-#' @param object An \code{ipriorMod} or \code{ipriorKernel2} object.
-#' @param theta (Optional) Value of hyperparameters to evaluate the kernel
-#'   matrix.
-#' @param xstar (Optional) If not supplied, then a square, symmetric kernel
-#'   matrix is returned using the data as input points. Otherwise, the kernel
-#'   matrix is evaluated with respect to this set of data as well. It must be a
-#'   list of vectors/matrices with similar dimensions to the original data.
-#'
-#' @return A kernel matrix.
-#'
-#' @export
-get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
-  if (is.ipriorMod(object)) {
-    # estl <- object$ipriorKernel$estl
-    # til.cond <- (
-    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
-    # )
-    res <- get_Hlam(object$ipriorKernel, object$theta, FALSE)
-    return(res)
-  } else if (is.ipriorKernel2(object)) {
-    # estl <- object$estl
-    # til.cond <- (
-    #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
-    # )
-    res <- get_Hlam(object, object$theta, FALSE)
-    return(res)
-  }
 }
