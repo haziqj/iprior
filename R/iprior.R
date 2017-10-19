@@ -159,6 +159,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
   control_ <- list(
     maxit     = 100,
     em.maxit  = 5,  # for mixed method
+    par.maxit = 5,  # for parallel method
     stop.crit = 1e-8,
     theta0    = NULL,
     # lambda0   = NULL,

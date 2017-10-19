@@ -52,19 +52,14 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   while (em_loop_logical()) {
     # Block A ------------------------------------------------------------------
-    if (is.ipriorKernel_nys(mod)) {
-      Hlam <- get_Hlam(mod, theta, get_Xl.nys(mod))
-      eigen_Hlam_nys(Hlam, environment())  # assign u and V to environment
-    } else {
-      Hlam <- get_Hlam(mod, theta)
-      eigen_Hlam(Hlam, environment())  # assign u and V to environment
-    }
+    Hlam <- get_Hlam(mod, theta)
+    list2env(eigen_Hlam(Hlam), environment())
     z <- psi * u ^ 2 + 1 / psi  # eigenvalues of Vy
 
     # Block C ------------------------------------------------------------------
     zinv.Vt <- t(V) / z
     Vy.inv.y <- as.numeric(crossprod(y, V) %*% zinv.Vt)
-    w <- psi * (V %*% crossprod(V * u, Vy.inv.y))
+    w <- psi * Hlam %*% Vy.inv.y
     W <- V %*% zinv.Vt + tcrossprod(w)
 
     # Update parameters other than psi -----------------------------------------
@@ -78,16 +73,14 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
       psi <- theta_to_psi(theta, mod)
     } else {
       Hlamsq <- V %*% (t(V) * u ^ 2)
-      Hlam.w <- V %*% crossprod(V * u, w)
-      T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam.w)
+      T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam %*% w)
       psi <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
       theta[ grep("psi", names(mod$thetal$theta))] <- log(psi)
     }
 
     # Calculate log-likelihood ---------------------------------------------------
     logdet <- sum(log(z))
-    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 -
-      crossprod(y, Vy.inv.y) / 2
+    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
 
     niter <- niter + 1
     if (!silent) setTxtProgressBar(pb, niter)
@@ -96,37 +89,31 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 
-  # Calculate fitted values  ---------------------------------------------------
-  y.hat <- get_y.hat(u, V, w)
-
   # Calculate standard errors --------------------------------------------------
-  if (!isTRUE(mixed)) {
-    tmp <- optimHess(theta, loglik_iprior, object = mod)
-    tmp <- eigenCpp(-tmp)
-    u <- tmp$val + 1e-9
-    V <- tmp$vec
-    Fi.inv <- V %*% t(V) / u
-    se <- sqrt(diag(Fi.inv))
-    se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
-  } else {
-    se <- NULL
-  }
+  tmp <- optimHess(theta, loglik_iprior, object = mod)
+  tmp <- eigenCpp(-tmp)
+  u <- tmp$val + 1e-9
+  V <- tmp$vec
+  Fi.inv <- V %*% t(V) / u
+  se <- sqrt(diag(Fi.inv))
+  se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
 
   # Clean up and close ---------------------------------------------------------
-  convergence <- niter == maxit
+  convergence <- niter != maxit
   param.full <- theta_to_collapsed_param(theta, mod)
+  names(theta) <- names(mod$thetal$theta)
 
   if (!silent) {
     close(pb)
-    if (isTRUE(mixed)) cat("")
-    else if (convergence) cat("Convergence criterion not met.\n")
-    else cat("Converged after", niter, "iterations.\n")
+    if (convergence) cat("Converged after", niter, "iterations.\n")
+    else cat("Convergence criterion not met.\n")
   }
 
-  list(theta = theta, param.full = param.full, se = se,
-       loglik = as.numeric(na.omit(loglik)), w = as.numeric(w), y.hat = y.hat,
-       niter = niter, start.time = start.time, end.time = end.time,
-       time = time.taken, convergence = convergence, message = NULL)
+  list(theta = theta, param.full = param.full,
+       loglik = as.numeric(na.omit(loglik)),
+       se = se, niter = niter, w = as.numeric(w), start.time = start.time,
+       end.time = end.time, time = time.taken,
+       convergence = as.numeric(!convergence), message = NULL)
 }
 
 QEstep <- function(theta, psi = NULL, object, w, W) {
@@ -139,18 +126,9 @@ QEstep <- function(theta, psi = NULL, object, w, W) {
   #
   # Returns: Numeric.
   if (is.null(psi)) psi <- theta_to_psi(theta, object)
-  if (is.ipriorKernel_nys(mod)) {
-    Hlam <- get_Hlam(object, theta, get_Xl.nys(mod))
-    eigen_Hlam_nys(Hlam, environment())
-  } else {
-    Hlam <- get_Hlam(object, theta)
-    eigen_Hlam(Hlam, environment())
-  }
-  Hlamsq <- V %*% (t(V) * u ^ 2)
-  Hlam.w <- V %*% crossprod(V * u, w)
-  Vy <- psi * Hlamsq + diag(1 / psi, object$n)
+  Hlam <- get_Hlam(object, theta)
+  Vy <- psi * fastSquare(Hlam) + diag(1 / psi, object$n)
   res <- psi * sum(object$y ^ 2) + sum(Vy * W) -
-    2 * psi * crossprod(object$y, Hlam.w)
-
+    2 * psi * crossprod(object$y, Hlam %*% w)
   as.numeric(res)
 }

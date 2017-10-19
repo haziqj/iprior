@@ -20,7 +20,8 @@
 
 iprior_parallel <- function(mod, method = "direct",
                             control = list(silent = FALSE, restarts = TRUE,
-                                           no.cores = parallel::detectCores())) {
+                                           no.cores = parallel::detectCores(),
+                                           par.maxit = 100)) {
   # This estimation method is not really any specific method per se, but rather
   # a  function that enables the selected method to be run multiple times from
   # different random starting points. The starting point that gives the highest
@@ -60,7 +61,7 @@ iprior_parallel <- function(mod, method = "direct",
     ), {
       new.control          <- control
       new.control$restarts <- 0
-      new.control$maxit    <- min(control$maxit, 10)
+      new.control$maxit    <- control$par.maxit
       new.control$silent   <- TRUE
       tmp <- iprior(mod, control = new.control, method = method)
       list(
@@ -74,7 +75,13 @@ iprior_parallel <- function(mod, method = "direct",
 
   # Find best starting value ---------------------------------------------------
   tmp <- sapply(res, function(x) x$loglik)
+  names(tmp) <- paste("Run", seq_along(tmp))
   best.run <- which(tmp == max(tmp))
+  if (!isTRUE(control$silent)) {
+    cat("Log-likelihood from random starts:\n")
+    print(tmp)
+    cat("Continuing on Run", best.run, "\n")
+  }
 
   # Continue updating the best model -------------------------------------------
   control$restarts <- 0
