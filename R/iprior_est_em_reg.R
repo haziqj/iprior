@@ -90,13 +90,17 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   time.taken <- as.time(end.time - start.time)
 
   # Calculate standard errors --------------------------------------------------
-  tmp <- optimHess(theta, loglik_iprior, object = mod)
-  tmp <- eigenCpp(-tmp)
-  u <- tmp$val + 1e-9
-  V <- tmp$vec
-  Fi.inv <- V %*% t(V) / u
-  se <- sqrt(diag(Fi.inv))
-  se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
+  if (!isTRUE(mixed)) {
+    tmp <- optimHess(theta, loglik_iprior, object = mod)
+    tmp <- eigenCpp(-tmp)
+    u <- tmp$val + 1e-9
+    V <- tmp$vec
+    Fi.inv <- V %*% t(V) / u
+    se <- sqrt(diag(Fi.inv))
+    se <- convert_se(se, theta, mod)  # delta method to convert to parameter s.e.
+  } else {
+    se <- NULL
+  }
 
   # Clean up and close ---------------------------------------------------------
   convergence <- niter != maxit
@@ -105,8 +109,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   if (!silent) {
     close(pb)
-    if (convergence) cat("Converged after", niter, "iterations.\n")
-    else cat("Convergence criterion not met.\n")
+    if (isTRUE(mixed)) cat("")
+    else if (convergence) cat("Convergence criterion not met.\n")
+    else cat("Converged after", niter, "iterations.\n")
   }
 
   list(theta = theta, param.full = param.full,
