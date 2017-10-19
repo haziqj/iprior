@@ -6,6 +6,8 @@
 \alias{get_y}
 \alias{get_size}
 \alias{get_hyp}
+\alias{get_lambda}
+\alias{get_psi}
 \alias{get_se}
 \alias{get_kernels}
 \alias{get_kern_matrix}
@@ -24,6 +26,10 @@ get_y(object)
 get_size(object, units = "kB", standard = "SI")
 
 get_hyp(object)
+
+get_lambda(object)
+
+get_psi(object)
 
 get_se(object)
 

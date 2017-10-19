@@ -68,6 +68,20 @@ get_hyp <- function(object) {
 
 #' @rdname Accessors
 #' @export
+get_lambda <- function(object) {
+  tmp <- get_hyp(object)
+  tmp[grep("lambda", names(tmp))]
+}
+
+#' @rdname Accessors
+#' @export
+get_psi <- function(object) {
+  tmp <- get_hyp(object)
+  tmp[grep("psi", names(tmp))]
+}
+
+#' @rdname Accessors
+#' @export
 get_se <- function(object) {
   check_and_get_ipriorMod(object)
   expand_theta(object$se, object$ipriorKernel$thetal$theta.drop, NA)
