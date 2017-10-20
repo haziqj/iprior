@@ -66,7 +66,8 @@ iprior_parallel <- function(mod, method = "direct",
       tmp <- iprior(mod, control = new.control, method = method)
       list(
         theta  = tmp$theta,
-        loglik = tmp$loglik[length(tmp$loglik)]
+        loglik = tmp$loglik,
+        niter  = tmp$niter
       )
     }
   )
@@ -74,9 +75,11 @@ iprior_parallel <- function(mod, method = "direct",
   parallel::stopCluster(cl)
 
   # Find best starting value ---------------------------------------------------
-  tmp <- sapply(res, function(x) x$loglik)
+  tmp <- sapply(res, function(x) x$loglik[length(x$loglik)])
   names(tmp) <- paste("Run", seq_along(tmp))
   best.run <- which(tmp == max(tmp))
+  best.niter <- res[[best.run]]$niter
+  best.loglik <- res[[best.run]]$loglik
   if (!isTRUE(control$silent)) {
     cat("Log-likelihood from random starts:\n")
     print(tmp)
@@ -95,6 +98,8 @@ iprior_parallel <- function(mod, method = "direct",
   res$time <- time.taken
   res$start.time <- start.time
   res$end.time <- end.time
+  res$niter <- res$niter + best.niter
+  res$loglik <- c(best.loglik, res$loglik)
 
   res
 }
