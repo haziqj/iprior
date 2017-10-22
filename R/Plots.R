@@ -76,19 +76,39 @@ plot_predict <- function(x) {
 
 #' @rdname plot.ipriorMod
 #' @export
-plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
+plot_fitted_multilevel <- function(x, X.var = 1, grp.var = 1, facet = c(2, 3),
                                    cred.bands = TRUE, show.legend = TRUE,
                                    show.points = TRUE, x.lab = NULL,
-                                   y.lab = NULL, grp.lab = NULL) {
-  fit <- fitted(x, intervals = cred.bands)
-  y.hat <- fit$y
-
+                                   y.lab = NULL, grp.lab = NULL,
+                                   extrapolate = FALSE) {
   which.pearson <- x$ipriorKernel$which.pearson
   cat.x <- which(which.pearson)
   cts.x <- which(!which.pearson)
   X      <- x$ipriorKernel$Xl[[cts.x[X.var]]]
-  grp    <- x$ipriorKernel$Xl[[cat.x[grp]]]
+  grp    <- x$ipriorKernel$Xl[[cat.x[grp.var]]]
+  fit <- fitted(x, intervals = cred.bands)
+  y.hat <- fit$y
   plot.df <- data.frame(y.hat = y.hat, x = X, grp = grp, y = get_y(x))
+
+  if (isTRUE(extrapolate)) {
+    x.min <- min(X)
+    x.max <- max(X)
+    X.ext <- seq(x.min, x.max, length = 20)
+    grp.ext <- rep(unique(grp), each = 20)
+    ext.df <- data.frame(X.ext, grp.ext)
+    if (!is.null(x$ipriorKernel$formula)) {
+      x.pos <- c(cts.x[X.var], cat.x[grp.var]); print(x.pos)
+      colnames(ext.df)[1:2] <- attr(x$ipriorKernel$terms, "term.labels")[x.pos]
+      fit.ext <- predict(x, ext.df, intervals = cred.bands)
+      y.hat.ext <- fit.ext$y
+      plot.df.ext <- data.frame(y.hat = y.hat.ext, x = X.ext, grp = grp.ext,
+                                y = NA)
+    } else {
+      stop("Not implemented yet. Sorry!")
+    }
+    plot.df <- rbind(plot.df, plot.df.ext)
+  }
+
   if (length(cat.x) == 2) {
     plot.df <- cbind(plot.df, facet1 = x$ipriorKernel$Xl[[cat.x[facet[1]]]])
   }
@@ -104,13 +124,22 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
   p <- ggplot(plot.df)
 
   if (isTRUE(cred.bands)) {
-    p <- p + geom_ribbon(aes(x = X, ymin = fit$lower, ymax = fit$upper,
-                             fill = grp), alpha = 0.15) +
+    plot.cred.bands.df <- data.frame(
+      x = X, lower = fit$lower, upper = fit$upper, grp = grp
+    )
+    if (isTRUE(extrapolate)) {
+      plot.cred.bands.df.ext <- data.frame(
+        x = X.ext, lower = fit.ext$lower, upper = fit.ext$upper, grp = grp.ext
+      )
+      plot.cred.bands.df <- rbind(plot.cred.bands.df, plot.cred.bands.df.ext)
+    }
+    p <- p + geom_ribbon(data = plot.cred.bands.df, alpha = 0.15,
+                         aes(x, ymin = lower, ymax = upper, fill = grp)) +
       scale_fill_discrete(name = grp.lab)
   }
 
   if (isTRUE(show.points)) {
-    p <- p + geom_point(aes(x, y, col = grp))
+    p <- p + geom_point(aes(x, y, col = grp), na.rm = TRUE)
   }
 
   p <- p +
@@ -124,6 +153,9 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp = 1, facet = c(2, 3),
   }
   if (length(cat.x) == 3) {
     p <- p + facet_grid(facet2 ~ facet1)
+  }
+  if (as.character(paste0(facet, collapse = "")) == "1") {
+    p <- p + facet_wrap( ~ grp, nrow = 2)
   }
 
   if (!isTRUE(show.legend)) {
@@ -205,5 +237,27 @@ plot_iter <- function(x, niter.plot = NULL, lab.pos = c("up", "down")) {
     annotate("text", col = "red3", x = niter.plot[1], y = max(lb.original),
              vjust = lab.pos, label = round(max(lb.original), 2), size = 3.7) +
     labs(y = "Log-likelihood") +
+    theme_bw()
+}
+
+plot_loglik <- function(x, xlim, ylim) {
+  check_and_get_ipriorMod(x)
+  if (missing(xlim)) xlim <- x$theta[1] + c(-1, 1) * 3
+  if (missing(ylim)) ylim <- x$theta[2] + c(-1, 1) * 3
+  theta.x <- seq(xlim[1], xlim[2], length = 50)
+  theta.y <- seq(ylim[1], ylim[2], length = 50)
+  plot.df <- expand.grid(theta.x, theta.y)
+  z <- seq_len(nrow(plot.df))
+  for (i in seq_along(z)) {
+    z[i] <- logLik(x$ipriorKernel, as.numeric(plot.df[i, ]))
+  }
+  plot.df <- cbind(plot.df, z)
+
+  ggplot(plot.df) +
+    geom_raster(aes(Var1, Var2, fill = z)) +
+    geom_contour(aes(Var1, Var2, z = z)) +
+    geom_vline(xintercept = x$theta[1]) +
+    geom_hline(yintercept = x$theta[2]) +
+    scale_fill_gradient(low = "white", high = "#00BFC4") +
     theme_bw()
 }

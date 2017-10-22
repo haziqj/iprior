@@ -103,7 +103,7 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   }
 
   # Clean up and close ---------------------------------------------------------
-  convergence <- niter != maxit
+  convergence <- niter == maxit
   param.full <- theta_to_collapsed_param(theta, mod)
   names(theta) <- names(mod$thetal$theta)
 
@@ -118,7 +118,7 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
        loglik = as.numeric(na.omit(loglik)),
        se = se, niter = niter, w = as.numeric(w), start.time = start.time,
        end.time = end.time, time = time.taken,
-       convergence = as.numeric(!convergence), message = NULL)
+       convergence = convergence, message = NULL)
 }
 
 QEstep <- function(theta, psi = NULL, object, w, W) {

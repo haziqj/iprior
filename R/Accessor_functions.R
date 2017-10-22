@@ -33,14 +33,14 @@
 #' @name Accessors
 NULL
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the intercept.
 #' @export
 get_intercept <- function(object) {
   check_and_get_ipriorKernel(object)
   object$intercept
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the response variables.
 #' @export
 get_y <- function(object) {
   check_and_get_ipriorKernel(object)
@@ -52,42 +52,84 @@ get_y <- function(object) {
   res
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the object size of the I-prior model.
 #' @export
 get_size <- function(object, units = "kB", standard = "SI") {
   check_and_get_ipriorKernel(object)
   print(object.size(object), units = units, standard = standard)
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the hyerparameters of the model (both estimated and fixed ones).
 #' @export
 get_hyp <- function(object) {
   check_and_get_ipriorMod(object)
-  object$param.full
+  res <- object$param.full
+  if (length(res) > 0) return(res)
+  else cat("NA")
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the scale parameters used.
 #' @export
 get_lambda <- function(object) {
   tmp <- get_hyp(object)
-  tmp[grep("lambda", names(tmp))]
+  res <- tmp[grep("lambda", names(tmp))]
+  if (length(res) > 0) return(res)
+  else cat("NA")
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the error precision.
 #' @export
 get_psi <- function(object) {
   tmp <- get_hyp(object)
-  tmp[grep("psi", names(tmp))]
+  res <- tmp[grep("psi", names(tmp))]
+  if (length(res) > 0) return(res)
+  else cat("NA")
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the lengthscale for the SE kernels used.
+#' @export
+get_lengthscale <- function(object) {
+  tmp <- get_hyp(object)
+  res <- tmp[grep("lengthscale", names(tmp))]
+  if (length(res) > 0) return(res)
+  else cat("NA")
+}
+
+#' @describeIn Accessors Obtain the Hurst coefficient of the fBm kernels used.
+#' @export
+get_hurst <- function(object) {
+  tmp <- get_hyp(object)
+  res <- tmp[grep("hurst", names(tmp))]
+  if (length(res) > 0) return(res)
+  else cat("NA")
+}
+
+#' @describeIn Accessors Obtain the offset parameters for the polynomial kernels used.
+#' @export
+get_offset <- function(object) {
+  tmp <- get_hyp(object)
+  res <- tmp[grep("offset", names(tmp))]
+  if (length(res) > 0) return(res)
+  else cat("NA")
+}
+
+#' @describeIn Accessors Obtain the degree of the polynomial kernels used.
+#' @export
+get_degree <- function(object) {
+  tmp <- get_kernels(object)
+  res <- get_polydegree(tmp)
+  if (length(res) > 0) return(res)
+  else cat("NA")
+}
+
+#' @describeIn Accessors Obtain the standard errors of the estimated hyperparameters.
 #' @export
 get_se <- function(object) {
   check_and_get_ipriorMod(object)
   expand_theta(object$se, object$ipriorKernel$thetal$theta.drop, NA)
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the kernels used.
 #' @export
 get_kernels <- function(object) {
   if (is.ipriorMod(object)) theta <- object$theta
@@ -99,7 +141,7 @@ get_kernels <- function(object) {
   res
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the kernel matrix of the I-prior model.
 #' @export
 get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
   if (is.ipriorMod(object)) {
@@ -119,35 +161,36 @@ get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
   }
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the training mean squared error.
 #' @export
 get_mse <- function(object) {
   check_and_get_ipriorMod(object)
   object$train.error
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain information on which hyperparameters were
+#'   estimated and which were fixed.
 #' @export
 get_estl <- function(object) {
   check_and_get_ipriorKernel(object)
   unlist(object$estl)
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the estimation method used.
 #' @export
 get_method <- function(object) {
   check_and_get_ipriorMod(object)
   cat(object$est.method)
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the convergence information.
 #' @export
 get_convergence <- function(object) {
   check_and_get_ipriorMod(object)
   cat(object$est.conv)
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the number of iterations performed.
 #' @export
 get_niter <- function(object) {
   check_and_get_ipriorMod(object)
@@ -156,7 +199,8 @@ get_niter <- function(object) {
   cat("Iterations:", paste0(niter, "/", maxit, "."))
 }
 
-#' @rdname Accessors
+#' @describeIn Accessors Obtain the time taken to complete the estimation
+#'   procedure.
 #' @export
 get_time <- function(object) {
   check_and_get_ipriorMod(object)

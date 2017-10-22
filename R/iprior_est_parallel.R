@@ -21,7 +21,8 @@
 iprior_parallel <- function(mod, method = "direct",
                             control = list(silent = FALSE, restarts = TRUE,
                                            no.cores = parallel::detectCores(),
-                                           par.maxit = 100)) {
+                                           par.maxit = 100,
+                                           optim.method = "L-BFGS")) {
   # This estimation method is not really any specific method per se, but rather
   # a  function that enables the selected method to be run multiple times from
   # different random starting points. The starting point that gives the highest

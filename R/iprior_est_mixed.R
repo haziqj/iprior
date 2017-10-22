@@ -19,7 +19,8 @@
 ################################################################################
 
 iprior_mixed <- function(mod, theta0 = NULL, em.maxit = 5, stop.crit = 1e-5,
-                         silent = FALSE, control.optim = list()) {
+                         silent = FALSE, control.optim = list(),
+                         optim.method = "L-BFGS") {
   # This method does several EM steps before switching to the direct
   # optimisation method. It combines both the stability of the EM with the fast
   # convergence of the direct method.
@@ -52,12 +53,13 @@ iprior_mixed <- function(mod, theta0 = NULL, em.maxit = 5, stop.crit = 1e-5,
                             mixed = TRUE)
   }
   if (em.method["em.reg"]) {
-    tmp <- iprior_em_reg(mod, em.maxit, stop.crit, silent, theta0)
+    tmp <- iprior_em_reg(mod, em.maxit, stop.crit, silent, theta0, mixed = TRUE)
   }
 
   # Then pass to direct maximisation routine -----------------------------------
   cat("Now switching to direct optimisation\n")
-  res <- iprior_direct(mod, loglik_iprior, tmp$theta, control.optim)
+  res <- iprior_direct(mod, loglik_iprior, tmp$theta, control.optim,
+                       optim.method)
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
 

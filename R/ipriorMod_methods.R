@@ -74,10 +74,8 @@ summary.ipriorMod <- function(object, ...) {
     niter <- object$niter
   }
 
-  cl <- capture.output(object$call)
-
   res <- list(resid.summ = resid.summ, tab = tab, loglik = logLik(object),
-              error = object$train.error, call = cl, x.kern = x.kern,
+              error = object$train.error, call = object$call, x.kern = x.kern,
               est.method = object$est.method, est.conv = object$est.conv,
               niter = niter, maxit = maxit, time = object$time)
   class(res) <- "ipriorMod_summary"
@@ -108,9 +106,15 @@ kernel_summary_translator <- function(x) {
 print.ipriorMod_summary <- function(x, wrap = FALSE, ...) {
   cat("Call:\n")
   cl <- x$call
-  if (isTRUE(wrap)) cl <- paste0(strwrap(cl, ...), collapse = "\n  ")
-  cat(cl)
-  cat("\n\n")
+  if (isTRUE(wrap)) {
+    cl <- capture.output(cl)
+    cl <- paste0(strwrap(cl, ...), collapse = "\n  ")
+    cat(cl)
+    cat("\n\n")
+  } else {
+    print(cl)
+    cat("\n")
+  }
   cat("RKHS used:\n")
   cat(x$x.kern)
   cat("\n")

@@ -12,9 +12,9 @@
 
 plot_predict(x)
 
-plot_fitted_multilevel(x, X.var = 1, grp = 1, facet = c(2, 3),
+plot_fitted_multilevel(x, X.var = 1, grp.var = 1, facet = c(2, 3),
   cred.bands = TRUE, show.legend = TRUE, show.points = TRUE,
-  x.lab = NULL, y.lab = NULL, grp.lab = NULL)
+  x.lab = NULL, y.lab = NULL, grp.lab = NULL, extrapolate = FALSE)
 
 plot_fitted(x, X.var = 1, cred.bands = TRUE, size = 1,
   linetype = "solid")
@@ -27,8 +27,6 @@ plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 \item{...}{Not used}
 
 \item{X.var}{The index of the X variable to plot.}
-
-\item{grp}{The index of the groups.}
 
 \item{facet}{The index of the X variable in which to facet. This is a vector
 of maximum length 2.}
@@ -54,6 +52,8 @@ title.}
 start and end points of the iterations to plot.}
 
 \item{lab.pos}{Adjust the position of the log-likelihood label.}
+
+\item{grp}{The index of the groups.}
 }
 \description{
 There are three types of plots that are currently written in the package:

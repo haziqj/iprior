@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-iprior_direct <- function(mod, estimation.method, theta0, control) {
+iprior_direct <- function(mod, lik.fn, theta0, control, method = "L-BFGS") {
   # The direct optimisation method for estimating I-prior models. This minimises
   # the marginal deviance (-2 * logLik) using a quasi-Newton algorithm (L-BFGS).
   #
@@ -33,8 +33,8 @@ iprior_direct <- function(mod, estimation.method, theta0, control) {
   w <- loglik <- NULL
 
   start.time <- Sys.time()
-  res <- optim(theta0, estimation.method, object = mod, env = iprior.env,
-               trace = TRUE, method = "L-BFGS", control = control,
+  res <- optim(theta0, lik.fn, object = mod, env = iprior.env,
+               trace = TRUE, method = method, control = control,
                hessian = TRUE)
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
@@ -77,6 +77,7 @@ loglik_iprior <- function(theta, object, trace = FALSE, env = NULL) {
 
   y <- object$y  # y has already been standardised!
   n <- object$n
+
   z <- psi * u ^ 2 + 1 / psi
   logdet <- sum(log(z))
   Vy.inv.y <- A_times_a(1 / z, V, y)

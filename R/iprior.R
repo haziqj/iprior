@@ -168,7 +168,8 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     report    = 10,
     psi.reg   = FALSE,  # option for iprior_em_reg()
     restarts  = 0,
-    no.cores  = parallel::detectCores()
+    no.cores  = parallel::detectCores(),
+    optim.method = "L-BFGS"
   )
   control <- update_control(control, control_)  # see iprior_helper.R
   control.optim <- list(
@@ -217,16 +218,18 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
         res$est.method <- "Regular EM algorithm."
       }
       if (est.method["direct"]) {
-        res <- iprior_direct(mod, loglik_iprior, theta0, control.optim)
+        res <- iprior_direct(mod, loglik_iprior, theta0, control.optim,
+                             control$optim.method)
         res$est.method <- "Direct optimisation method."
       }
       if (est.method["nystrom"]) {
-        res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim)
+        res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim,
+                             control$optim.method)
         res$est.method <- "Nystrom approximated optimisation."
       }
       if (est.method["mixed"]) {
         res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,
-                            control$silent, control.optim)
+                            control$silent, control.optim, control$optim.method)
         res$est.method <- paste0("EM algorithm (", control$em.maxit,
                                  " steps) + direct minimisation.")
       }
