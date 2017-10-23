@@ -28,10 +28,13 @@ plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 
 \item{X.var}{The index of the X variable to plot.}
 
+\item{grp.var}{Index of the grouping variable for multilevel plots.}
+
 \item{facet}{The index of the X variable in which to facet. This is a vector
 of maximum length 2.}
 
-\item{cred.bands}{Logical. Plot the confidence intervals? Defaults to \code{TRUE}.}
+\item{cred.bands}{Logical. Plot the confidence intervals? Defaults to
+\code{TRUE}.}
 
 \item{show.legend}{Logical. Show legend?}
 
@@ -43,6 +46,9 @@ of maximum length 2.}
 
 \item{grp.lab}{(Optional) The name for the groups, which is also the legend
 title.}
+
+\item{extrapolate}{Logical. Extend the fitted regression line to fill the
+plot?}
 
 \item{size}{Size of the fitted line}
 

@@ -22,6 +22,10 @@
 #'
 #' @param n Sample size.
 #' @param seed (Optional) Random seed.
+#' @param x.jitter A small amount of jitter is added to the \code{X} variables
+#'   generated from a normal distribution with mean zero and standard deviation
+#'   equal to \code{x.jitter}.
+#' @param xlim Limits of the \code{X} variables to generate from.
 #'
 #' @return A dataframe containing the response variable \code{y} and
 #'   unidimensional explanatory variable \code{X}.

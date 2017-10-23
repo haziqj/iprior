@@ -31,7 +31,8 @@
 #'
 #' @param x An \code{ipriorMod} object.
 #' @param X.var The index of the X variable to plot.
-#' @param cred.bands Logical. Plot the confidence intervals? Defaults to \code{TRUE}.
+#' @param cred.bands Logical. Plot the confidence intervals? Defaults to
+#'   \code{TRUE}.
 #' @param niter.plot (Optional) Vector of length at most two, indicating the
 #'   start and end points of the iterations to plot.
 #' @param lab.pos Adjust the position of the log-likelihood label.
@@ -45,6 +46,9 @@
 #' @param y.lab (Optional) Y axis label.
 #' @param grp.lab (Optional) The name for the groups, which is also the legend
 #'   title.
+#' @param grp.var Index of the grouping variable for multilevel plots.
+#' @param extrapolate Logical. Extend the fitted regression line to fill the
+#'   plot?
 #' @param size Size of the fitted line
 #' @param linetype Type of the fitted line
 #'

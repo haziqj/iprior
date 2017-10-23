@@ -4,7 +4,7 @@
 #'
 # iprior package imports -------------------------------------------------------
 #' @importFrom stats coef delete.response dnorm fitted logLik model.extract
-#'   model.frame model.response na.action na.omit optim optimHess pnorm
+#'   model.frame model.response na.action na.omit optim optimHess pnorm predict
 #'   printCoefmat qnorm resid residuals rnorm rt terms
 #' @importFrom utils capture.output combn object.size setTxtProgressBar str
 #'   txtProgressBar
@@ -14,6 +14,7 @@ NULL
 # Hacky way to pass R CMD CHECK "no visible binding",note ----------------------
 globalVariables(c("BlockBStuff", "estl", "ind1", "ind2", "intr", "intr.3plus",
                   "ipriorEM.env", "Iteration", "kernels", "lambda", "loglik",
-                  "m", "maxit", "mod", "n", "niter", "no.int", "no.int.3plus",
-                  "p", "parsm", "Pl", "probit", "psi", "Psql", "Sl","stop.crit",
-                  "u", "V", "Vy.inv.y", "X", "y"))
+                  "lower", "m", "maxit", "mod", "n", "niter", "no.int",
+                  "no.int.3plus", "p", "parsm", "Pl", "probit", "psi", "Psql",
+                  "Sl","stop.crit", "u", "upper", "V", "Var1", "Var2",
+                  "Vy.inv.y", "X", "y"))

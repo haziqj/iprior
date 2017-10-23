@@ -9,6 +9,12 @@ gen_smooth(n = 150, xlim = c(0.2, 4.6), x.jitter = 0.65, seed = NULL)
 \arguments{
 \item{n}{Sample size.}
 
+\item{xlim}{Limits of the \code{X} variables to generate from.}
+
+\item{x.jitter}{A small amount of jitter is added to the \code{X} variables
+generated from a normal distribution with mean zero and standard deviation
+equal to \code{x.jitter}.}
+
 \item{seed}{(Optional) Random seed.}
 }
 \value{
