@@ -101,7 +101,7 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp.var = 1, facet = c(2, 3),
     grp.ext <- rep(unique(grp), each = 20)
     ext.df <- data.frame(X.ext, grp.ext)
     if (!is.null(x$ipriorKernel$formula)) {
-      x.pos <- c(cts.x[X.var], cat.x[grp.var]); print(x.pos)
+      x.pos <- c(cts.x[X.var], cat.x[grp.var])
       colnames(ext.df)[1:2] <- attr(x$ipriorKernel$terms, "term.labels")[x.pos]
       fit.ext <- predict(x, ext.df, intervals = cred.bands)
       y.hat.ext <- fit.ext$y
