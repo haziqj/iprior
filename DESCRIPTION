@@ -18,6 +18,7 @@ Imports:
   ggplot2,
   mvtnorm,
   Rcpp (>= 0.12.5),
+  reshape2,
   scales
 LinkingTo:
   Rcpp,
