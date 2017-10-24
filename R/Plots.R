@@ -51,6 +51,7 @@
 #'   plot?
 #' @param size Size of the fitted line
 #' @param linetype Type of the fitted line
+#' @param draws Number of draws for posterior predictive check.
 #'
 #' @export
 plot.ipriorMod <- function(x, ...) {
@@ -243,6 +244,67 @@ plot_iter <- function(x, niter.plot = NULL, lab.pos = c("up", "down")) {
     labs(y = "Log-likelihood") +
     theme_bw()
 }
+
+#' @rdname plot.ipriorMod
+#' @export
+plot_ppc <- function(x, draws = 100) {
+  check_and_get_ipriorMod(x)
+  Hlam <- get_Hlam(x$ipriorKernel, x$theta)
+  psi <- theta_to_psi(x$theta, x$ipriorKernel)
+  if (is.nystrom(x)) {
+    eigen_Hlam_nys(Hlam, environment())  # assign u and V to environment
+  } else {
+    eigen_Hlam(Hlam, environment())  # assign u and V to environment
+  }
+  z <- psi * u ^ 2 + 1 / psi
+  Vy.hat <- Hlam %*% A_times_a(1 / z, V, Hlam) + diag(1 / psi, x$ipriorKernel$n)
+  y.hat <- fitted(x)$y
+  ppc <- t(mvtnorm::rmvnorm(draws, mean = y.hat, sigma = Vy.hat))
+  melted.ppc <- suppressMessages(reshape2::melt(data.frame(ppc = ppc)))
+
+  p <- ggplot() +
+    scale_x_continuous(breaks = NULL, name = expression(italic(y))) +
+    scale_y_continuous(breaks = NULL) +
+    geom_line(data = melted.ppc, stat = "density", alpha = 0.5,
+              aes(x = value, group = variable, col = "yrep", size = "yrep")) +
+    geom_line(aes(x = get_y(x), col = "y", size = "y"), stat = "density") +
+    theme(legend.position = "bottom") +
+    scale_colour_manual(
+      name = NULL, labels = c("Observed", "Replications"),
+      values = c("grey10", "steelblue3")
+    ) +
+    scale_size_manual(
+      name = NULL, labels = c("Observed", "Replications"),
+      values = c(1.1, 0.19)
+    ) +
+    labs(y = "Density", title = "Posterior predictive density check") +
+    theme_bw() +
+    theme(legend.position = c(0.9, 0.5))
+
+  p
+}
+
+
+
+# p.ppc <- ggplot() +
+#   scale_x_continuous(breaks = NULL, name = expression(italic(y))) +
+#   scale_y_continuous(breaks = NULL) +
+#   geom_line(data = melted.ppc,
+#             aes(x = value, group = variable, col = "yrep", size = "yrep"),
+#             stat = "density", alpha = 0.5) +
+#   geom_line(data = dat, aes(x = y, col = "y", size = "y"), stat = "density") +
+#   theme(legend.position = "bottom") +
+# scale_colour_manual(
+#   name = NULL, labels = c("Observed", "Replications"),
+#   values = c("grey10", "steelblue3")
+# ) +
+# scale_size_manual(
+#   name = NULL, labels = c("Observed", "Replications"),
+#   values = c(1.1, 0.19)
+# ) +
+# labs(y = "Density", title = "Posterior predictive density check") +
+#   theme_bw() +
+#   theme(legend.position = c(0.9, 0.5))
 
 plot_loglik <- function(x, xlim, ylim) {
   check_and_get_ipriorMod(x)

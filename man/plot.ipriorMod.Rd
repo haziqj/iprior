@@ -6,6 +6,7 @@
 \alias{plot_fitted_multilevel}
 \alias{plot_fitted}
 \alias{plot_iter}
+\alias{plot_ppc}
 \title{Plots for I-prior models}
 \usage{
 \method{plot}{ipriorMod}(x, ...)
@@ -20,6 +21,8 @@ plot_fitted(x, X.var = 1, cred.bands = TRUE, size = 1,
   linetype = "solid")
 
 plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
+
+plot_ppc(x, draws = 100)
 }
 \arguments{
 \item{x}{An \code{ipriorMod} object.}
@@ -58,6 +61,8 @@ plot?}
 start and end points of the iterations to plot.}
 
 \item{lab.pos}{Adjust the position of the log-likelihood label.}
+
+\item{draws}{Number of draws for posterior predictive check.}
 
 \item{grp}{The index of the groups.}
 }

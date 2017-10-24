@@ -68,6 +68,20 @@ test_that("Nystrom", {
 
 context("Various estimation methods")
 
+test_that("iprior_canonical", {
+
+  mod <- kernL2(y ~ ., gen_smooth(n = 5, seed = 123))
+  suppressWarnings(
+    res <- iprior_canonical(mod, 1:2, control = list(trace = 0))
+  )
+  theta <- c(-6.976095, -2.936247)
+  names(theta) <- names(res$theta)
+  expect_equal(res$theta, theta, tolerance = 1e-6)
+  expect_equal(res$loglik[length(res$loglik)], -14.43531, tolerance = 1e-6)
+  expect_equal(loglik_iprior(1:2, mod), loglik_canonical(1:2, mod))
+
+})
+
 test_that("iprior_direct", {
 
   y <- 1:3

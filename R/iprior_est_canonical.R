@@ -31,6 +31,17 @@ iprior_canonical <- function(mod, theta0 = NULL, control = list()) {
   # Returns: A list containing the optimised theta and parameters, y.hat and w,
   # loglik values, standard errors, number of iterations, time taken, and
   # convergence information.
+
+  # Default optim control list -------------------------------------------------
+  control_ <- list(
+    fnscale = -2,
+    trace   = TRUE,
+    maxit   = 100,
+    REPORT  = 10,
+    factr   = 1e7
+  )
+  control <- update_control(control, control_)
+
   iprior.env <- environment()
   w <- loglik <- NULL
   start.time <- Sys.time()
@@ -77,6 +88,7 @@ loglik_canonical <- function(theta, object, trace = FALSE, env = NULL) {
   psi <- theta_to_psi(theta, object)
   lambda <- theta_to_collapsed_param(theta, object)[seq_len(object$p)]
   X <- matrix(unlist(object$Xl), nrow = object$n)
+  X <- scale(X, center = TRUE, scale = FALSE)
   XtX <- crossprod(X)
   Lambda <- diag(lambda, ncol(X))
   Vy.inv <- psi * (
@@ -85,7 +97,7 @@ loglik_canonical <- function(theta, object, trace = FALSE, env = NULL) {
   Vy.inv.y <- Vy.inv %*% object$y
   logdet <- determinant(Vy.inv)$mod
   res <- as.numeric(
-    -object$n / 2 * log(2 * pi) + logdet / 2 - crossprod(object$y, Vy.inv.y) / 2
+    (-object$n / 2) * log(2 * pi) + logdet / 2 - crossprod(object$y, Vy.inv.y) / 2
   )
 
   if (isTRUE(trace)) {
@@ -94,7 +106,7 @@ loglik_canonical <- function(theta, object, trace = FALSE, env = NULL) {
     assign("loglik", loglik, envir = env)
     assign("Vy.inv.y", Vy.inv.y, envir = env)
     assign("X", X, envir = env)
-    assign("lambda", Lambda, envir = env)
+    assign("lambda", lambda, envir = env)
     assign("psi", psi, envir = env)
   }
 
