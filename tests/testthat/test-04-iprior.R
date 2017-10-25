@@ -165,20 +165,20 @@ test_that("iprior_nystrom", {
 
 })
 
-test_that("iprior_parallel", {
-
-  mod <- kernL2(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
-  suppressWarnings({
-    mod1 <- iprior(mod, control = list(silent = TRUE, restarts = 2))
-    expect_message(
-      mod2 <- iprior_parallel(mod, control = list(theta0 = 1:2, silent = TRUE,
-                                                  restarts = 2))
-    )
-  })
-  expect_equal(logLik(mod1), -25.4149, tolerance = 1e-5)
-  expect_equal(logLik(mod1), logLik(mod2), tolerance = 1e-5)
-
-})
+# test_that("iprior_parallel", {
+#
+#   mod <- kernL2(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
+#   suppressWarnings({
+#     mod1 <- iprior(mod, control = list(silent = TRUE, restarts = 2))
+#     expect_message(
+#       mod2 <- iprior_parallel(mod, control = list(theta0 = 1:2, silent = TRUE,
+#                                                   restarts = 2))
+#     )
+#   })
+#   expect_equal(logLik(mod1), -25.4149, tolerance = 1e-5)
+#   expect_equal(logLik(mod1), logLik(mod2), tolerance = 1e-5)
+#
+# })
 
 test_that("update and iprior.ipriorMod", {
 

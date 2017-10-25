@@ -57,3 +57,28 @@ test_that("fastVDiag", {
   expect_equal(mat, res, tolerance = 1e-6)
 
 })
+
+test_that("check_theta", {
+
+  mod <- kernL2(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
+  res <- capture.output(check_theta(mod))
+  expect_equal(res[1], "theta consists of 3:")
+  expect_equal(res[2], "log(lambda), log(offset), log(psi)")
+
+})
+
+test_that("gg_col_hue", {
+
+  res1 <- gg_col_hue(10)
+  expect_warning(res2 <- ipriorColPal(10))
+  expect_warning(res3 <- ggColPal(10))
+  expect_equal(res1, res2)
+
+})
+
+test_that("is.ipriorKernel", {
+
+  mod <- kernL2(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
+  expect_true(is.ipriorKernel(mod))
+
+})

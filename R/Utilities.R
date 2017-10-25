@@ -244,7 +244,8 @@ is.theta_lambda <- function(x) {
 
 #' Emulate \code{ggplot2} default colour palette
 #'
-#' Emulate \code{ggplot2} default colour palette.
+#' Emulate \code{ggplot2} default colour palette. \code{ipriorColPal} and
+#' \code{ggColPal} are DEPRECATED.
 #'
 #' This is the default colour scale for categorical variables in \code{ggplot2}.
 #' It maps each level to an evenly spaced hue on the colour wheel. It does not
@@ -277,6 +278,7 @@ gg_col_hue <- gg_colour_hue
 #' @rdname gg_colour_hue
 #' @export
 ipriorColPal <- function(x) {
+  warning("Deprecated. Use gg_colour_hue() instead.")
   gg_colour_hue(x)
 }
 # ipriorColPal <- function(x) {

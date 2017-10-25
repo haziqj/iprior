@@ -29,7 +29,8 @@ combination of hue and luminance.}
 \item{l}{Luminance (lightness), in [0, 100].}
 }
 \description{
-Emulate \code{ggplot2} default colour palette.
+Emulate \code{ggplot2} default colour palette. \code{ipriorColPal} and
+\code{ggColPal} are DEPRECATED.
 }
 \details{
 This is the default colour scale for categorical variables in \code{ggplot2}.

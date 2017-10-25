@@ -48,5 +48,11 @@ test_that("Plots", {
   mod <- iprior(y ~ ., dat, method = "em",
                 control = list(silent = TRUE, maxit = 10))
   expect_silent(p <- plot_fitted_multilevel(mod))
+  expect_silent(p <- plot_fitted_multilevel(mod, extrapolate = TRUE))
+
+  dat <- gen_smooth(10, seed = 123)
+  mod <- iprior(y ~ ., dat, kernel = "fbm", method = "em", nystrom = 5,
+                control = list(silent = TRUE, maxit = 10))
+  expect_silent(p <- plot_fitted(mod))
 
 })
