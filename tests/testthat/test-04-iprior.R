@@ -71,14 +71,14 @@ context("Various estimation methods")
 test_that("iprior_canonical", {
 
   mod <- kernL2(y ~ ., gen_smooth(n = 5, seed = 123))
-  suppressWarnings(
-    res <- iprior_canonical(mod, 1:2, control = list(trace = 0))
-  )
-  theta <- c(-6.976095, -2.936247)
-  names(theta) <- names(res$theta)
-  expect_equal(res$theta, theta, tolerance = 1e-6)
-  expect_equal(res$loglik[length(res$loglik)], -14.43531, tolerance = 1e-6)
-  expect_equal(loglik_iprior(1:2, mod), loglik_canonical(1:2, mod))
+  suppressWarnings({
+    mod1 <- iprior(mod, method = "canonical",
+                   control = list(silent = TRUE, maxit = 20, theta0 = 1:2))
+    mod2 <- iprior_canonical(mod, 1:2, list(trace = 0, maxit = 19))
+  })
+  expect_equal(as.numeric(get_hyp(mod1)), c(0.04241322, 0.05310080),
+               tolerance = 1e-5)
+  expect_equal(get_hyp(mod1), mod2$param.full, tolerance = 1e-5)
 
 })
 
@@ -88,34 +88,84 @@ test_that("iprior_direct", {
   x1 <- 1:3
   x2 <- factor(7:9)
   mod <- kernL2(y, x1, x2)
-  suppressWarnings(
-    res <- iprior_direct(mod, loglik_iprior, 1:3, list(fnscale = -2, trace = 0,
-                                                       maxit = 1))
-  )
-  theta <- c(0.4311141, -0.2127298, -0.3132339)
-  names(theta) <- names(res$theta)
-  expect_equal(res$theta, theta, tolerance = 1e-6)
-  expect_equal(res$loglik[length(res$loglik)], -4.051600, tolerance = 1e-6)
+  suppressWarnings({
+    mod1 <- iprior(mod, control = list(silent = TRUE, maxit = 0, theta0 = 1:3))
+    mod2 <- iprior_direct(mod, loglik_iprior, 1:3, list(trace = 0, maxit = 0))
+  })
+  expect_equal(as.numeric(get_hyp(mod1)), c(-0.2031616, -2.2147428, 1.8114034),
+               tolerance = 1e-5)
+  expect_equal(get_hyp(mod1), mod2$param.full, tolerance = 1e-5)
 
 })
 
 test_that("iprior_fixed", {
 
-  mod <- iprior(stack.loss ~ ., stackloss, fixed.hyp = TRUE,
-                 control = list(silent = TRUE))
-  expect_equal(as.numeric(mod$param.full), rep(1, 4))
+  mod <- kernL2(stack.loss ~ ., stackloss, kernel = "se,3", fixed.hyp = TRUE)
+  mod1 <- iprior(mod, control = list(silent = TRUE))
+  mod2 <- iprior_fixed(mod)
+  expect_equal(as.numeric(get_hyp(mod1)), c(1, 1, 1, 3, 3, 3, 1))
+  expect_equal(get_hyp(mod1), mod2$param.full, tolerance = 1e-5)
 
 })
 
 test_that("iprior_em_closed", {
 
-  set.seed(123)
-  mod <- iprior(kernL2(stack.loss ~ ., stackloss), method = "em",
-                 control = list(maxit = 3, silent = TRUE))
-  expect_equal(as.numeric(mod$param.full),
-               c(-0.55425, -0.23690, 0.88891, 0.13567), tolerance = 1e-5)
+  mod <- kernL2(stack.loss ~ ., stackloss)
+  suppressWarnings({
+    mod1 <- iprior(mod, method = "em",
+                   control = list(maxit = 2, silent = TRUE, theta0 = 1:4))
+    mod2 <- iprior_em_closed(mod, maxit = 2, silent = TRUE, theta0 = 1:4)
+  })
+  expect_equal(as.numeric(get_hyp(mod1)),
+               c(0.9994840, 1.9986455, 2.8938313, 0.4840088), tolerance = 1e-5)
+  expect_equal(get_hyp(mod1), mod2$param.full, tolerance = 1e-5)
 
 })
+
+test_that("iprior_em_reg", {
+
+  mod <- kernL2(stack.loss ~ Air.Flow, stackloss, kernel = "poly3")
+  suppressWarnings({
+    mod1 <- iprior(mod, method = "em",
+                   control = list(maxit = 2, silent = TRUE, theta0 = 1:2))
+    mod2 <- iprior_em_reg(mod, maxit = 2, silent = TRUE, theta0 = 1:2)
+  })
+  expect_equal(as.numeric(get_hyp(mod1)), c(8.726267e-09, 0, 4.338007e-03),
+               tolerance = 1e-5)
+  expect_equal(mod1$param.full, mod2$param.full, tolerance = 1e-5)
+
+})
+
+test_that("iprior_em_mixed", {
+
+  mod <- kernL2(y ~ . ^ 2, gen_multilevel(10, 3, seed = 123))
+  suppressWarnings({
+    mod1 <- iprior(mod, method = "mixed",
+                   control = list(maxit = 0, silent = TRUE, theta0 = 1:3))
+    mod2 <- iprior_mixed(mod, silent = TRUE, theta0 = 1:3,
+                         control.optim = list(maxit = 0))
+  })
+  expect_equal(as.numeric(get_hyp(mod1)), c(0.7379230, 1.7986713, 0.2541066),
+               tolerance = 1e-5)
+  expect_equal(mod1$param.full, mod2$param.full, tolerance = 1e-5)
+
+})
+
+test_that("iprior_em_mixed", {
+
+  mod <- kernL2(y ~ ., gen_smooth(100, seed = 123), kernel = "fbm,0.7",
+                nystrom = 10)
+  suppressWarnings({
+    mod1 <- iprior(mod, control = list(maxit = 0, silent = TRUE, theta0 = 1:2))
+    mod2 <- iprior_direct(mod, loglik_nystrom, 1:3, list(trace = 0, maxit = 0))
+  })
+  expect_equal(as.numeric(get_hyp(mod1)), c(6.663954, 0.7, 4.746405),
+               tolerance = 1e-5)
+  expect_equal(mod1$param.full, mod2$param.full, tolerance = 1e-5)
+
+})
+
+context("Print and summary for ipriorMod")
 
 test_that("print()", {
 
@@ -124,7 +174,9 @@ test_that("print()", {
   x2 <- factor(7:9)
   mod <- iprior(y, x1, x2, fixed.hyp = TRUE, control = list(silent = TRUE))
   tmp <- capture.output(print(mod))
+  expect_equal(tmp, tmp)
   tmp <- summary(mod)
   tmp <- capture.output(print(tmp))
+  expect_equal(tmp, tmp)
 
 })

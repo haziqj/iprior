@@ -45,7 +45,8 @@ iprior_mixed <- function(mod, theta0 = NULL, em.maxit = 5, stop.crit = 1e-5,
   control.optim <- update_control(control.optim, control.optim_)
 
   # First pass to EM routine ---------------------------------------------------
-  cat(paste0("Running ", em.maxit, " initial EM iterations\n"))
+  if (!isTRUE(silent))
+    cat(paste0("Running ", em.maxit, " initial EM iterations\n"))
   start.time <- Sys.time()
   em.method <- iprior_method_checker(mod, "em")
   if (em.method["em.closed"]) {
@@ -57,7 +58,7 @@ iprior_mixed <- function(mod, theta0 = NULL, em.maxit = 5, stop.crit = 1e-5,
   }
 
   # Then pass to direct maximisation routine -----------------------------------
-  cat("Now switching to direct optimisation\n")
+  if (!isTRUE(silent)) cat("Now switching to direct optimisation\n")
   res <- iprior_direct(mod, loglik_iprior, tmp$theta, control.optim,
                        optim.method)
   end.time <- Sys.time()

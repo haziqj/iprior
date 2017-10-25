@@ -18,7 +18,8 @@
 #
 ################################################################################
 
-iprior_direct <- function(mod, lik.fn, theta0, control, method = "L-BFGS") {
+iprior_direct <- function(mod, lik.fn, theta0, control = list(),
+                          method = "L-BFGS") {
   # The direct optimisation method for estimating I-prior models. This minimises
   # the marginal deviance (-2 * logLik) using a quasi-Newton algorithm (L-BFGS).
   #
@@ -29,6 +30,17 @@ iprior_direct <- function(mod, lik.fn, theta0, control, method = "L-BFGS") {
   # Returns: A list containing the optimised theta and parameters, y.hat and w,
   # loglik values, standard errors, number of iterations, time taken, and
   # convergence information.
+
+  # Default optim control list -------------------------------------------------
+  control_ <- list(
+    fnscale = -2,
+    trace   = 1,
+    maxit   = 100,
+    REPORT  = 10,
+    factr   = 1e7
+  )
+  control <- update_control(control, control_)
+
   iprior.env <- environment()
   w <- loglik <- NULL
 

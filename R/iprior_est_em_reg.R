@@ -78,9 +78,10 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
       theta[ grep("psi", names(mod$thetal$theta))] <- log(psi)
     }
 
-    # Calculate log-likelihood ---------------------------------------------------
+    # Calculate log-likelihood -------------------------------------------------
     logdet <- sum(log(z))
-    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 - crossprod(y, Vy.inv.y) / 2
+    loglik[niter + 1] <- -n / 2 * log(2 * pi) - logdet / 2 -
+      crossprod(y, Vy.inv.y) / 2
 
     niter <- niter + 1
     if (!silent) setTxtProgressBar(pb, niter)
@@ -88,6 +89,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
   end.time <- Sys.time()
   time.taken <- as.time(end.time - start.time)
+
+  # Calculate fitted values  ---------------------------------------------------
+  y.hat <- get_y.hat(u, V, w)
 
   # Calculate standard errors --------------------------------------------------
   if (!isTRUE(mixed)) {
@@ -114,11 +118,10 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     else cat("Converged after", niter, "iterations.\n")
   }
 
-  list(theta = theta, param.full = param.full,
-       loglik = as.numeric(na.omit(loglik)),
-       se = se, niter = niter, w = as.numeric(w), start.time = start.time,
-       end.time = end.time, time = time.taken,
-       convergence = convergence, message = NULL)
+  list(theta = theta, param.full = param.full, se = se,
+       loglik = as.numeric(na.omit(loglik)), w = as.numeric(w), y.hat = y.hat,
+       niter = niter,  start.time = start.time, end.time = end.time,
+       time = time.taken, convergence = convergence, message = NULL)
 }
 
 QEstep <- function(theta, psi = NULL, object, w, W) {
