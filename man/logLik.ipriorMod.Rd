@@ -13,7 +13,7 @@
 
 \method{logLik}{ipriorKernel2}(object, theta = NULL, ...)
 
-\method{deviance}{ipriorKernel2}(object, theta, ...)
+\method{deviance}{ipriorKernel2}(object, theta = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{ipriorMod} or \code{ipriorKernel2}.}

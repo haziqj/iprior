@@ -41,6 +41,10 @@ iprior_parallel <- function(mod, method = "direct",
   } else {
     control$no.cores <- min(parallel::detectCores(), control$restarts)
   }
+  if (!is.null(control$theta0)) {
+    message("Ignoring theta0 control options with random restarts.")
+  }
+  control$theta0 <- NULL
   if (!isTRUE(control$silent)) {
     cat("Performing", control$restarts, "random restarts on", control$no.cores,
         "cores\n")
@@ -49,6 +53,8 @@ iprior_parallel <- function(mod, method = "direct",
   } else {
     snow.options.list <- list()
   }
+
+
 
   # The multithreading bit -----------------------------------------------------
   start.time <- Sys.time()
