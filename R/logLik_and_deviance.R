@@ -51,7 +51,7 @@ logLik.ipriorMod <- function(object, theta = NULL, ...) {
     res <- object$loglik
     return(res[length(res)])
   } else {
-    logLik.ipriorKernel2(object, theta)
+    logLik.ipriorKernel2(object$ipriorKernel, theta)
   }
 }
 

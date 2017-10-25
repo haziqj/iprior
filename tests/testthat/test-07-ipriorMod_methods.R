@@ -15,7 +15,7 @@ test_that("ipriorMod methods and accessors", {
   # Accessor functions
   expect_equal(get_intercept(mod), 17.84021, tolerance = 1e-5)
   expect_equal(as.numeric(get_y(mod)), dat$y)
-  expect_output(get_size(mod))
+  # expect_output(get_size(mod))
   expect_equal(get_hyp(mod), c(lambda = 1, hurst = 0.5, psi = 1))
   expect_equal(get_hyp(mod), c(get_lambda(mod), get_hurst(mod), get_psi(mod)))
   expect_equal(capture.output(get_lengthscale(mod)), "NA")
@@ -34,5 +34,15 @@ test_that("ipriorMod methods and accessors", {
                "Convergence not assessed.")
   expect_equal(capture.output(get_niter(mod)), "Iterations: NA/100.")
   expect_silent(get_time(mod))
+
+})
+
+test_that("Nystrom methods", {
+
+  dat <- gen_smooth(10, seed = 123)
+  mod <- iprior(y ~ ., dat, kernel = "fbm", nystrom = 5,
+                control = list(silent = TRUE))
+  expect_equal(logLik(mod), 29.37298, tolerance = 1e-5)
+  expect_equal(logLik(mod, 1:2), -32.11874, tolerance = 1e-5)
 
 })

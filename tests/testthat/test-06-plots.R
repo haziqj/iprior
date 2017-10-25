@@ -36,8 +36,17 @@ context("Plots")
 test_that("Plots", {
 
   dat <- gen_smooth(10, seed = 123)
-  mod <- iprior(y ~ ., dat, kernel = "fbm", fixed.hyp = TRUE)
+  mod <- iprior(y ~ ., dat, kernel = "fbm", method = "em",
+                control = list(silent = TRUE, maxit = 10))
+  expect_silent(p <- plot(mod))
   expect_silent(p <- plot_fitted(mod))
   expect_silent(p <- plot_predict(mod))
+  expect_silent(p <- plot_iter(mod))
+  expect_silent(p <- plot_ppc(mod, draws = 2))
+
+  dat <- gen_multilevel(n = 10, m = 2, seed = 123)
+  mod <- iprior(y ~ ., dat, method = "em",
+                control = list(silent = TRUE, maxit = 10))
+  expect_silent(p <- plot_fitted_multilevel(mod))
 
 })

@@ -7,12 +7,14 @@ test_that("Kernel loader using non-formula",{
                Acid.Conc. = stackloss$Acid.Conc.)
   expect_is(mod, "ipriorKernel")
   expect_equal(mod$p, 3)
+  tmp <- capture.output(print(mod))
+  expect_equal(tmp, tmp)
 
 })
 
 test_that("Kernel loader using formula",{
 
-  mod <- kernL(stack.loss ~ ., data = stackloss)
+  mod <- kernL(stack.loss ~ . ^ 2, data = stackloss)
   expect_is(mod, "ipriorKernel")
   expect_equal(mod$p, 3)
 
@@ -26,9 +28,9 @@ test_that("one.lam = TRUE works properly",{
 
 })
 
-test_that("Kernel loader using formula",{
+test_that("Higher order terms",{
 
-  mod <- kernL(stack.loss ~ ., data = stackloss)
+  mod <- kernL(stack.loss ~ . ^ 3, data = stackloss)
   expect_is(mod, "ipriorKernel")
   expect_equal(mod$p, 3)
 
