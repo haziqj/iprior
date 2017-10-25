@@ -165,6 +165,17 @@ test_that("iprior_em_mixed", {
 
 })
 
+test_that("update and iprior.ipriorMod", {
+
+  mod <- iprior(y ~ ., gen_smooth(30, seed = 123), kernel = "se", method = "em",
+                control = list(maxit = 10, silent = TRUE))
+  expect_message(mod <- iprior(mod, iter.update = 10),
+                 "Updating iprior model with 10")
+  expect_message(update(mod, iter.update = 10), "Updating iprior model with 10")
+  expect_true(is.ipriorMod(mod))
+
+})
+
 context("Print and summary for ipriorMod")
 
 test_that("print()", {
