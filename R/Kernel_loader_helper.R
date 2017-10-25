@@ -325,7 +325,8 @@ theta_to_psi <- function(theta, object) {
 }
 
 get_hyperparam <- function(x) {
-  # Obtain the hyperparameters of kernels.
+  # Obtain the hyperparameters of kernels. Note: the exported version is
+  # get_hyp().
   #
   # Args: x is either a character vector of the kernel specification (e.g. x <-
   # "fbm,0.5"), or it is the output from one of the kern_x() functions.
@@ -337,7 +338,8 @@ get_hyperparam <- function(x) {
 }
 
 get_polydegree <- function(x) {
-  # Obtain the degree of the polynomial kernel.
+  # Obtain the degree of the polynomial kernel. Note: the exported version is
+  # get_degree().
   #
   # Args: x is either a character vector of the kernel specification (e.g. x <-
   # "fbm,0.5"), or it is the output from one of the kern_x() functions.

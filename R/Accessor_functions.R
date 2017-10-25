@@ -116,10 +116,12 @@ get_offset <- function(object) {
 #' @describeIn Accessors Obtain the degree of the polynomial kernels used.
 #' @export
 get_degree <- function(object) {
-  tmp <- get_kernels(object)
-  res <- get_polydegree(tmp)
-  if (length(res) > 0) return(res)
-  else cat("NA")
+  if (is.kern_poly(object)) {
+    tmp <- get_kernels(object)
+    return(get_polydegree(tmp))
+  } else {
+    cat("NA")
+  }
 }
 
 #' @describeIn Accessors Obtain the standard errors of the estimated hyperparameters.

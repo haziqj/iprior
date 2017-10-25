@@ -1,79 +1,38 @@
+context("ipriorMod methods and accessors")
 
+test_that("ipriorMod methods and accessors", {
 
-# context("Optim and theta")
-#
-# test_that("iprior with theta and lambda and psi",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(lambda = rnorm(3), psi = abs(rnorm(1)),
-#                                  theta = abs(rnorm(4))))
-#   )
-#
-# })
-#
-# test_that("iprior with theta and lambda",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(lambda = rnorm(3),
-#                                  theta = abs(rnorm(4))))
-#   )
-#
-# })
-#
-# test_that("iprior with theta and psi",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(psi = abs(rnorm(1)),
-#                                  theta = abs(rnorm(4))))
-#   )
-#
-# })
-#
-# test_that("iprior with theta and sigma",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(sigma = abs(rnorm(1)),
-#                                  theta = abs(rnorm(4))))
-#   )
-#
-# })
-#
-# test_that("iprior with psi and sigma",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(psi = abs(rnorm(1)),
-#                                  sigma = abs(rnorm(1))))
-#   )
-#
-# })
-#
-# test_that("iprior with lambda, psi and sigma",{
-#
-#   expect_error(
-#     mod <- iprior(stack.loss ~ ., stackloss,
-#                   control = list(lambda = rnorm(3), psi = abs(rnorm(1)),
-#                                  sigma = abs(rnorm(1))))
-#   )
-#
-# })
-#
-# test_that("iprior and optim wrapper",{
-#
-#   mod <- kernL(stack.loss ~ . ^ 2, data = stackloss)
-#   mod.fit <- ipriorOptim(mod, control = list(silent = TRUE))
-#   expect_that(mod.fit, is_a("ipriorMod"))
-#
-# })
-#
-# test_that("FBM optim wrapper",{
-#
-#   mod <- kernL(y ~ ., datfbm, model = list(kernel = "FBM"))
-#   mod.fit <- fbmOptim(mod, silent = TRUE)
-#   expect_that(mod.fit, is_a("ipriorMod"))
-#
-# })
+  dat <- gen_smooth(10, seed = 123)
+  mod <- iprior(y ~ ., dat, kernel = "fbm", fixed.hyp = TRUE)
+
+  # Methods
+  expect_equal(as.numeric(sigma(mod)), 1)
+  expect_equal(logLik(mod), -53.06776, tolerance = 1e-5)
+  expect_equal(logLik(mod), logLik(mod$ipriorKernel))
+  expect_equal(deviance(mod), 106.1355, tolerance = 1e-5)
+  expect_equal(deviance(mod), deviance(mod$ipriorKernel))
+
+  # Accessor functions
+  expect_equal(get_intercept(mod), 17.84021, tolerance = 1e-5)
+  expect_equal(as.numeric(get_y(mod)), dat$y)
+  expect_equal(capture.output(get_size(mod)), "14.1 kB")
+  expect_equal(get_hyp(mod), c(lambda = 1, hurst = 0.5, psi = 1))
+  expect_equal(get_hyp(mod), c(get_lambda(mod), get_hurst(mod), get_psi(mod)))
+  expect_equal(capture.output(get_lengthscale(mod)), "NA")
+  expect_equal(capture.output(get_offset(mod)), "NA")
+  expect_equal(capture.output(get_degree(mod)), "NA")
+  expect_equal(get_se(mod), c(lambda = NA, hurst = NA, psi = NA))
+  expect_equal(get_kernels(mod), c(X = "fbm,0.5"))
+  expect_equal(get_kern_matrix(mod), kern_fbm(dat$X))
+  expect_equal(get_mse(mod), 7.817885, tolerance = 1e-5)
+  expect_equal(get_estl(mod), c(est.lambda = FALSE, est.hurst = FALSE,
+                                est.lengthscale = FALSE, est.offset = FALSE,
+                                est.psi = FALSE))
+  expect_equal(capture.output(get_method(mod)),
+               "Estimation with fixed hyperparameters.")
+  expect_equal(capture.output(get_convergence(mod)),
+               "Convergence not assessed.")
+  expect_equal(capture.output(get_niter(mod)), "Iterations: NA/100.")
+  expect_silent(get_time(mod))
+
+})

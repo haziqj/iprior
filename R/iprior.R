@@ -202,7 +202,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     if (est.method["fixed"]) {
       res <- iprior_fixed(mod)
       res$est.method <- "Estimation with fixed hyperparameters."
-      res$est.conv <- ""
+      res$est.conv <- "Convergence not assessed."
     } else if (est.method["canonical"]) {
       res <- iprior_canonical(mod, theta0, control.optim)
       res$est.method <- "Efficient canonical method."
