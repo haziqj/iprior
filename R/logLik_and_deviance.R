@@ -74,6 +74,6 @@ logLik.ipriorKernel2 <- function(object, theta = NULL, ...) {
 
 #' @rdname logLik.ipriorMod
 #' @export
-deviance.ipriorKernel2 <- function(object, theta, ...) {
+deviance.ipriorKernel2 <- function(object, theta = NULL, ...) {
   -2 * logLik.ipriorKernel2(object, theta, ...)
 }
