@@ -284,46 +284,24 @@ plot_ppc <- function(x, draws = 100) {
   p
 }
 
-
-
-# p.ppc <- ggplot() +
-#   scale_x_continuous(breaks = NULL, name = expression(italic(y))) +
-#   scale_y_continuous(breaks = NULL) +
-#   geom_line(data = melted.ppc,
-#             aes(x = value, group = variable, col = "yrep", size = "yrep"),
-#             stat = "density", alpha = 0.5) +
-#   geom_line(data = dat, aes(x = y, col = "y", size = "y"), stat = "density") +
-#   theme(legend.position = "bottom") +
-# scale_colour_manual(
-#   name = NULL, labels = c("Observed", "Replications"),
-#   values = c("grey10", "steelblue3")
-# ) +
-# scale_size_manual(
-#   name = NULL, labels = c("Observed", "Replications"),
-#   values = c(1.1, 0.19)
-# ) +
-# labs(y = "Density", title = "Posterior predictive density check") +
-#   theme_bw() +
-#   theme(legend.position = c(0.9, 0.5))
-
-plot_loglik <- function(x, xlim, ylim) {
-  check_and_get_ipriorMod(x)
-  if (missing(xlim)) xlim <- x$theta[1] + c(-1, 1) * 3
-  if (missing(ylim)) ylim <- x$theta[2] + c(-1, 1) * 3
-  theta.x <- seq(xlim[1], xlim[2], length = 50)
-  theta.y <- seq(ylim[1], ylim[2], length = 50)
-  plot.df <- expand.grid(theta.x, theta.y)
-  z <- seq_len(nrow(plot.df))
-  for (i in seq_along(z)) {
-    z[i] <- logLik(x$ipriorKernel, as.numeric(plot.df[i, ]))
-  }
-  plot.df <- cbind(plot.df, z)
-
-  ggplot(plot.df) +
-    geom_raster(aes(Var1, Var2, fill = z)) +
-    geom_contour(aes(Var1, Var2, z = z)) +
-    geom_vline(xintercept = x$theta[1]) +
-    geom_hline(yintercept = x$theta[2]) +
-    scale_fill_gradient(low = "white", high = "#00BFC4") +
-    theme_bw()
-}
+# plot_loglik <- function(x, xlim, ylim) {
+#   check_and_get_ipriorMod(x)
+#   if (missing(xlim)) xlim <- x$theta[1] + c(-1, 1) * 3
+#   if (missing(ylim)) ylim <- x$theta[2] + c(-1, 1) * 3
+#   theta.x <- seq(xlim[1], xlim[2], length = 50)
+#   theta.y <- seq(ylim[1], ylim[2], length = 50)
+#   plot.df <- expand.grid(theta.x, theta.y)
+#   z <- seq_len(nrow(plot.df))
+#   for (i in seq_along(z)) {
+#     z[i] <- logLik(x$ipriorKernel, as.numeric(plot.df[i, ]))
+#   }
+#   plot.df <- cbind(plot.df, z)
+#
+#   ggplot(plot.df) +
+#     geom_raster(aes(Var1, Var2, fill = z)) +
+#     geom_contour(aes(Var1, Var2, z = z)) +
+#     geom_vline(xintercept = x$theta[1]) +
+#     geom_hline(yintercept = x$theta[2]) +
+#     scale_fill_gradient(low = "white", high = "#00BFC4") +
+#     theme_bw()
+# }
