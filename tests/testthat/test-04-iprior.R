@@ -117,7 +117,7 @@ test_that("iprior_em_closed", {
     mod2 <- iprior_em_closed(mod, maxit = 2, silent = TRUE, theta0 = 1:4)
   })
   expect_equal(as.numeric(get_hyp(mod1)),
-               c(0.9994840, 1.9986455, 2.8938313, 0.4840088), tolerance = 1e-5)
+               c(0.9994840, 1.9973584, 2.9036381, 0.4840088), tolerance = 1e-5)
   expect_equal(get_hyp(mod1), mod2$param.full, tolerance = 1e-5)
 
 })
@@ -145,7 +145,7 @@ test_that("iprior_em_mixed", {
     mod2 <- iprior_mixed(mod, silent = TRUE, theta0 = 1:3,
                          control.optim = list(maxit = 0))
   })
-  expect_equal(as.numeric(get_hyp(mod1)), c(0.7379230, 1.7986713, 0.2541066),
+  expect_equal(as.numeric(get_hyp(mod1)), c(0.7378479, 1.7849915, 0.2541533),
                tolerance = 1e-5)
   expect_equal(mod1$param.full, mod2$param.full, tolerance = 1e-5)
 

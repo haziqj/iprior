@@ -69,7 +69,9 @@ iprior <- function(...) UseMethod("iprior")
 #'   Defaults to \code{0}. It's also possible to set it to \code{TRUE}, in which
 #'   case the number of random restarts is set to the total number of available
 #'   cores.} \item{\code{no.cores}}{The number of cores in which to do random
-#'   restarts. Defaults to the total number of available cores.} }
+#'   restarts. Defaults to the total number of available cores.}
+#'   \item{\code{omega}}{The overrelaxation parameter for the EM algorithm - a
+#'   value between 0 and 1.}}
 #' @param iter.update The number of iterations to perform when calling the
 #'   function on an \code{ipriorMod} object. Defaults to \code{100}.
 #'
@@ -169,7 +171,8 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     psi.reg   = FALSE,  # option for iprior_em_reg()
     restarts  = 0,
     no.cores  = parallel::detectCores(),
-    optim.method = "L-BFGS"
+    optim.method = "L-BFGS",
+    omega     = 0
   )
   control <- update_control(control, control_)  # see iprior_helper.R
   control.optim <- list(
@@ -199,7 +202,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
     )
   } else {
     est.method <- iprior_method_checker(mod, method)
-    if (est.method["fixed"]) {
+    if (est.method["fixed"]) {  # FIXED METHOD
       res <- iprior_fixed(mod)
       res$est.method <- "Estimation with fixed hyperparameters."
       res$est.conv <- "Convergence not assessed."
@@ -207,27 +210,27 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
       res <- iprior_canonical(mod, theta0, control.optim)
       res$est.method <- "Efficient canonical method."
     } else {
-      if (est.method["em.closed"]) {
+      if (est.method["em.closed"]) {  # EM CLOSED-FORM
         res <- iprior_em_closed(mod, control$maxit, control$stop.crit,
-                                control$silent, theta0)
+                                control$silent, theta0, omega = control$omega)
         res$est.method <- "Closed-form EM algorithm."
       }
-      if (est.method["em.reg"]) {
+      if (est.method["em.reg"]) {  # EM REGULAR
         res <- iprior_em_reg(mod, control$maxit, control$stop.crit,
                              control$silent, theta0)
         res$est.method <- "Regular EM algorithm."
       }
-      if (est.method["direct"]) {
+      if (est.method["direct"]) {  # DIRECT OPTIMISATION
         res <- iprior_direct(mod, loglik_iprior, theta0, control.optim,
                              control$optim.method)
         res$est.method <- "Direct optimisation method."
       }
-      if (est.method["nystrom"]) {
+      if (est.method["nystrom"]) {  # NYSTROM DIRECT OPTIMISATION
         res <- iprior_direct(mod, loglik_nystrom, theta0, control.optim,
                              control$optim.method)
         res$est.method <- "Nystrom approximated optimisation."
       }
-      if (est.method["mixed"]) {
+      if (est.method["mixed"]) {  # MIXED METHOD
         res <- iprior_mixed(mod, theta0, control$em.maxit, control$stop.crit,
                             control$silent, control.optim, control$optim.method)
         res$est.method <- paste0("EM algorithm (", control$em.maxit,

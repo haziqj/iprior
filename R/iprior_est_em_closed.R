@@ -20,7 +20,7 @@
 
 iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
                              theta0 = NULL, lambda0 = NULL, psi0 = NULL,
-                             mixed = FALSE) {
+                             mixed = FALSE, omega = 0) {
   # The closed-form EM algorithm method for estimating I-prior models. This only
   # works when there are no other hyperparameters to estimate other than lambda
   # and psi.
@@ -53,7 +53,7 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
   # psi <- psi0
   if (is.null(theta0)) theta0 <- rnorm(mod$thetal$n.theta)
   psi <- theta_to_psi(theta0, mod)
-  lambda <- theta_to_collapsed_param(theta0, mod)[seq_len(mod$p)]
+  lambda.new <- lambda <- theta_to_collapsed_param(theta0, mod)[seq_len(mod$p)]
   niter <- 0
   loglik <- rep(NA, maxit)
   Hl <- expand_Hl_and_lambda(Hl, rep(1, p), intr, intr.3plus)$Hl  # expand Hl
@@ -80,14 +80,15 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
       BlockB(k)  # Updates Pl, Psql, and Sl
       T1 <- sum(Psql[[k]] * W)
       T2 <- crossprod(y, Pl[[k]]) %*% w - sum(Sl[[k]] * W) / 2
-      lambda[k] <- as.numeric(T2 / T1)
+      lambda.new[k] <- as.numeric(T2 / T1)
     }
-
+    lambda <- (1 + omega) * lambda.new - omega * lambda
 
     # Update psi ---------------------------------------------------------------
     Hlamsq <- V %*% (t(V) * u ^ 2)
     T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam %*% w)
-    psi <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
+    psi.new <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
+    psi <- (1 + omega) * psi.new - omega * psi
 
     # Calculate log-likelihood ---------------------------------------------------
     logdet <- sum(log(z))

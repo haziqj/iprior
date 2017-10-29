@@ -19,7 +19,8 @@
 ################################################################################
 
 iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
-                          theta0 = NULL, psi.reg = FALSE, mixed = FALSE) {
+                          theta0 = NULL, psi.reg = FALSE, mixed = FALSE,
+                          omega = 0) {
   # The regular version of the EM algorithm for estimating I-prior models. This
   # maximises the M-step using the quasi-Newton L-BFGS algorithm.
   #
@@ -63,10 +64,12 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     W <- V %*% zinv.Vt + tcrossprod(w)
 
     # Update parameters other than psi -----------------------------------------
-    if (!isTRUE(psi.reg)) psi <- NULL
-    res.optim <- optim(theta, QEstep, psi = psi, object = mod, w = w, W = W,
+    if (!isTRUE(psi.reg)) psi.optim <- NULL
+    else psi.optim <- psi
+    res.optim <- optim(theta, QEstep, psi = psi.optim, object = mod, w = w, W = W,
                        method = "L-BFGS", control = list(trace = FALSE))
-    theta <- res.optim$par
+    theta.new <- res.optim$par
+    theta <- (1 + omega) * theta.new - omega * theta
 
     # Update psi ---------------------------------------------------------------
     if (isTRUE(psi.reg)) {
@@ -74,8 +77,9 @@ iprior_em_reg <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
     } else {
       Hlamsq <- V %*% (t(V) * u ^ 2)
       T3 <- crossprod(y) + sum(Hlamsq * W) - 2 * crossprod(y, Hlam %*% w)
-      psi <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
-      theta[ grep("psi", names(mod$thetal$theta))] <- log(psi)
+      psi.new <- sqrt(max(0, as.numeric(sum(diag(W)) / T3)))
+      psi <- (1 + omega) * psi.new - omega * psi
+      theta[grep("psi", names(mod$thetal$theta))] <- log(psi)
     }
 
     # Calculate log-likelihood -------------------------------------------------

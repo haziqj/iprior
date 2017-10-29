@@ -69,7 +69,9 @@ function.} \item{\code{restarts}}{The number of random restarts to perform.
 Defaults to \code{0}. It's also possible to set it to \code{TRUE}, in which
 case the number of random restarts is set to the total number of available
 cores.} \item{\code{no.cores}}{The number of cores in which to do random
-restarts. Defaults to the total number of available cores.} }}
+restarts. Defaults to the total number of available cores.}
+\item{\code{omega}}{The overrelaxation parameter for the EM algorithm - a
+value between 0 and 1.}}}
 
 \item{interactions}{Character vector to specify the interaction terms. When
 using formulas, this is specified automatically, so is not required. Syntax
