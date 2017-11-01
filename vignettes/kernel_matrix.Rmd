@@ -146,7 +146,7 @@ findH2 <- function(z, ind1, ind2){
 Regression with 3 covariates and two-way interactions between all 3 covariates. Here, `p = 3`, `l = 3` and `h = q = 6`. In full, the index of the `H.mat` is `c(1, 2, 3, 1:2, 1:3, 2:3)`.
 
 ```{r}
-(mod <- kernL(stack.loss ~ . ^ 2, data = stackloss))
+(mod <- .kernL(stack.loss ~ . ^ 2, data = stackloss))
 p <- 3
 ```
 
