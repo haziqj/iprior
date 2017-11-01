@@ -4,7 +4,7 @@
 \alias{iprior}
 \alias{iprior.default}
 \alias{iprior.formula}
-\alias{iprior.ipriorKernel2}
+\alias{iprior.ipriorKernel}
 \alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
@@ -20,7 +20,7 @@
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
   nystrom = FALSE, nys.seed = NULL, model = list(), ...)
 
-\method{iprior}{ipriorKernel2}(object, method = "direct", control = list(),
+\method{iprior}{ipriorKernel}(object, method = "direct", control = list(),
   ...)
 
 \method{iprior}{ipriorMod}(object, method = NULL, control = list(),
@@ -122,7 +122,7 @@ approximation.}
 letting the function know to treat all variables as a single variable (i.e.
 shared scale parameter). Defaults to \code{FALSE}.}
 
-\item{object}{An \code{ipriorKernel2} or \code{ipriorMod} object.}
+\item{object}{An \code{ipriorKernel} or \code{ipriorMod} object.}
 
 \item{iter.update}{The number of iterations to perform when calling the
 function on an \code{ipriorMod} object. Defaults to \code{100}.}
@@ -145,13 +145,13 @@ non-formula. When not using formula, the syntax is as per the default S3
 method. That is, the response variable is the vector \code{y}, and any
 explanatory variables should follow this, and separated by commas.
 
-As described \link[=kernL2]{here}, the model can be loaded first into an
+As described \link[=kernL]{here}, the model can be loaded first into an
 \code{ipriorKernel} object, and then passed to the \code{iprior()} function
 to perform the estimation.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ipriorKernel2}: Takes in object of type \code{ipriorKernel2}, a loaded and
+\item \code{ipriorKernel}: Takes in object of type \code{ipriorKernel}, a loaded and
 prepared I-prior model, and proceeds to estimate it.
 
 \item \code{ipriorMod}: Re-run or continue running the EM algorithm from last

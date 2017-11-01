@@ -63,7 +63,7 @@ print.time <- function(x, ...) {
 #' @export
 check_theta <- function(object) {
   if (is.ipriorMod(object)) object <- object$ipriorKernel
-  if (is.ipriorKernel2(object)) {
+  if (is.ipriorKernel(object)) {
     res <- names(object$thetal$theta)
 
     ind.lam <- grep("lambda", res)
@@ -95,10 +95,10 @@ check_and_get_ipriorKernel <- function(object, assign.to.env = FALSE) {
   # Helper function to check whether object is of ipriorMod or ipriorKernel
   # class, and if so, replaces the object in environment with ipriorKernel.
   #
-  # Args: An ipriorMod or ipriorKernel2 object; logical assign.to.env.
+  # Args: An ipriorMod or ipriorKernel object; logical assign.to.env.
   #
-  # Returns: Replacement of object with ipriorKernel2 object if necessary, or
-  # assignment of ipriorKernel2 object to environment.
+  # Returns: Replacement of object with ipriorKernel object if necessary, or
+  # assignment of ipriorKernel object to environment.
   if (is.ipriorMod(object)) {
     if (isTRUE(assign.to.env)) {
       list2env(object$ipriorKernel, parent.frame())
@@ -106,7 +106,7 @@ check_and_get_ipriorKernel <- function(object, assign.to.env = FALSE) {
       assign(deparse(substitute(object)), object$ipriorKernel,
            envir = parent.frame())
     }
-  } else if (is.ipriorKernel2(object)) {
+  } else if (is.ipriorKernel(object)) {
     if (isTRUE(assign.to.env)) {
       list2env(object, parent.frame())
     } else {
@@ -120,7 +120,7 @@ check_and_get_ipriorKernel <- function(object, assign.to.env = FALSE) {
 check_and_get_ipriorMod <- function(object, assign.to.env = FALSE) {
   # Helper function to check whether object is of ipriorMod class.
   #
-  # Args: An ipriorMod or ipriorKernel2 object; logical assign.to.env.
+  # Args: An ipriorMod or ipriorKernel object; logical assign.to.env.
   #
   # Returns: Nothing - just checks. Unless assign.to.env is TRUE.
   if (is.ipriorMod(object)) {
@@ -148,15 +148,13 @@ is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 
 #' @rdname is.iprior_x
 #' @export
-is.ipriorKernel <- function(x) {
-  inherits(x, "ipriorKernel") | inherits(x, "ipriorKernel2")
-}
+is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
-is.ipriorKernel2 <- function(x) inherits(x, "ipriorKernel2")
+is.ipriorKernel_old <- function(x) inherits(x, "ipriorKernel_ikd")
 
 is.ipriorKernel_nys <- function(x) {
   if (is.ipriorMod(x)) x <- x$ipriorKernel
-  if (is.ipriorKernel2(x)) {
+  if (is.ipriorKernel(x)) {
     !is.null(x$nystroml)
   } else {
     return(FALSE)
@@ -189,7 +187,7 @@ NULL
 
 is.kern_type <- function(x, type) {
   if (is.ipriorMod(x)) kernel_type <- x$ipriorKernel$kernels
-  else if (is.ipriorKernel2(x)) kernel_type <- x$kernels
+  else if (is.ipriorKernel(x)) kernel_type <- x$kernels
   else if (!is.null(attributes(x)$kernel)) kernel_type <- attributes(x)$kernel
   else kernel_type <- x
   if (!is.null(kernel_type)) grepl(type, kernel_type)
@@ -224,11 +222,11 @@ is.theta_lambda <- function(x) {
   # Helper function to determine whether or not a given set of hyperparameter
   # consists only of lambdas.
   #
-  # Args: an ipriorMod or ipriorKernel2 object.
+  # Args: an ipriorMod or ipriorKernel object.
   #
   # Returns: Logical.
   if (is.ipriorMod(x)) x <- x$ipriorKernel
-  if (is.ipriorKernel2(x)) {
+  if (is.ipriorKernel(x)) {
     theta <- names(x$thetal$theta)
     any.hurst       <- any(grepl("hurst"      , theta))
     any.lengthscale <- any(grepl("lengthscale", theta))

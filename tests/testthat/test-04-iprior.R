@@ -60,7 +60,7 @@ test_that("Direct", {
 test_that("Nystrom", {
 
   mod <- structure(list(thetal = list(n.theta = 10), nystroml = 1),
-                   class = "ipriorKernel2")
+                   class = "ipriorKernel")
   res <- iprior_method_checker(mod, "direct")
   expect_true(res["nystrom"])
 
@@ -70,7 +70,7 @@ context("Various estimation methods")
 
 test_that("iprior_canonical", {
 
-  mod <- kernL2(y ~ ., gen_smooth(n = 5, seed = 123))
+  mod <- kernL(y ~ ., gen_smooth(n = 5, seed = 123))
   suppressWarnings({
     mod1 <- iprior(mod, method = "canonical",
                    control = list(silent = TRUE, maxit = 20, theta0 = 1:2))
@@ -87,7 +87,7 @@ test_that("iprior_direct", {
   y <- 1:3
   x1 <- 1:3
   x2 <- factor(7:9)
-  mod <- kernL2(y, x1, x2)
+  mod <- kernL(y, x1, x2)
   suppressWarnings({
     mod1 <- iprior(mod, control = list(silent = TRUE, maxit = 0, theta0 = 1:3))
     mod2 <- iprior_direct(mod, loglik_iprior, 1:3, list(trace = 0, maxit = 0))
@@ -100,7 +100,7 @@ test_that("iprior_direct", {
 
 test_that("iprior_fixed", {
 
-  mod <- kernL2(stack.loss ~ ., stackloss, kernel = "se,3", fixed.hyp = TRUE)
+  mod <- kernL(stack.loss ~ ., stackloss, kernel = "se,3", fixed.hyp = TRUE)
   mod1 <- iprior(mod, control = list(silent = TRUE))
   mod2 <- iprior_fixed(mod)
   expect_equal(as.numeric(get_hyp(mod1)), c(1, 1, 1, 3, 3, 3, 1))
@@ -110,7 +110,7 @@ test_that("iprior_fixed", {
 
 test_that("iprior_em_closed", {
 
-  mod <- kernL2(stack.loss ~ ., stackloss)
+  mod <- kernL(stack.loss ~ ., stackloss)
   suppressWarnings({
     mod1 <- iprior(mod, method = "em",
                    control = list(maxit = 2, silent = TRUE, theta0 = 1:4))
@@ -124,7 +124,7 @@ test_that("iprior_em_closed", {
 
 test_that("iprior_em_reg", {
 
-  mod <- kernL2(stack.loss ~ Air.Flow, stackloss, kernel = "poly3")
+  mod <- kernL(stack.loss ~ Air.Flow, stackloss, kernel = "poly3")
   suppressWarnings({
     mod1 <- iprior(mod, method = "em",
                    control = list(maxit = 2, silent = TRUE, theta0 = 1:2))
@@ -138,7 +138,7 @@ test_that("iprior_em_reg", {
 
 test_that("iprior_em_mixed", {
 
-  mod <- kernL2(y ~ . ^ 2, gen_multilevel(10, 3, seed = 123))
+  mod <- kernL(y ~ . ^ 2, gen_multilevel(10, 3, seed = 123))
   suppressWarnings({
     mod1 <- iprior(mod, method = "mixed",
                    control = list(maxit = 0, silent = TRUE, theta0 = 1:3))
@@ -153,7 +153,7 @@ test_that("iprior_em_mixed", {
 
 test_that("iprior_nystrom", {
 
-  mod <- kernL2(y ~ ., gen_smooth(100, seed = 123), kernel = "fbm,0.7",
+  mod <- kernL(y ~ ., gen_smooth(100, seed = 123), kernel = "fbm,0.7",
                 nystrom = 10)
   suppressWarnings({
     mod1 <- iprior(mod, control = list(maxit = 0, silent = TRUE, theta0 = 1:2))
@@ -167,7 +167,7 @@ test_that("iprior_nystrom", {
 
 # test_that("iprior_parallel", {
 #
-#   mod <- kernL2(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
+#   mod <- kernL(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
 #   suppressWarnings({
 #     mod1 <- iprior(mod, control = list(silent = TRUE, restarts = 2))
 #     expect_message(

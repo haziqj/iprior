@@ -23,7 +23,7 @@ iprior_method_checker <- function(object, method) {
   # available. E.g. if estimating Hurst parameter for fBm kernel, then the EM
   # closed-form is not possible.
   #
-  # Args: An ipriorKernel2 object, and the method input by the user in iprior().
+  # Args: An ipriorKernel object, and the method input by the user in iprior().
   #
   # Returns: A logical vector of length seven, with only one entry being TRUE,
   # directing the iprior() function to the correct iprior_x() estimation
@@ -92,7 +92,7 @@ convert_se <- function(se, theta, object) {
   # using the delta method. These are then used in the summary() method for
   # ipriorMod objects.
   #
-  # Args: se for theta, the optimised theta value, and the ipriorKernel2 object.
+  # Args: se for theta, the optimised theta value, and the ipriorKernel object.
   #
   # Returns: A vector similar to se, but with delta-transformed values.
   theta.names <- names(object$theta)
@@ -116,7 +116,7 @@ convert_se <- function(se, theta, object) {
 get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   # Obtain the scaled kernel matrix Hlam.
   #
-  # Args: An ipriorKernel2 object, theta values to calculate Hlam at, and a
+  # Args: An ipriorKernel object, theta values to calculate Hlam at, and a
   # logical argument theta.is.lambda. If theta.is.lambda = TRUE, then it is just
   # a matter of taking the sumproduct of Hl and theta. Otherwise, Hl will be
   # re-calculated everytime this function is called.
@@ -150,7 +150,7 @@ get_Htildelam <- function(object, theta, xstar) {
   # A helper function to calculate Hlam given a new set of data. This is similar
   # to get_Hlam().
   #
-  # Args: An ipriorKernel2 object, theta values to calculate Hlam at, and a list
+  # Args: An ipriorKernel object, theta values to calculate Hlam at, and a list
   # of new data.
   #
   # Returns: Assuming m new data points, then an m x n matrix is returned.
@@ -177,7 +177,7 @@ calc_Hlam <- function(Hl, lambda, object) {
   # Helper function to get the sumproduct of the list of kernel matrices and the
   # scale parameters.
   #
-  # Args: Hl list of kernel matrices, scale parameters lambda, and ipriorKernel2
+  # Args: Hl list of kernel matrices, scale parameters lambda, and ipriorKernel
   # object.
   #
   # Returns: Hlam matrix.

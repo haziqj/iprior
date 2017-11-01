@@ -135,7 +135,7 @@ get_se <- function(object) {
 #' @export
 get_kernels <- function(object) {
   if (is.ipriorMod(object)) theta <- object$theta
-  if (is.ipriorKernel2(object)) theta <- object$thetal$theta
+  if (is.ipriorKernel(object)) theta <- object$thetal$theta
   check_and_get_ipriorKernel(object)
   param.tab <- theta_to_param(theta, object)
   res <- param.tab$kernel
@@ -153,7 +153,7 @@ get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
     # )
     res <- get_Hlam(object$ipriorKernel, object$theta, FALSE)
     return(res)
-  } else if (is.ipriorKernel2(object)) {
+  } else if (is.ipriorKernel(object)) {
     # estl <- object$estl
     # til.cond <- (
     #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)

@@ -39,7 +39,7 @@
 #' \code{\link[stats]{optim}}. Parameters have been transformed so that they can
 #' be optimised unconstrained.
 #'
-#' @param object An object of class \code{ipriorMod} or \code{ipriorKernel2}.
+#' @param object An object of class \code{ipriorMod} or \code{ipriorKernel}.
 #' @param theta (Optional) Evaluates the log-likelihood at \code{theta}.
 #' @param ... Not used.
 #'
@@ -51,7 +51,7 @@ logLik.ipriorMod <- function(object, theta = NULL, ...) {
     res <- object$loglik
     return(res[length(res)])
   } else {
-    logLik.ipriorKernel2(object$ipriorKernel, theta)
+    logLik.ipriorKernel(object$ipriorKernel, theta)
   }
 }
 
@@ -63,7 +63,7 @@ deviance.ipriorMod <- function(object, theta = NULL, ...) {
 
 #' @rdname logLik.ipriorMod
 #' @export
-logLik.ipriorKernel2 <- function(object, theta = NULL, ...) {
+logLik.ipriorKernel <- function(object, theta = NULL, ...) {
   if (is.null(theta)) theta <- object$thetal$theta
   if (is.nystrom(object)) {
     return(loglik_nystrom(theta, object))
@@ -74,6 +74,6 @@ logLik.ipriorKernel2 <- function(object, theta = NULL, ...) {
 
 #' @rdname logLik.ipriorMod
 #' @export
-deviance.ipriorKernel2 <- function(object, theta = NULL, ...) {
-  -2 * logLik.ipriorKernel2(object, theta, ...)
+deviance.ipriorKernel <- function(object, theta = NULL, ...) {
+  -2 * logLik.ipriorKernel(object, theta, ...)
 }

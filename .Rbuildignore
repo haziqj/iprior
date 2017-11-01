@@ -6,3 +6,4 @@
 ^LICENSE\.txt$
 ^cran-comments\.md$
 ^appveyor\.yml$
+^vignettes/iprior2_test\.Rmd$

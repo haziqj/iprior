@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-#'Load the kernel matrices of an I-prior model
+#'DEPRECATED Load the kernel matrices of an I-prior model
 #'
 #'Prepare the kernel matrices according to a user available model options list.
 #'This is then passed to the \code{\link{iprior}} function for model fitting.
@@ -88,44 +88,12 @@
 #'  The rest of the list are unimportant to the end-user, but they are passed to
 #'  the EM routine via a call to \code{\link{iprior}}.
 #'
-#' @examples
-#' str(ToothGrowth)
-#' mod <- kernL(y = ToothGrowth$len,
-#'              supp = ToothGrowth$supp,
-#'              dose = ToothGrowth$dose,
-#'              model = list(interactions="1:2"))
-#' mod
-#' kernL(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
-#' kernL(len ~ supp * dose, data = ToothGrowth,
-#'       model = list(parsm = TRUE))  # non-parsimonious option
-#'
-#' # Choosing different kernels
-#' str(stackloss)
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(kernel = "FBM"))  # all FBM
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(kernel = c("Canonical", "FBM", "Canonical")))
-#'
-#' # Specifying higher order terms
-#' kernL(stack.loss ~ Air.Flow + I(Air.Flow^2) + ., data = stackloss,
-#'       model = list(order = c("1", "1^2", "2", "3")))
-#'
-#' # If all scale parameters are the same, then use one.lam = TRUE
-#' kernL(stack.loss ~ ., data = stackloss, model = list(one.lam = TRUE))
-#'
-#' # You can rename the variables too
-#' kernL(stack.loss ~ ., data = stackloss,
-#'       model = list(yname = "response", xname = c("air", "water", "acid")))
-#'
-#' # Sometimes the print output is too long, can use str() options here
-#' print(mod, strict.width = "cut", width = 50)
-#'
-#'@name kernL
+#'@name kernL_old
 #'@export
-kernL <- function(y, ..., model = list()) UseMethod("kernL")
+.kernL <- function(y, ..., model = list()) UseMethod(".kernL")
 
 #' @export
-kernL.default <- function(y, ..., model = list()) {
+.kernL.default <- function(y, ..., model = list()) {
   x <- list(...)  # don't list if updating ipriorKernel
   if (length(x) == 1 && is.ipriorX(x[[1]])) x <- unlist(x, recursive = FALSE)
   if (testXForm(x)) x <- unlist(x, recursive = FALSE)
@@ -409,15 +377,15 @@ kernL.default <- function(y, ..., model = list()) {
                        no.int = no.int, q = q, Nystrom = FALSE, y.levels = y.levels,
                        BlockBstuff = BlockBstuff, model = mod, call = cl,
                        no.int.3plus = no.int.3plus)
-  class(kernelLoaded) <- "ipriorKernel"
+  class(kernelLoaded) <- "ipriorKernel_old"
   if (as.numeric(mod$Nys.kern) > 0L)
     class(kernelLoaded) <- c("ipriorKernel_Nystrom")
   kernelLoaded
 }
 
-#' @rdname kernL
+#' @rdname kernL_old
 #' @export
-kernL.formula <- function(formula, data, model = list(), ...) {
+.kernL.formula <- function(formula, data, model = list(), ...) {
   mf <- model.frame(formula = formula, data = data)
   tt <- terms(mf)
   Terms <- delete.response(tt)
@@ -463,7 +431,7 @@ kernL.formula <- function(formula, data, model = list(), ...) {
     x <- as.data.frame(x)
   }
 
-  kernelLoaded <- kernL(y = y, x, model = c(model,
+  kernelLoaded <- .kernL(y = y, x, model = c(model,
                                             list(interactions = interactions,
                                                  intr.3plus = intr.3plus,
                                                  yname = yname, xname = xname)))
@@ -481,7 +449,7 @@ kernL.formula <- function(formula, data, model = list(), ...) {
 }
 
 #' @export
-print.ipriorKernel <- function(x, ...) {
+print.ipriorKernel_old <- function(x, ...) {
   cat("\n")
   # if (x$model$kernel == 'Canonical') CanOrFBM <- 'Canonical' else CanOrFBM <-
   # paste0('Fractional Brownian Motion with Hurst coef. ', x$gamfbm) kerneltypes <-

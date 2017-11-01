@@ -133,7 +133,7 @@ QEstep <- function(theta, psi = NULL, object, w, W) {
   # Q(theta) = psi  * sum(y ^ 2) + tr(Vy %*% W) - 2 * psi * crossprod(y, Hlam
   # %*% w)
   #
-  # Args: parameters theta and psi (optional), the ipriorKernel2 object, the
+  # Args: parameters theta and psi (optional), the ipriorKernel object, the
   # vector w and matrix W.
   #
   # Returns: Numeric.

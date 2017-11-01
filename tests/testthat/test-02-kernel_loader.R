@@ -59,21 +59,21 @@ test_that("Incorrect specification of kernels", {
 
   y <- x <- 1:3
   # Not enough kernels
-  expect_warning(mod <- kernL2(y, x, x, x, kernel = c("poly", "se")))
+  expect_warning(mod <- kernL(y, x, x, x, kernel = c("poly", "se")))
   # Too many kernels
-  expect_warning(mod <- kernL2(y, x, kernel = c("poly", "se")))
+  expect_warning(mod <- kernL(y, x, kernel = c("poly", "se")))
 
 })
 
 test_that("Interactions", {
 
   y <- x <- 1:3
-  mod1 <- kernL2(y, x, x, x, interactions = c("1:2", "1:2:3"))
-  mod2 <- kernL2(stack.loss ~ . ^ 2, stackloss)
-  expect_true(is.ipriorKernel2(mod1))
+  mod1 <- kernL(y, x, x, x, interactions = c("1:2", "1:2:3"))
+  mod2 <- kernL(stack.loss ~ . ^ 2, stackloss)
+  expect_true(is.ipriorKernel(mod1))
   expect_equal(mod1$no.int, 1)
   expect_equal(mod1$no.int.3plus, 1)
-  expect_true(is.ipriorKernel2(mod2))
+  expect_true(is.ipriorKernel(mod2))
   expect_equal(mod2$no.int, 3)
   expect_equal(mod2$no.int.3plus, 0)
 
@@ -82,8 +82,8 @@ test_that("Interactions", {
 test_that("Fixed hyperparameter option", {
 
   y <- x <- 1:3
-  mod <- kernL2(y, x, kernel = "fbm,0.8", fixed.hyp = TRUE)
-  expect_true(is.ipriorKernel2(mod))
+  mod <- kernL(y, x, kernel = "fbm,0.8", fixed.hyp = TRUE)
+  expect_true(is.ipriorKernel(mod))
   expect_false(all(unlist(mod$estl)))
 
 })
@@ -91,8 +91,8 @@ test_that("Fixed hyperparameter option", {
 test_that("Formula input", {
 
   dat <- gen_smooth(3)
-  mod1 <- kernL2(y ~ ., dat, kernel = "poly")
-  mod2 <- kernL2(dat$y, dat$X, kernel = "poly")
+  mod1 <- kernL(y ~ ., dat, kernel = "poly")
+  mod2 <- kernL(dat$y, dat$X, kernel = "poly")
   tmp1 <- capture.output(print(mod1))
   tmp2 <- capture.output(print(mod2))
   expect_equal(tmp1, tmp2)
@@ -104,9 +104,9 @@ test_that("get_Hlam()", {
   y <- x1 <- 1:3
   x2 <- factor(1:3)
   x3 <- 4:6
-  mod1 <- kernL2(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"))
+  mod1 <- kernL(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"))
   theta1 <- mod1$thetal$theta
-  mod2 <- kernL2(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"),
+  mod2 <- kernL(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"),
                  est.hurst = TRUE, est.lengthscale = TRUE)
   theta2 <- mod2$thetal$theta
   expect_equivalent(get_Hlam(mod1, c(1, 1, 1), theta.is.lambda = TRUE),

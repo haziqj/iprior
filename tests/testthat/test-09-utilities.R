@@ -60,7 +60,7 @@ test_that("fastVDiag", {
 
 test_that("check_theta", {
 
-  mod <- kernL2(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
+  mod <- kernL(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
   res <- capture.output(check_theta(mod))
   expect_equal(res[1], "theta consists of 3:")
   expect_equal(res[2], "log(lambda), log(offset), log(psi)")
@@ -78,7 +78,7 @@ test_that("gg_col_hue", {
 
 test_that("is.ipriorKernel", {
 
-  mod <- kernL2(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
+  mod <- kernL(y ~ ., gen_smooth(10), kernel = "poly", est.offset = TRUE)
   expect_true(is.ipriorKernel(mod))
 
 })

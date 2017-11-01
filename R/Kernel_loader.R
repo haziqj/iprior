@@ -71,7 +71,7 @@
 #'   letting the function know to treat all variables as a single variable (i.e.
 #'   shared scale parameter). Defaults to \code{FALSE}.
 #'
-#' @return An \code{ipriorKernel2} object which contains the relevant material
+#' @return An \code{ipriorKernel} object which contains the relevant material
 #'   to be passed to the \code{iprior} function for model fitting.
 #'
 #' @seealso \link[=iprior]{iprior}
@@ -79,32 +79,32 @@
 #' @examples
 #'
 #' str(ToothGrowth)
-#' (mod <- kernL2(y = ToothGrowth$len,
+#' (mod <- kernL(y = ToothGrowth$len,
 #'                supp = ToothGrowth$supp,
 #'                dose = ToothGrowth$dose,
 #'                interactions = "1:2"))
-#' kernL2(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
+#' kernL(len ~ supp * dose, data = ToothGrowth)  # equivalent formula call
 #'
 #' # Choosing different kernels
 #' str(stackloss)
-#' kernL2(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
-#' kernL2(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
-#' kernL2(stack.loss ~ ., stackloss,
+#' kernL(stack.loss ~ ., stackloss, kernel = "fbm")  # all fBm kernels
+#' kernL(stack.loss ~ ., stackloss, kernel = "FBm")  # cApS dOn't MatTeR
+#' kernL(stack.loss ~ ., stackloss,
 #'        kernel = c("linear", "se", "poly3"))  # different kernels
 #'
 #' # Sometimes the print output is too long, can use str() options here
 #' print(mod, strict.width = "cut", width = 30)
 #'
 #' @export
-kernL2 <- function(
+kernL <- function(
   y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
   est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
   nys.seed = NULL, model = list()
-) UseMethod("kernL2")
+) UseMethod("kernL")
 
 #' @export
-kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
+kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
@@ -112,7 +112,7 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
                            model = list()) {
   # Checks ---------------------------------------------------------------------
   if (is.list(model) & length(model) > 0) {
-    stop("\'model\' option is deprecated. Use the arguments to kernL2 instead. See \'?kernL2\' for details.", call. = FALSE)
+    stop("\'model\' option is deprecated. Use the arguments directly instead. See \'?kernL\' for details.", call. = FALSE)
   }
   kernel <- tolower(kernel)
 
@@ -280,13 +280,13 @@ kernL2.default <- function(y, ..., kernel = "linear", interactions = NULL,
   # Function call --------------------------------------------------------------
   res$call <- fix_call_default(match.call(), "kernL")
 
-  class(res) <- "ipriorKernel2"
+  class(res) <- "ipriorKernel"
   res
 }
 
-#' @rdname kernL2
+#' @rdname kernL
 #' @export
-kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
+kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            est.lambda = TRUE, est.hurst = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
@@ -335,13 +335,13 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
     names(x) <- xname
   }
 
-  res <- kernL2.default(y = y, Xl.formula = x, interactions = interactions,
-                        kernel = kernel, est.lambda = est.lambda,
-                        est.hurst = est.hurst,
-                        est.lengthscale = est.lengthscale,
-                        est.offset = est.offset, est.psi = est.psi,
-                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
-                        nystrom = nystrom, nys.seed = nys.seed, model = model)
+  res <- kernL.default(y = y, Xl.formula = x, interactions = interactions,
+                       kernel = kernel, est.lambda = est.lambda,
+                       est.hurst = est.hurst,
+                       est.lengthscale = est.lengthscale,
+                       est.offset = est.offset, est.psi = est.psi,
+                       fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
+                       nystrom = nystrom, nys.seed = nys.seed, model = model)
   res$yname <- yname
   res$formula <- formula
   res$terms <- tt
@@ -351,7 +351,7 @@ kernL2.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
 }
 
 #' @export
-print.ipriorKernel2 <- function(x, units = "MB", standard = "SI", ...) {
+print.ipriorKernel <- function(x, units = "MB", standard = "SI", ...) {
   tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
 
   # if (isTRUE(x$probit)) {

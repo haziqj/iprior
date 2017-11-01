@@ -41,12 +41,12 @@ iprior <- function(...) UseMethod("iprior")
 #' method. That is, the response variable is the vector \code{y}, and any
 #' explanatory variables should follow this, and separated by commas.
 #'
-#' As described \link[=kernL2]{here}, the model can be loaded first into an
+#' As described \link[=kernL]{here}, the model can be loaded first into an
 #' \code{ipriorKernel} object, and then passed to the \code{iprior()} function
 #' to perform the estimation.
 #'
-#' @inheritParams kernL2
-#' @param object An \code{ipriorKernel2} or \code{ipriorMod} object.
+#' @inheritParams kernL
+#' @param object An \code{ipriorKernel} or \code{ipriorMod} object.
 #' @param method The estimation method. One of: \itemize{ \item{\code{"direct"}
 #'   - for the direct minimisation of the marginal deviance using
 #'   \code{optim()}'s L-BFGS method} \item{\code{"em"} - for the EM algorithm}
@@ -139,10 +139,10 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
                            model = list()) {
   # Load the I-prior model -----------------------------------------------------
-  if (is.ipriorKernel2(y)) {
+  if (is.ipriorKernel(y)) {
     mod <- y
   } else {
-    mod <- kernL2(y = y, ..., kernel = kernel, interactions = interactions,
+    mod <- kernL(y = y, ..., kernel = kernel, interactions = interactions,
                   est.lambda = est.lambda, est.hurst = est.hurst,
                   est.lengthscale = est.lengthscale, est.offset = est.offset,
                   est.psi = est.psi, fixed.hyp = fixed.hyp, lambda = lambda,
@@ -273,7 +273,7 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
                            model = list(), ...) {
   # Simply load the kernel and pass to iprior.default() ------------------------
-  mod <- kernL2.formula(formula, data, kernel = kernel, one.lam = one.lam,
+  mod <- kernL.formula(formula, data, kernel = kernel, one.lam = one.lam,
                         est.lambda = est.lambda, est.hurst = est.hurst,
                         est.lengthscale = est.lengthscale,
                         est.offset = est.offset, est.psi = est.psi,
@@ -285,10 +285,10 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
   res
 }
 
-#' @describeIn iprior Takes in object of type \code{ipriorKernel2}, a loaded and
+#' @describeIn iprior Takes in object of type \code{ipriorKernel}, a loaded and
 #'   prepared I-prior model, and proceeds to estimate it.
 #' @export
-iprior.ipriorKernel2 <- function(object, method = "direct",
+iprior.ipriorKernel <- function(object, method = "direct",
                                  control = list(), ...) {
   iprior.default(y = object, method = method, control = control)
 }

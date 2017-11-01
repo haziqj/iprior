@@ -3,20 +3,20 @@
 \name{logLik.ipriorMod}
 \alias{logLik.ipriorMod}
 \alias{deviance.ipriorMod}
-\alias{logLik.ipriorKernel2}
-\alias{deviance.ipriorKernel2}
+\alias{logLik.ipriorKernel}
+\alias{deviance.ipriorKernel}
 \title{Obtain the log-likelihood and deviance of an I-prior model}
 \usage{
 \method{logLik}{ipriorMod}(object, theta = NULL, ...)
 
 \method{deviance}{ipriorMod}(object, theta = NULL, ...)
 
-\method{logLik}{ipriorKernel2}(object, theta = NULL, ...)
+\method{logLik}{ipriorKernel}(object, theta = NULL, ...)
 
-\method{deviance}{ipriorKernel2}(object, theta = NULL, ...)
+\method{deviance}{ipriorKernel}(object, theta = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{ipriorMod} or \code{ipriorKernel2}.}
+\item{object}{An object of class \code{ipriorMod} or \code{ipriorKernel}.}
 
 \item{theta}{(Optional) Evaluates the log-likelihood at \code{theta}.}
 

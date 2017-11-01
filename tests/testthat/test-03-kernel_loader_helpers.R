@@ -20,26 +20,26 @@ test_that("BlockB creation conditions", {
   y <- 1:3
   x1 <- 1:3
   x2 <- 4:6
-  expect_true(!is.null(kernL2(y, x1, kernel = "se")$BlockBStuff))  # single lambda
-  expect_true(!is.null(kernL2(y, x1, x2, kernel = "fbm")$BlockBStuff))  # mult lambda
-  expect_true(!is.null(kernL2(y, x1, x2, interactions = "1:2")$BlockBStuff))
+  expect_true(!is.null(kernL(y, x1, kernel = "se")$BlockBStuff))  # single lambda
+  expect_true(!is.null(kernL(y, x1, x2, kernel = "fbm")$BlockBStuff))  # mult lambda
+  expect_true(!is.null(kernL(y, x1, x2, interactions = "1:2")$BlockBStuff))
   expect_true(
-    is.null(kernL2(y, x1, x2, kernel = c("poly2", "fbm"))$BlockBStuff)
+    is.null(kernL(y, x1, x2, kernel = c("poly2", "fbm"))$BlockBStuff)
   )  # polynomial kernel
   expect_true(
-    is.null(kernL2(y, x1, x2, kernel = "fbm", est.hurst = TRUE)$BlockBStuff)
+    is.null(kernL(y, x1, x2, kernel = "fbm", est.hurst = TRUE)$BlockBStuff)
   )  # est hurst
   expect_true(
-    is.null(kernL2(y, x1, x2, kernel = "se", est.lengthscale = TRUE)$BlockBStuff)
+    is.null(kernL(y, x1, x2, kernel = "se", est.lengthscale = TRUE)$BlockBStuff)
   )  # est lengthscale
   expect_true(
-    is.null(kernL2(y, x1, x2, est.lambda = FALSE, est.psi = FALSE)$BlockBStuff)
+    is.null(kernL(y, x1, x2, est.lambda = FALSE, est.psi = FALSE)$BlockBStuff)
   )  # no estimate lambda and psi
   expect_true(
-    !is.null(kernL2(y, x1, x2, est.lambda = TRUE, est.psi = FALSE)$BlockBStuff)
+    !is.null(kernL(y, x1, x2, est.lambda = TRUE, est.psi = FALSE)$BlockBStuff)
   )  # no estimate lambda
   expect_true(
-    !is.null(kernL2(y, x1, x2, est.lambda = FALSE, est.psi = TRUE)$BlockBStuff)
+    !is.null(kernL(y, x1, x2, est.lambda = FALSE, est.psi = TRUE)$BlockBStuff)
   )  # no estimate psi
 
 })

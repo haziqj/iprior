@@ -44,7 +44,7 @@ param_to_kernel <- function(param) {
 theta_to_kernel <- function(theta, object) {
   # Convert theta to vector of kernels.
   #
-  # Args: theta and an ipriorKernel2 object.
+  # Args: theta and an ipriorKernel object.
   #
   # Returns: Vector of kernels.
   param <- theta_to_param(mod$theta, mod$kernL)
@@ -192,7 +192,7 @@ collapse_param <- function(param) {
 
 theta_to_param <- function(theta, object) {
   # Args: A vector of parameters to be optimised, including logpsi. object must
-  # be either a ipriorKernel2 type object, or a list containing param.na,
+  # be either a ipriorKernel type object, or a list containing param.na,
   # which.pearson and poly.deg.
   #
   # Returns: A param table.
@@ -315,7 +315,7 @@ theta_to_psi <- function(theta, object) {
   # ipriorKernel object.
   #
   # Args: A vector of parameters to be optimised, including logpsi, and an
-  # ipriorKernel2 object.
+  # ipriorKernel object.
   #
   # Returns: psi, the error precision.
   theta <- expand_theta(theta, object$thetal$theta.drop,
@@ -433,6 +433,9 @@ expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
     assign("lambda", lambda, envir = env)
   }
 }
+
+#' @export
+.expand_Hl_and_lambda <- expand_Hl_and_lambda
 
 BlockB_fn <- function(Hl, intr, n, p) {
   # This is the function which returns the BlockBStuff required for closed-form
