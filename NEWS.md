@@ -1,4 +1,4 @@
-# v0.6.5.9005
+# v0.7.0
 
 * **This udpate provides a complete redesign of the internals of the package. There are more kernels supported, new estimation methods, and plots are done using the `ggplot2` package.**
 * Enhanced the methods and calculations for the linear (canonical) kernel, the fractional Brownian motion kernel, and the Pearson kernel.

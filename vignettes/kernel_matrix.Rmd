@@ -1,10 +1,10 @@
 ---
-title: "Manual for the kernel matrix list"
+title: "Closed-form EM algorithm matrix manipulations"
 author: "Haziq Jamil"
-date: "2017-01-10"
+date: "2017-11-02"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Manual for the kernel matrix list}
+  %\VignetteIndexEntry{Closed-form EM algorithm matrix manipulations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,14 +1,14 @@
 Package: iprior
-Title: Regression using Priors with Fisher Information Covariance Kernels (I-Priors)
-Version: 0.6.5.9005
+Title: Regression Modelling using I-priors
+Version: 0.7.0
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
 Description: Provides methods to perform and analyse I-prior regression models.
     Estimation is done either via direct optimisation of the log-likelihood or 
     an EM algorithm.
-URL: https://github.com/haziqjamil/iprior
-BugReports: https://github.com/haziqjamil/iprior/issues
+URL: https://github.com/haziqj/iprior
+BugReports: https://github.com/haziqj/iprior/issues
 License: GPL (>= 3.0)
 Depends: 
   R (>= 3.2.5)
@@ -26,8 +26,11 @@ LinkingTo:
 Suggests:
   knitr,
   MASS,
+  R.rsp,
   rmarkdown,
   testthat
 LazyData: yes
-VignetteBuilder: knitr
+VignetteBuilder: 
+  knitr,
+  R.rsp
 RoxygenNote: 6.0.1
