@@ -6,11 +6,20 @@
 [![CRAN_Status_Badge_version_ago](http://www.r-pkg.org/badges/version-ago/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 
-Based on the manuscript entitled "Regression with I-priors" by Wicher Bergsma [2017, unpublished]. In a linear regression setting, priors can be assigned to the regression function using a vector space framework, and the posterior estimate of the regression function obtained. An I-prior is defined as Gaussian with some prior mean (usually zero) and covariance kernel equal to the Fisher information for the regression function.
+Based on the manuscript entitled "Regression and Classification with I-priors" by Wicher Bergsma [2017, [arXiv:1707.00274](https://arxiv.org/abs/1707.00274)]. 
+In a general regression setting, priors can be assigned to the regression function in a vector space framework, and the posterior estimate of the regression function obtained. 
+An I-prior is defined as Gaussian with some prior mean (usually zero) and covariance kernel equal to the Fisher information for the regression function.
+The function space is assumed to be a reproducing kernel Hilbert/Krein space (RKHS/RKKS).
 
-This package performs linear regression modelling using I-priors in R. It is intuitively designed to be similar to `lm`, with both formula and non-formula based input. The parameters of an I-prior model are the scale parameters of the reproducing kernel Hilbert space (RKHS) over the set of covariates, `lambda`, and the standard deviation of model errors, `sigma`. While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
+This package performs regression modelling using I-priors in R. 
+It is intuitively designed to be similar to `lm`, making use of similar syntactical conventions and S3 methods, with both formula and non-formula based input. 
+The parameters of an I-prior model include the scale parameters of the kernels, any other kernel parameters such as the Hurst index for a fractional Brownian motion (fBm) kernel, and the model error precision.
+The package estimates these parameters using direct log-likelihood maximisation, the expectation-maxmisation (EM) algorithm, or a combination of both.
+The Nyström method of approximating the kernel matrix is also supported.
+While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests or asymptotic Z-tests of the scale parameters.
 
-For installation instructions and some examples of I-prior modelling, continue reading below. The package is documented with help files, and the [wiki](https://github.com/haziqjamil/iprior/wiki/) is a good source to view some discussion topics and further examples.
+For installation instructions and some examples of I-prior modelling, continue reading below. 
+The package is documented with help files, and the vignette provides an introduction to the concept of I-priors and also to using the package.
 
 ## Installation
 
@@ -27,7 +36,8 @@ or the developmental version from this GitHub repository. R/iprior makes use of 
 -   On Mac, install Xcode from the app store.
 -   On Linux, `sudo apt-get install r-base-dev` or similar.
 
-The easiest way to then install from this repo is by using the [devtools](https://github.com/hadley/devtools) package. Install this first.
+The easiest way to then install from this repo is by using the [devtools](https://github.com/hadley/devtools) package. 
+Install this first.
 
 ``` r
 install.packages("devtools")
@@ -36,23 +46,26 @@ install.packages("devtools")
 Then, run the following code to install and attach the `iprior` package.
 
 ``` r
-devtools::install_github("haziqjamil/iprior", build_vignettes = TRUE)
+devtools::install_github("haziqj/iprior", build_vignettes = TRUE)
 library(iprior)
 ```
 
-*Note: The option `build_vignettes = TRUE` builds the package vignettes for viewing, but takes slightly longer. Set `build_vignettes = FALSE`, or remove this option entirely, to skip building the vignettes.*
+[comment]: *Note: The option `build_vignettes = TRUE` builds the package vignettes for viewing, but takes slightly longer. Set `build_vignettes = FALSE`, or remove this option entirely, to skip building the vignettes.*
 
 ## Syntax
 
 To fit an I-prior model to `mod` regressing `y` against `x`, where these are contained in the data frame `dat`, the following syntax are equivalent.
 
 ``` r
-mod <- iprior(y ~ x, data = dat)  # formula based input
+mod <- iprior(y ~ x, data = dat)     # formula based input
 mod <- iprior(y = dat$y, x = dat$x)  # non-formula based input
 ```
 
-The call to `iprior()` can be accompanied by model options in the form of `model = list()`, such as choosing the RKHS, number of scale parameters, and others. Control options for the EM algorithm fit is done through the option `control = list()`. Find the full list of options by typing `?iprior` in R.
+The call to `iprior()` can be accompanied by several other model specification arguments, including choosing the RKHS, hyperparameters to estimate, estimation method, and others. 
+Control options for the estimation method of choice is done through the option `control = list()`. 
+Find the full list of options by typing `?iprior` in R.
 
 ## Resources
 
-View the package vignettes by typing `browseVignettes("iprior")` in R. Also, visit the the [wiki](https://github.com/haziqjamil/iprior/wiki/Vignette-examples) page for some usage examples and other topics of discussions.
+View the package vignette by typing `browseVignettes("iprior")` in R. 
+This package is part of the PhD project entitled "Regression Modelling using Fisher Information Covariance Kernels (I-priors)" by Haziq Jamil [[link](http://phd.haziqj.ml)].
