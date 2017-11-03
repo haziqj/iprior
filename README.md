@@ -11,7 +11,7 @@ In a general regression setting, priors can be assigned to the regression functi
 An I-prior is defined as Gaussian with some prior mean (usually zero) and covariance kernel equal to the Fisher information for the regression function.
 
 This package performs regression modelling using I-priors in R. 
-It is intuitively designed to be similar to `lm`, making use of similar syntactical conventions and S3 methods, with both formula and non-formula based input. 
+It is intuitively designed to be similar to `lm`, making use of familiar syntactical conventions and S3 methods, with both formula and non-formula based input. 
 The package estimates these parameters using direct log-likelihood maximisation, the expectation-maxmisation (EM) algorithm, or a combination of both.
 While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
