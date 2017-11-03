@@ -9,14 +9,11 @@
 Based on the manuscript entitled "Regression and Classification with I-priors" by Wicher Bergsma [2017, [arXiv:1707.00274](https://arxiv.org/abs/1707.00274)]. 
 In a general regression setting, priors can be assigned to the regression function in a vector space framework, and the posterior estimate of the regression function obtained. 
 An I-prior is defined as Gaussian with some prior mean (usually zero) and covariance kernel equal to the Fisher information for the regression function.
-The function space is assumed to be a reproducing kernel Hilbert/Krein space (RKHS/RKKS).
 
 This package performs regression modelling using I-priors in R. 
 It is intuitively designed to be similar to `lm`, making use of similar syntactical conventions and S3 methods, with both formula and non-formula based input. 
-The parameters of an I-prior model include the scale parameters of the kernels, any other kernel parameters such as the Hurst index for a fractional Brownian motion (fBm) kernel, and the model error precision.
 The package estimates these parameters using direct log-likelihood maximisation, the expectation-maxmisation (EM) algorithm, or a combination of both.
-The Nyström method of approximating the kernel matrix is also supported.
-While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests or asymptotic Z-tests of the scale parameters.
+While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
 For installation instructions and some examples of I-prior modelling, continue reading below. 
 The package is documented with help files, and the vignette provides an introduction to the concept of I-priors and also to using the package.

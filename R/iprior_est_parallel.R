@@ -54,8 +54,6 @@ iprior_parallel <- function(mod, method = "direct",
     snow.options.list <- list()
   }
 
-
-
   # The multithreading bit -----------------------------------------------------
   start.time <- Sys.time()
   cl <- parallel::makeCluster(control$no.cores)
