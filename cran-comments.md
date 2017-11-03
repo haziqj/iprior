@@ -1,12 +1,14 @@
 ## Test environments
 * local macOS High Sierra 10.13, R 3.4.2
-* Ubuntu 14.04.5 (devel, release and oldrel on travis-ci)
-* win-builder (devel and release)
+* OS X El Capitan 10.11.6 on travis-ci, R 3.3.3 
+* Ubuntu 14.04.5 on travis-ci, R devel, release and oldrel (with valgrind)
+* Windows Server 2012 R2 x64 build 9600 on appveyor-ci, R devel, release and oldrel 
+* win-builder (devel)
 
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
-There was 1 NOTE:
+There were 2 NOTEs:
 
 * checking installed package size ... NOTE
   installed size is  9.1Mb
@@ -15,5 +17,9 @@ There was 1 NOTE:
   
   *This NOTE appears only with linux systems (i.e., it does not appear with macOS or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.*
 
+* Uses the superseded package: 'doSNOW'
+
+  *Use of the 'doSNOW' package as opposed to the 'doParallel' package is required due to the support of the printed txtProgressBar in the 'doSNOW' package.*
+  
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
