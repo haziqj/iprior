@@ -1,5 +1,5 @@
 Package: iprior
-Title: Regression Modelling using I-priors
+Title: Regression Modelling using I-Priors
 Version: 0.7.0
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
