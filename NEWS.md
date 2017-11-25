@@ -1,3 +1,7 @@
+# v0.7.1.9001
+
+* Modification to centering of SE and polynomial kernels.
+
 # v0.7.0
 
 * **This udpate provides a complete redesign of the internals of the package. There are more kernels supported, new estimation methods, and plots are done using the `ggplot2` package.**
