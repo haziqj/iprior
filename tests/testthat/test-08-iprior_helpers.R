@@ -9,8 +9,8 @@ test_that("Hlam", {
   mod <- kernL(y, x1, x2, x3, kernels = c("fbm", "se", "pearson"))
   K <- get_Hlam(mod, mod$thetal$theta)
   tmp <- eigen_Hlam(K)
-  expect_equal(det(K), 32.73602, tolerance = 1e-6)
-  expect_equal(tmp$u, c(1.869905, 3.598763, 4.864665), tolerance = 1e-6)
+  expect_equal(as.numeric(determinant(K)$mod), -34.28778, tolerance = 1e-6)
+  expect_equal(tmp$u, c(4.066071e-16, 3.569738e+00, 4.864665e+00), tolerance = 1e-6)
 
 })
 
@@ -22,7 +22,7 @@ test_that("logLik", {
   x3 <- factor(7:9)
   mod <- kernL(y, x1, x2, x3, kernel = "poly", est.offset = TRUE)
   res <- loglik_iprior(c(1, 1, 1, 0, 0, 0), object = mod)
-  expect_equal(res, -8.735662, tolerance = 1e-6)
+  expect_equal(res, -9.47678, tolerance = 1e-6)
 
 })
 

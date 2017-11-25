@@ -276,6 +276,6 @@ kern_centre <- function(mat) {
   rvec <- apply(mat, 1, sum)
   cvec <- apply(mat, 2, sum)
   svec <- sum(mat)
-  mat - rvec / length(cvec) - rep(cvec, each = nrow(mat)) / length(rvec) +
-    svec / (length(rvec) * length(cvec))
+  n <- ncol(mat)
+  mat - rvec / n - rep(cvec, each = nrow(mat)) / n + svec / (n ^ 2)
 }
