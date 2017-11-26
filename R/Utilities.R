@@ -330,6 +330,60 @@ fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   cl
 }
 
+formula_to_xy <- function(formula, data, one.lam) {
+  # Convert formula entry to y, X entry.
+  #
+  # Args: The formula, data frame and a logical option for one.lam.
+  #
+  # Returns: A list containing the data y and X, interactions instructions, x
+  # and y names, and model terms (tt).
+  mf <- model.frame(formula = formula, data = data)
+  tt <- terms(mf)
+  Terms <- delete.response(tt)
+  x <- model.frame(Terms, mf)
+  y <- model.response(mf)
+  yname <- names(attr(tt, "dataClasses"))[1]
+  xname <- names(x)
+  xnl <- length(xname)
+  x <- as.list(x)
+  attr(x, "terms") <- NULL
+  # attr(y, "yname") <- yname
+
+  # Interactions ---------------------------------------------------------------
+  interactions <- NULL
+  tmpo <- attr(tt, "order")
+  tmpf <- attr(tt, "factors")
+  tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  # this obtains 2nd order interactions
+  int2 <- apply(tmpf2, 2, function(x) which(x == 1))
+  if (any(tmpo == 2)) interactions <- int2
+  intr.3plus <- NULL
+  tmpf3 <- as.matrix(tmpf[-1, tmpo > 2])
+  int3 <- apply(tmpf3, 2, whereInt)
+  if (any(tmpo > 2)) intr.3plus <- int3
+  interactions <- list(intr = interactions, intr.3plus = intr.3plus)
+
+  # Deal with one.lam option ---------------------------------------------------
+  if (isTRUE(one.lam)) {
+    if (!all(sapply(interactions, is.null))) {
+      stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
+    }
+    if (length(x) == 1) {
+      message("Option one.lam = TRUE used with a single covariate anyway.")
+    }
+    attributes(x)$terms <- attributes(x)$names <- NULL
+    if (xnl <= 3) {
+      xname <- paste(xname, collapse = " + ")
+    } else {
+      xname <- paste(xname[1], "+ ... +", xname[xnl])
+    }
+    x <- list(matrix(unlist(x), ncol = length(x)))
+    names(x) <- xname
+  }
+
+  list(y = y, Xl = x, interactions = interactions, xname = xname, yname = yname,
+       tt = tt)
+}
+
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
   # yourself when your package is unloaded.

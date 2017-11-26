@@ -274,11 +274,12 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            model = list(), ...) {
   # Simply load the kernel and pass to iprior.default() ------------------------
   mod <- kernL.formula(formula, data, kernel = kernel, one.lam = one.lam,
-                        est.lambda = est.lambda, est.hurst = est.hurst,
-                        est.lengthscale = est.lengthscale,
-                        est.offset = est.offset, est.psi = est.psi,
-                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
-                        nystrom = nystrom, nys.seed = nys.seed, model = model)
+                       est.lambda = est.lambda, est.hurst = est.hurst,
+                       est.lengthscale = est.lengthscale,
+                       est.offset = est.offset, est.psi = est.psi,
+                       fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
+                       nystrom = nystrom, nys.seed = nys.seed, model = model,
+                       ...)
   res <- iprior.default(y = mod, method = method, control = control)
   res$call <- fix_call_formula(match.call(), "iprior")
   res$ipriorKernel$call <- fix_call_formula(match.call(), "kernL")

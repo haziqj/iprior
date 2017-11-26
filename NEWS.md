@@ -1,6 +1,7 @@
-# v0.7.1.9001
+# v0.7.1.9002
 
 * Modification to centering of SE and polynomial kernels.
+* Added a function to perform k-fold cross validation experiments for I-prior models.
 
 # v0.7.0
 

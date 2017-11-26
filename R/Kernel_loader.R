@@ -115,7 +115,6 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     stop("\'model\' option is deprecated. Use the arguments directly instead. See \'?kernL\' for details.", call. = FALSE)
   }
   kernel <- tolower(kernel)
-
   Xl <- list(...)
   # It is common to make the mistake and type kernels instead of kernel. This
   # corrects it.
@@ -124,14 +123,26 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     kernel <- Xl[[Xl.kernel.mistake]]
     Xl[[Xl.kernel.mistake]] <- NULL
   }
+  # Check for cross-validation
+  cv.method <- FALSE
+  if ("test.samp" %in% names(Xl)) {
+    Xl.test.samp.ind <- match("test.samp", names(Xl))
+    test.samp <- Xl[[Xl.test.samp.ind]]
+    train.samp <- seq_along(y)[-test.samp]
+    Xl[[Xl.test.samp.ind]] <- NULL
+    cv.method <- TRUE
+  }
+  # Check formula
   Xl.formula <- match("Xl.formula", names(Xl))
   formula.method <- FALSE
   if ("Xl.formula" %in% names(Xl)) {
     Xl <- Xl[[Xl.formula]]
     formula.method <- TRUE
   }
+  # Get names
   xname <- names(Xl)
   yname <- attr(y, "yname")
+  # Check for probit model
   if (is.factor(y)) {
     probit <- TRUE
     tmp <- get_y_and_levels(y)
@@ -141,6 +152,23 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     probit <- FALSE
     y.levels <- NULL
   }
+
+  # For cross-validation routine, just load the training samples ---------------
+  y.test <- Xl.test <- NULL
+  if (isTRUE(cv.method)) {
+    y.test <- y[test.samp]
+    Xl.test <- lapply(Xl, function(x) {
+      if (is.matrix(x) | is.data.frame(x)) return(x[test.samp, , drop = FALSE])
+      else return(x[test.samp])
+    })
+    y <- y[train.samp]
+    Xl <- lapply(Xl, function(x) {
+      if (is.matrix(x) | is.data.frame(x)) return(x[train.samp, , drop = FALSE])
+      else return(x[train.samp])
+    })
+  }
+
+  # Get intercept --------------------------------------------------------------
   y <- scale(y, scale = FALSE)  # centre variables
   intercept <- attr(y, "scaled:center")
 
@@ -276,6 +304,10 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     xname = xname, yname = yname, formula = NULL, terms = NULL,
     y.levels = y.levels
   )
+  if (!is.null(y.test) & !is.null(Xl.test)) {
+    res$y.test <- y.test
+    res$Xl.test <- Xl.test
+  }
 
   # Function call --------------------------------------------------------------
   res$call <- fix_call_default(match.call(), "kernL")
@@ -292,56 +324,16 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
                            model = list(), ...) {
-  mf <- model.frame(formula = formula, data = data)
-  tt <- terms(mf)
-  Terms <- delete.response(tt)
-  x <- model.frame(Terms, mf)
-  y <- model.response(mf)
-  yname <- names(attr(tt, "dataClasses"))[1]
-  xname <- names(x)
-  xnl <- length(xname)
-  x <- as.list(x)
-  attr(x, "terms") <- NULL
-  # attr(y, "yname") <- yname
-
-  # Interactions ---------------------------------------------------------------
-  interactions <- NULL
-  tmpo <- attr(tt, "order")
-  tmpf <- attr(tt, "factors")
-  tmpf2 <- as.matrix(tmpf[-1, tmpo == 2])  # this obtains 2nd order interactions
-  int2 <- apply(tmpf2, 2, function(x) which(x == 1))
-  if (any(tmpo == 2)) interactions <- int2
-  intr.3plus <- NULL
-  tmpf3 <- as.matrix(tmpf[-1, tmpo > 2])
-  int3 <- apply(tmpf3, 2, whereInt)
-  if (any(tmpo > 2)) intr.3plus <- int3
-  interactions <- list(intr = interactions, intr.3plus = intr.3plus)
-
-  # Deal with one.lam option ---------------------------------------------------
-  if (isTRUE(one.lam)) {
-    if (!all(sapply(interactions, is.null))) {
-      stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
-    }
-    if (length(x) == 1) {
-      message("Option one.lam = TRUE used with a single covariate anyway.")
-    }
-    attributes(x)$terms <- attributes(x)$names <- NULL
-    if (xnl <= 3) {
-      xname <- paste(xname, collapse = " + ")
-    } else {
-      xname <- paste(xname[1], "+ ... +", xname[xnl])
-    }
-    x <- list(matrix(unlist(x), ncol = length(x)))
-    names(x) <- xname
-  }
-
-  res <- kernL.default(y = y, Xl.formula = x, interactions = interactions,
+  list2env(formula_to_xy(formula = formula, data = data, one.lam = one.lam),
+           envir = environment())
+  res <- kernL.default(y = y, Xl.formula = Xl, interactions = interactions,
                        kernel = kernel, est.lambda = est.lambda,
                        est.hurst = est.hurst,
                        est.lengthscale = est.lengthscale,
                        est.offset = est.offset, est.psi = est.psi,
                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
-                       nystrom = nystrom, nys.seed = nys.seed, model = model)
+                       nystrom = nystrom, nys.seed = nys.seed, model = model,
+                       ...)
   res$yname <- yname
   res$formula <- formula
   res$terms <- tt
