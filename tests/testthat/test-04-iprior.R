@@ -191,6 +191,17 @@ test_that("update and iprior.ipriorMod", {
 
 })
 
+test_that("Training samples specified", {
+
+  set.seed(123)
+  mod1 <- iprior(stack.loss, stack.x, train.samp = 1:10,
+                 control = list(silent = TRUE))
+  mod2 <- iprior(stack.loss ~ ., stackloss, one.lam = TRUE, train.samp = 1:10,
+                 control = list(silent = TRUE))
+  expect_equal(mod1$test, mod2$test, tol = 1e-5)
+
+})
+
 context("Print and summary for ipriorMod")
 
 test_that("print()", {
@@ -206,3 +217,5 @@ test_that("print()", {
   expect_equal(tmp, tmp)
 
 })
+
+

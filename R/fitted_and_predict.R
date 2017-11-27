@@ -88,14 +88,9 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
     xrownames <- rownames(do.call(cbind, newdata))
   }
 
-  Hlam.new <- get_Htildelam(object$ipriorKernel, object$theta, xstar)
-  y.hat.new <- get_intercept(object) + Hlam.new %*% object$w
-  res <- predict_iprior(y.test, y.hat.new)
+  res <- predict_iprior(object, xstar, y.test, intervals = intervals,
+                        alpha = alpha)
   names(res$y) <- xrownames
-  names(res)[grep("train.error", names(res))] <- "test.error"
-  if (isTRUE(intervals)) {
-    res <- c(res, predict_iprior_quantiles(object, Hlam.new, res$y, alpha))
-  }
   class(res) <- "ipriorPredict"
   res
 }
@@ -129,9 +124,31 @@ print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
   cat("\n")
 }
 
-predict_iprior <- function(y, y.hat) {
-  # This is the main helper function to calculate fitted or predicted values. It
-  # appears in iprior(), fitted() and predict() for ipriorMod objects.
+predict_iprior <- function(object, xstar, y.test, intervals = FALSE,
+                           alpha = 0.05) {
+  # This is the main helper function to calculate predicted values, and if
+  # required, the credibility intervals for prediction.
+  #
+  # Args: An ipriorMod object, a list of new data points (in the style of
+  # non-formula, even if fitted using formula), and data or test data for
+  # calculation of residuals and prediction error.
+  #
+  # Returns: A list containing the predicted values, residuals and MSE.
+  Hlam.new <- get_Htildelam(object$ipriorKernel, object$theta, xstar)
+  y.hat.new <- object$ipriorKernel$intercept + Hlam.new %*% object$w
+  res <- mse_iprior(y.test, y.hat.new)
+
+  if (isTRUE(intervals)) {
+    res <- c(res, predict_iprior_quantiles(object, Hlam.new, res$y, alpha))
+  }
+
+  names(res)[grep("train.error", names(res))] <- "test.error"
+  res
+}
+
+mse_iprior <- function(y, y.hat) {
+  # A helper function to calculate residuals and mean squared error from y and
+  # y.hat. It appears in iprior(), fitted() and predict() for ipriorMod objects.
   #
   # Args: y (data or test data for calculation of errors); y.hat is the
   # predicted y values.

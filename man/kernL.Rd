@@ -13,7 +13,8 @@ kernL(y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
 \method{kernL}{formula}(formula, data, kernel = "linear", one.lam = FALSE,
   est.lambda = TRUE, est.hurst = FALSE, est.lengthscale = FALSE,
   est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
-  psi = 1, nystrom = FALSE, nys.seed = NULL, model = list(), ...)
+  psi = 1, nystrom = FALSE, nys.seed = NULL, model = list(), train.samp,
+  ...)
 }
 \arguments{
 \item{y}{Vector of response variables}
@@ -83,10 +84,13 @@ approximation.}
 \item{one.lam}{Logical. When using formula input, this is a convenient way of
 letting the function know to treat all variables as a single variable (i.e.
 shared scale parameter). Defaults to \code{FALSE}.}
+
+\item{train.samp}{(Optional) A vector indicating which of the data points
+should be used for training, so the remaining would be used for testing.}
 }
 \value{
-An \code{ipriorKernel} object which contains the relevant material
-  to be passed to the \code{iprior} function for model fitting.
+An \code{ipriorKernel} object which contains the relevant material to
+  be passed to the \code{iprior} function for model fitting.
 }
 \description{
 Load the kernel matrices for I-prior models

@@ -70,9 +70,11 @@
 #' @param one.lam Logical. When using formula input, this is a convenient way of
 #'   letting the function know to treat all variables as a single variable (i.e.
 #'   shared scale parameter). Defaults to \code{FALSE}.
+#' @param train.samp (Optional) A vector indicating which of the data points
+#'   should be used for training, so the remaining would be used for testing.
 #'
-#' @return An \code{ipriorKernel} object which contains the relevant material
-#'   to be passed to the \code{iprior} function for model fitting.
+#' @return An \code{ipriorKernel} object which contains the relevant material to
+#'   be passed to the \code{iprior} function for model fitting.
 #'
 #' @seealso \link[=iprior]{iprior}
 #'
@@ -109,7 +111,7 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list()) {
+                           model = list(), train.samp) {
   # Checks ---------------------------------------------------------------------
   if (is.list(model) & length(model) > 0) {
     stop("\'model\' option is deprecated. Use the arguments directly instead. See \'?kernL\' for details.", call. = FALSE)
@@ -122,15 +124,6 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   if ("kernels" %in% names(Xl)) {
     kernel <- Xl[[Xl.kernel.mistake]]
     Xl[[Xl.kernel.mistake]] <- NULL
-  }
-  # Check for cross-validation
-  cv.method <- FALSE
-  if ("test.samp" %in% names(Xl)) {
-    Xl.test.samp.ind <- match("test.samp", names(Xl))
-    test.samp <- Xl[[Xl.test.samp.ind]]
-    train.samp <- seq_along(y)[-test.samp]
-    Xl[[Xl.test.samp.ind]] <- NULL
-    cv.method <- TRUE
   }
   # Check formula
   Xl.formula <- match("Xl.formula", names(Xl))
@@ -153,19 +146,25 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     y.levels <- NULL
   }
 
-  # For cross-validation routine, just load the training samples ---------------
-  y.test <- Xl.test <- NULL
-  if (isTRUE(cv.method)) {
-    y.test <- y[test.samp]
-    Xl.test <- lapply(Xl, function(x) {
-      if (is.matrix(x) | is.data.frame(x)) return(x[test.samp, , drop = FALSE])
-      else return(x[test.samp])
-    })
-    y <- y[train.samp]
-    Xl <- lapply(Xl, function(x) {
-      if (is.matrix(x) | is.data.frame(x)) return(x[train.samp, , drop = FALSE])
-      else return(x[train.samp])
-    })
+  # Were training samples specified? -------------------------------------------
+  train.check <- FALSE
+  if (!missing(train.samp)) {
+    if (all(train.samp %in% seq_along(y))) {
+      train.check <- TRUE
+      test.samp <- seq_along(y)[-train.samp]
+      y.test <- y[test.samp]
+      Xl.test <- lapply(Xl, function(x) {
+        if (is.matrix(x) | is.data.frame(x)) return(x[test.samp, , drop = FALSE])
+        else return(x[test.samp])
+      })
+      y <- y[train.samp]
+      Xl <- lapply(Xl, function(x) {
+        if (is.matrix(x) | is.data.frame(x)) return(x[train.samp, , drop = FALSE])
+        else return(x[train.samp])
+      })
+    } else {
+      warning("Training samples incorrectly specified.", call. = FALSE)
+    }
   }
 
   # Get intercept --------------------------------------------------------------
@@ -304,13 +303,11 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     xname = xname, yname = yname, formula = NULL, terms = NULL,
     y.levels = y.levels
   )
-  if (!is.null(y.test) & !is.null(Xl.test)) {
+  if (isTRUE(train.check)) {
     res$y.test <- y.test
     res$Xl.test <- Xl.test
   }
-
-  # Function call --------------------------------------------------------------
-  res$call <- fix_call_default(match.call(), "kernL")
+  res$call <- fix_call_default(match.call(), "kernL")  # fix function call
 
   class(res) <- "ipriorKernel"
   res
@@ -323,7 +320,7 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), ...) {
+                           model = list(), train.samp, ...) {
   list2env(formula_to_xy(formula = formula, data = data, one.lam = one.lam),
            envir = environment())
   res <- kernL.default(y = y, Xl.formula = Xl, interactions = interactions,
@@ -333,17 +330,17 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                        est.offset = est.offset, est.psi = est.psi,
                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
                        nystrom = nystrom, nys.seed = nys.seed, model = model,
-                       ...)
+                       train.samp = train.samp, ...)
   res$yname <- yname
   res$formula <- formula
   res$terms <- tt
-  res$call <- fix_call_formula(match.call(), "kernL")
+  res$call <- fix_call_formula(match.call(), "kernL")  # fix function call
 
   res
 }
 
 #' @export
-print.ipriorKernel <- function(x, units = "MB", standard = "SI", ...) {
+print.ipriorKernel <- function(x, units = "auto", standard = "SI", ...) {
   tmp <- expand_Hl_and_lambda(x$Hl, seq_along(x$Hl), x$intr, x$intr.3plus)
 
   # if (isTRUE(x$probit)) {
@@ -352,7 +349,12 @@ print.ipriorKernel <- function(x, units = "MB", standard = "SI", ...) {
   #   cat("Nystrom kernel approximation ()\n")
   # }
 
-  cat("Sample size:", x$n, "\n")
+  n <- x$n
+  if (is.ipriorKernel_cv(x)) {
+    n.test <- length(x$y.test)
+    n <- paste0(n + n.test, " (", n, " train + ", n.test, " test)")
+  }
+  cat("Sample size:", n, "\n")
   cat("No. of covariates:", length(x$Xl), "\n")
   # cat("No. of interactions:", x$no.int + x$no.int.3plus, "\n")
   cat("Object size: ")
@@ -390,6 +392,7 @@ print.ipriorKernel <- function(x, units = "MB", standard = "SI", ...) {
   poss.method <- paste0(unique(poss.method), collapse = ", ")
   cat("Estimation methods available:\n")
   cat(poss.method)
+  cat("\n")
 }
 
 print_kern <- function(x, ...) {

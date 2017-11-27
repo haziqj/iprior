@@ -167,7 +167,13 @@ get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
 #' @export
 get_mse <- function(object) {
   check_and_get_ipriorMod(object)
-  object$train.error
+  train.error <- c("Training" = object$train.error)
+  if (is.ipriorKernel_cv(object)) {
+    test.error <- c("Test" = object$test$test.error)
+    return(c(train.error, test.error))
+  } else {
+    return(train.error)
+  }
 }
 
 #' @describeIn Accessors Obtain information on which hyperparameters were

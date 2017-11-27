@@ -150,12 +150,21 @@ is.ipriorMod <- function(x) inherits(x, "ipriorMod")
 #' @export
 is.ipriorKernel <- function(x) inherits(x, "ipriorKernel")
 
-is.ipriorKernel_old <- function(x) inherits(x, "ipriorKernel_ikd")
+is.ipriorKernel_old <- function(x) inherits(x, "ipriorKernel_old")
 
 is.ipriorKernel_nys <- function(x) {
   if (is.ipriorMod(x)) x <- x$ipriorKernel
   if (is.ipriorKernel(x)) {
     !is.null(x$nystroml)
+  } else {
+    return(FALSE)
+  }
+}
+
+is.ipriorKernel_cv <- function(x) {
+  if (is.ipriorMod(x)) x <- x$ipriorKernel
+  if (is.ipriorKernel(x)) {
+    return(!is.null(x$y.test) & !is.null(x$Xl.test))
   } else {
     return(FALSE)
   }

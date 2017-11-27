@@ -62,7 +62,8 @@ iprior_parallel <- function(mod, method = "direct",
     foreach::foreach(
       i = seq_len(control$restarts),
       .packages = "iprior",
-      .options.snow = snow.options.list
+      .options.snow = snow.options.list,
+      .errorhandling = "remove"
     ), {
       new.control          <- control
       new.control$restarts <- 0
