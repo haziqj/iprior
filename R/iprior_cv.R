@@ -98,10 +98,11 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
                        est.psi = est.psi, fixed.hyp = fixed.hyp, lambda = lambda,
                        psi = psi, nystrom = nystrom, nys.seed = nys.seed,
                        method = method, control = control.full)
-    control$theta <- get_theta(full.mod)
+    control$theta0 <- get_theta(full.mod)
   }
 
   # The cross-validation routine -----------------------------------------------
+  cat("Performing cross-validation routine\n")
   if (!isTRUE(par.cv)) {
     # The non-multithreading version
     res <- as.data.frame(matrix(NA, ncol = 3, nrow = folds))
