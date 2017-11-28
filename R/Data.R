@@ -157,8 +157,6 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #' variables and mortality rates in 60 Standard Metropolitan Statistical Areas
 #' (SMSAs) of the USA, for the years 1959-1961.
 #'
-#' Details.
-#'
 #' @format A data frame of 16 observations on 16 variables.
 #' \describe{
 #'   \item{\code{Mortality}}{Total age-adjusted mortality rate per 100,000.}
@@ -186,3 +184,11 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #' data(pollution)
 #' str(pollution)
 "pollution"
+
+#' Tecator CV
+#'
+#' @format Results from iprior_cv cross validation experiment.
+"mod1.cv"
+
+#' @rdname mod1.cv
+"mod4.cv"

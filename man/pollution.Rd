@@ -31,9 +31,6 @@ Data on the relation between weather, socioeconomic, and air pollution
 variables and mortality rates in 60 Standard Metropolitan Statistical Areas
 (SMSAs) of the USA, for the years 1959-1961.
 }
-\details{
-Details.
-}
 \examples{
 data(pollution)
 str(pollution)

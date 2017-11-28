@@ -1,5 +1,5 @@
 ---
-title: "Functional "
+title: "Regression with a functional covariate: Analysis of the Tecator data set"
 author: "Haziq Jamil"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -9,4 +9,87 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Hello
+```{r, include = FALSE}
+data(tecator, package = "caret")
+endpoints <- as.data.frame(endpoints)
+colnames(endpoints) <- c("water", "fat", "protein")
+
+# Plot of 10 random spectra predicting fat content
+# (Inspired by package caret, v6.0-68. See ?caret::tecator for details)
+set.seed(123)
+inSubset <- sample(1:dim(endpoints)[1], 10)
+
+absorpSubset <- absorp[inSubset,]
+endpointSubset <- endpoints$fat[inSubset]
+
+newOrder <- order(absorpSubset[,1])
+absorpSubset <- absorpSubset[newOrder,]
+endpointSubset <- endpointSubset[newOrder]
+
+as.tibble(data.frame(id = factor(1:10), fat = endpointSubset,
+                     wave = absorpSubset)) %>%
+  melt(id.vars = c("id", "fat")) %>%
+  as.tibble() %>%
+  mutate(x = rep(1:100, each = 10)) %>%
+  ggplot(aes(x, value, col = id)) +
+  geom_line() +
+  geom_dl(aes(label = fat), method = list("last.polygons", cex = 0.9)) +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = c(1, 25, 50, 75, 100)) +
+  coord_cartesian(xlim = c(0, 105)) +
+  labs(x = "Wavelength index", y = "Absorbance Units")
+       # title = "Percentage fat content predictor profiles for 10 random samples")
+
+# Prepare data for iprior
+# n = 215, use first 172 for training, and remaining 43 for testing
+absorp <- -t(diff(t(absorp)))	# this takes first differences using diff()
+fat <- endpoints$fat
+```
+
+Continuing on Section 3.4 of the [vignette](https://cran.r-project.org/web/packages/iprior/vignettes/iprior_paper.pdf), we now analyse the predictive performance of I-prior models using a leave-one-out cross-validation (LOOCV) scheme. 
+For all `n=215` samples, one observation pair is left out and the model trained; the prediction error is obtained for the observation that was left out.
+This is repeated for all `n=215` samples, and the average of the prediction errors calculated.
+
+For the linear RKHS, the code to peform the LOOCV in the `iprior` package is as follows:
+```{r, cache = TRUE}
+(mod1.cv <- iprior_cv(fat, absorp, method = "em",
+                      control = list(stop.crit = 1e-2), folds = Inf))
+```
+Notice the argument `folds = Inf`---since the `iprior_cv()` function basically performs a $k$-fold cross validation experiment, setting `folds` to be equal to sample size or higher tells the function to perform LOOCV.
+The resulting fit gives training and test mean squared error (MSE) for the cross-validation experiment.
+
+The rest of the code for the remaining models are given below.
+As this takes quite a long time to run, this has been run locally and the results saved into the data `tecator.cv` within the `iprior` package. 
+
+```{r, eval = FALSE}
+mod2.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly2",
+                     est.offset = TRUE, control = list(stop.crit = 1e-2))
+mod3.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly3",
+                     est.offset = TRUE, control = list(stop.crit = 1e-2))
+mod4.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
+                     control = list(stop.crit = 1e-2))
+mod5.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
+                     est.hurst = TRUE, control = list(stop.crit = 1e-2))
+mod6.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "se",
+                     est.lengthscale = TRUE, control = list(stop.crit = 1e-2))
+
+# Function to tabulate the results
+tecator_tab_cv <- function() {
+  tab <- t(sapply(list(mod1.cv, mod2.cv, mod3.cv, mod4.cv, mod5.cv, mod6.cv),
+                  function(mod) {
+                    res <- as.numeric(apply(mod$mse, 2, mean))
+                    c("Training MSE" = res[2], "Test MSE" = res[3])
+                    }))
+  rownames(tab) <- c("Linear", "Quadratic", "Cubic", "fBm-0.5", "fBm-MLE",
+                     "SE-MLE")
+  tab
+}
+```
+
+The results are tabulated below.
+
+```{r}
+data(tecator.cv, package = "iprior")
+```

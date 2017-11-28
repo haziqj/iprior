@@ -214,3 +214,11 @@ get_time <- function(object) {
   check_and_get_ipriorMod(object)
   object$time
 }
+
+#' @describeIn Accessors Extract the theta value at convergence. Note that this
+#'   is on an unrestricted scale (see the vignette for details).
+#' @export
+get_theta <- function(object) {
+  check_and_get_ipriorMod(object)
+  object$theta
+}

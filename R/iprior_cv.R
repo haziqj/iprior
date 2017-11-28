@@ -48,6 +48,9 @@ iprior_cv <- function(...) UseMethod("iprior_cv")
 #'
 #' # LOOCV experiment
 #' (mod.cv <- iprior_cv(y ~ X, gen_smooth(100), kernel = "se", folds = Inf))
+#'
+#' # Can also get root MSE
+#' print(mod.cv, "RMSE")
 #' }
 #'
 #' @name iprior_cv
@@ -77,10 +80,26 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
   }
 
   # Checks and settings --------------------------------------------------------
+  original.silent <- control$silent
   control$silent <- TRUE
   snow.options.list <- list(progress = function(i) setTxtProgressBar(pb, i))
   pb <- txtProgressBar(min = 0, max = folds, style = 1)
   if (isTRUE(control$restarts)) par.cv <- FALSE
+
+  # Fit full model to get proper starting values -------------------------------
+  if (is.null(control$theta)) {
+    control.full <- control
+    control.full$silent <- original.silent
+    control.full$restarts <- TRUE
+    cat("Fitting full model\n")
+    full.mod <- iprior(y = y, ..., kernel = kernel, interactions = interactions,
+                       est.lambda = est.lambda, est.hurst = est.hurst,
+                       est.lengthscale = est.lengthscale, est.offset = est.offset,
+                       est.psi = est.psi, fixed.hyp = fixed.hyp, lambda = lambda,
+                       psi = psi, nystrom = nystrom, nys.seed = nys.seed,
+                       method = method, control = control.full)
+    control$theta <- get_theta(full.mod)
+  }
 
   # The cross-validation routine -----------------------------------------------
   if (!isTRUE(par.cv)) {
@@ -154,7 +173,6 @@ iprior_cv.formula <- function(formula, data, folds = 2, one.lam = FALSE,
                     nystrom = nystrom, nys.seed = nys.seed, ...)
 }
 
-#' @name iprior_cv
 #' @export
 print.iprior_xv <- function(x, result = c("MSE", "RMSE"), ...) {
   cv.method <- ifelse(x$folds == x$n, "Leave-one-out Cross Validation",

@@ -4,8 +4,6 @@
 \alias{iprior_cv}
 \alias{iprior_cv.default}
 \alias{iprior_cv.formula}
-\alias{iprior_cv}
-\alias{print.iprior_xv}
 \title{Perform a cross-validation experiment with the iprior function}
 \usage{
 \method{iprior_cv}{default}(y, ..., folds = 2, par.cv = TRUE,
@@ -20,8 +18,6 @@
   est.lambda = TRUE, est.hurst = FALSE, est.lengthscale = FALSE,
   est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
   psi = 1, nystrom = FALSE, nys.seed = NULL, ...)
-
-\method{print}{iprior_xv}(x, result = c("MSE", "RMSE"), ...)
 }
 \arguments{
 \item{y}{Vector of response variables}
@@ -145,6 +141,9 @@ to not use multithreading.
 
 # LOOCV experiment
 (mod.cv <- iprior_cv(y ~ X, gen_smooth(100), kernel = "se", folds = Inf))
+
+# Can also get root MSE
+print(mod.cv, "RMSE")
 }
 
 }

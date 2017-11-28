@@ -21,6 +21,7 @@
 \alias{get_convergence}
 \alias{get_niter}
 \alias{get_time}
+\alias{get_theta}
 \title{Accessor functions for \code{ipriorMod} objects.}
 \usage{
 get_intercept(object)
@@ -60,6 +61,8 @@ get_convergence(object)
 get_niter(object)
 
 get_time(object)
+
+get_theta(object)
 }
 \arguments{
 \item{object}{An \code{ipriorMod} object.}
@@ -120,5 +123,8 @@ estimated and which were fixed.
 
 \item \code{get_time}: Obtain the time taken to complete the estimation
 procedure.
+
+\item \code{get_theta}: Extract the theta value at convergence. Note that this
+is on an unrestricted scale (see the vignette for details).
 }}
 
