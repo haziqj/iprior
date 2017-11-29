@@ -165,20 +165,20 @@ test_that("iprior_nystrom", {
 
 })
 
-# test_that("iprior_parallel", {
-#
-#   mod <- kernL(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
-#   suppressWarnings({
-#     mod1 <- iprior(mod, control = list(silent = TRUE, restarts = 2))
-#     expect_message(
-#       mod2 <- iprior_parallel(mod, control = list(theta0 = 1:2, silent = TRUE,
-#                                                   restarts = 2))
-#     )
-#   })
-#   expect_equal(logLik(mod1), -25.4149, tolerance = 1e-5)
-#   expect_equal(logLik(mod1), logLik(mod2), tolerance = 1e-5)
-#
-# })
+test_that("iprior_parallel", {
+
+  mod <- kernL(y ~ ., gen_smooth(10, seed = 123), kernel = "fbm")
+  suppressWarnings({
+    mod1 <- iprior(mod, control = list(silent = TRUE, restarts = 1))
+    expect_message(
+      mod2 <- iprior_parallel(mod, control = list(theta0 = 1:2, silent = TRUE,
+                                                  restarts = 1))
+    )
+  })
+  expect_equal(logLik(mod1), -25.4149, tolerance = 1e-5)
+  expect_equal(logLik(mod1), logLik(mod2), tolerance = 1e-5)
+
+})
 
 test_that("update and iprior.ipriorMod", {
 
@@ -188,17 +188,6 @@ test_that("update and iprior.ipriorMod", {
                  "Updating iprior model with 10")
   expect_message(update(mod, iter.update = 10), "Updating iprior model with 10")
   expect_true(is.ipriorMod(mod))
-
-})
-
-test_that("Training samples specified", {
-
-  set.seed(123)
-  mod1 <- iprior(stack.loss, stack.x, train.samp = 1:10,
-                 control = list(silent = TRUE))
-  mod2 <- iprior(stack.loss ~ ., stackloss, one.lam = TRUE, train.samp = 1:10,
-                 control = list(silent = TRUE))
-  expect_equal(mod1$test, mod2$test, tol = 1e-5)
 
 })
 
