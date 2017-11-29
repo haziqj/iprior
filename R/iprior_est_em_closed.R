@@ -76,13 +76,13 @@ iprior_em_closed <- function(mod, maxit = 500, stop.crit = 1e-5, silent = FALSE,
 
     # Update lambda ------------------------------------------------------------
     for (k in seq_len(p)) {
-      lambda <- expand_Hl_and_lambda(lambda, lambda, intr, NULL)$lambda
+      lambda <- expand_Hl_and_lambda(lambda[1:p], lambda[1:p], intr, NULL)$lambda
       BlockB(k)  # Updates Pl, Psql, and Sl
       T1 <- sum(Psql[[k]] * W)
       T2 <- crossprod(y, Pl[[k]]) %*% w - sum(Sl[[k]] * W) / 2
       lambda.new[k] <- as.numeric(T2 / T1)
     }
-    lambda <- (1 + omega) * lambda.new - omega * lambda
+    lambda <- (1 + omega) * lambda.new - omega * lambda[1:p]
 
     # Update psi ---------------------------------------------------------------
     Hlamsq <- V %*% (t(V) * u ^ 2)
