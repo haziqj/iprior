@@ -206,5 +206,3 @@ test_that("print()", {
   expect_equal(tmp, tmp)
 
 })
-
-

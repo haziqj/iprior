@@ -99,9 +99,9 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
 #' @export
 print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
   if (!is.null(x$train.error)) {
-    cat("Training MSE:", x$train.error, "\n")
+    cat("Training RMSE:", sqrt(x$train.error), "\n")
   } else if (!is.nan(x$test.error)) {
-    cat("Test MSE:", x$test.error, "\n")
+    cat("Test RMSE:", sqrt(x$test.error), "\n")
   } else {
     cat("Test data not provided.\n")
   }
