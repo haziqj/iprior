@@ -40,7 +40,7 @@ test_that("Plots", {
                 control = list(silent = TRUE, maxit = 10))
   expect_silent(p <- plot(mod))
   expect_silent(p <- plot_fitted(mod))
-  expect_silent(p <- plot_predict(mod))
+  expect_silent(p <- plot_resid(mod))
   expect_silent(p <- plot_iter(mod))
   expect_silent(p <- plot_ppc(mod, draws = 2))
 

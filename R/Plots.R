@@ -69,7 +69,7 @@ plot.ipriorMod <- function(x, ...) {
 
 #' @rdname plot.ipriorMod
 #' @export
-plot_predict <- function(x) {
+plot_resid <- function(x) {
   # Args: x an ipriorMod object.
   plot.df <- as.data.frame(fitted(x)[1:2])
   ggplot(plot.df, aes(y, resid)) +
@@ -177,6 +177,9 @@ plot_fitted <- function(x, X.var = 1, cred.bands = TRUE, size = 1,
   fit <- fitted(x, intervals = cred.bands)
   y.hat <- fit$y
   X <- x$ipriorKernel$Xl[[X.var]]
+  if (!is.null(dim(X))) {
+    if (ncol(X) > 1) X <- X[, X.var]
+  }
   plot.df <- data.frame(y.hat = y.hat, x = X, y = get_y(x))
   x.lab <- x$ipriorKernel$xname[X.var]
   y.lab <- x$ipriorKernel$yname

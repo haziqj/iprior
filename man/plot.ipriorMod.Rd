@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plots.R
 \name{plot.ipriorMod}
 \alias{plot.ipriorMod}
-\alias{plot_predict}
+\alias{plot_resid}
 \alias{plot_fitted_multilevel}
 \alias{plot_fitted}
 \alias{plot_iter}
@@ -11,7 +11,7 @@
 \usage{
 \method{plot}{ipriorMod}(x, ...)
 
-plot_predict(x)
+plot_resid(x)
 
 plot_fitted_multilevel(x, X.var = 1, grp.var = 1, facet = c(2, 3),
   cred.bands = TRUE, show.legend = TRUE, show.points = TRUE,
