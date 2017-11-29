@@ -56,7 +56,7 @@ matrix:
 
 build_script:
   - travis-tool.sh install_deps
-  - travis-tool.sh install_github topepo/caret
+  - travis-tool.sh install_github topepo/caret/pkg/caret
 
 test_script:
   - travis-tool.sh run_tests
