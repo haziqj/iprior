@@ -185,10 +185,73 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #' str(pollution)
 "pollution"
 
-#' Tecator CV
+#' Results of I-prior cross-validation experiment on Tecator data set
 #'
-#' @format Results from iprior_cv cross validation experiment.
-"mod1.cv"
+#' @format Results from iprior_cv cross validation experiment. This is a list of
+#'   seven, with each component bearing the results for the linear, quadratic,
+#'   cubic, fBm-0.5, fBm-MLE and SE I-prior models. The seventh is a summarised
+#'   table of the results.
+#'
+#' @examples
+#' # Results from the six experiments
+#' print(tecator.cv[[1]], "RMSE")
+#' print(tecator.cv[[2]], "RMSE")
+#' print(tecator.cv[[3]], "RMSE")
+#' print(tecator.cv[[4]], "RMSE")
+#' print(tecator.cv[[5]], "RMSE")
+#' print(tecator.cv[[6]], "RMSE")
+#'
+#' # Summary of results
+#' print(tecator.cv[[7]])
+#'
+#' \dontrun{
+#'
+#' # Prepare data set
+#' data(tecator, package = "caret")
+#' endpoints <- as.data.frame(endpoints)
+#' colnames(endpoints) <- c("water", "fat", "protein")
+#' absorp <- -t(diff(t(absorp)))  # this takes first differences using diff()
+#' fat <- endpoints$fat
+#'
+#' # Here is the code to replicate the results
+#' mod1.cv <- iprior_cv(fat, absorp, method = "em",
+#'                      control = list(stop.crit = 1e-2), folds = Inf)
+#' mod2.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly2",
+#'                      est.offset = TRUE, control = list(stop.crit = 1e-2))
+#' mod3.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly3",
+#'                      est.offset = TRUE, control = list(stop.crit = 1e-2))
+#' mod4.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
+#'                      control = list(stop.crit = 1e-2))
+#' mod5.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "fbm",
+#'                      est.hurst = TRUE, control = list(stop.crit = 1e-2))
+#' mod6.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "se",
+#'                      est.lengthscale = TRUE, control = list(stop.crit = 1e-2))
+#'
+#' tecator_res_cv <- function(mod) {
+#'   res <- as.numeric(apply(sqrt(mod$mse[, -1]), 2, mean))  # Calculate RMSE
+#'   c("Training RMSE" = res[1], "Test RMSE" = res[2])
+#' }
+#'
+#' tecator_tab_cv <- function() {
+#'   tab <- t(sapply(list(mod1.cv, mod2.cv, mod3.cv, mod4.cv, mod5.cv, mod6.cv),
+#'                   tecator_res_cv))
+#'   rownames(tab) <- c("Linear", "Quadratic", "Cubic", "fBm-0.5", "fBm-MLE",
+#'                      "SE-MLE")
+#'   tab
+#' }
+#'
+#' tecator.cv <- list(
+#'   "linear"   = mod1.cv,
+#'   "qudratic" = mod2.cv,
+#'   "cubic"    = mod3.cv,
+#'   "fbm-0.5"  = mod4.cv,
+#'   "fbm-MLE"  = mod5.cv,
+#'   "SE"       = mod6.cv,
+#'   "summary"  = tecator_tab_cv()
+#' )
+#' }
+#'
+#'
+"tecator.cv"
 
-#' @rdname mod1.cv
-"mod4.cv"
+

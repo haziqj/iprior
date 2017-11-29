@@ -1,6 +1,7 @@
-# v0.7.1.9002
+# v0.7.1.9003
 
 * Modification to centering of SE and polynomial kernels.
+* Added option `train.samp` to `kernL()` and `iprior()` to easily split training and test samples for cross-validation.
 * Added a function to perform k-fold cross validation experiments for I-prior models.
 
 # v0.7.0

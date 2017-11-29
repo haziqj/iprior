@@ -29,6 +29,9 @@
 #'   matrix is returned using the data as input points. Otherwise, the kernel
 #'   matrix is evaluated with respect to this set of data as well. It must be a
 #'   list of vectors/matrices with similar dimensions to the original data.
+#' @param error.type (Optional) Report the mean squared error of prediction
+#'   (\code{"MSE"}), or the root mean squared error of prediction
+#'   (\code{"RMSE"})
 #'
 #' @name Accessors
 NULL
@@ -165,16 +168,24 @@ get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
 
 #' @describeIn Accessors Obtain the training mean squared error.
 #' @export
-get_mse <- function(object) {
+get_prederror <- function(object, error.type = c("RMSE", "MSE")) {
   check_and_get_ipriorMod(object)
+  error.type <- match.arg(toupper(error.type), c("RMSE", "MSE"))
+  if (error.type == "MSE") fun <- function(x) x
+  if (error.type == "RMSE") fun <- function(x) sqrt(x)
   train.error <- c("Training" = object$train.error)
   if (is.ipriorKernel_cv(object)) {
-    test.error <- c("Test" = object$test$test.error)
-    return(c(train.error, test.error))
+    res <- fun(c(train.error, "Test" = object$test$test.error))
   } else {
-    return(train.error)
+    res <- fun(train.error)
   }
+  names(res) <- paste(names(res), error.type)
+  res
 }
+
+get_mse <- function(object) get_prederror(object, "MSE")
+
+get_rmse <- function(object) get_prederror(object, "RMSE")
 
 #' @describeIn Accessors Obtain information on which hyperparameters were
 #'   estimated and which were fixed.
