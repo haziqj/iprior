@@ -24,6 +24,7 @@ LinkingTo:
   Rcpp,
   RcppEigen
 Suggests:
+  caret,
   knitr,
   MASS,
   R.rsp,

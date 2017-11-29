@@ -82,16 +82,21 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
   # Checks and settings --------------------------------------------------------
   original.silent <- control$silent
   control$silent <- TRUE
-  snow.options.list <- list(progress = function(i) setTxtProgressBar(pb, i))
-  pb <- txtProgressBar(min = 0, max = folds, style = 1)
+  if (!isTRUE(original.silent)) {
+    pb <- txtProgressBar(min = 0, max = folds, style = 1)
+    snow.options.list <- list(progress = function(i) setTxtProgressBar(pb, i))
+  } else {
+    snow.options.list <- list()
+  }
+
   if (isTRUE(control$restarts)) par.cv <- FALSE
 
   # Fit full model to get proper starting values -------------------------------
-  if (is.null(control$theta)) {
+  if (is.null(control$theta0)) {
     control.full <- control
     control.full$silent <- original.silent
     control.full$restarts <- TRUE
-    cat("Fitting full model\n")
+    if (!isTRUE(original.silent)) cat("Fitting full model\n")
     full.mod <- iprior(y = y, ..., kernel = kernel, interactions = interactions,
                        est.lambda = est.lambda, est.hurst = est.hurst,
                        est.lengthscale = est.lengthscale, est.offset = est.offset,
@@ -102,7 +107,7 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
   }
 
   # The cross-validation routine -----------------------------------------------
-  cat("Performing cross-validation routine\n")
+  if (!isTRUE(original.silent)) cat("Performing cross-validation routine\n")
   if (!isTRUE(par.cv)) {
     # The non-multithreading version
     res <- as.data.frame(matrix(NA, ncol = 3, nrow = folds))
@@ -118,8 +123,8 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
               nystrom = nystrom, nys.seed = nys.seed),
         method = method, control = control
       )
-      res[k, ] <- c(logLik(mod), get_mse(mod))
-      setTxtProgressBar(pb, k)
+      res[k, ] <- c(logLik(mod), get_rmse(mod))
+      if (!isTRUE(original.silent)) setTxtProgressBar(pb, k)
     }
   } else {
     # The Multithreading version
@@ -143,15 +148,14 @@ iprior_cv.default <- function(y, ..., folds = 2, par.cv = TRUE,
                 nystrom = nystrom, nys.seed = nys.seed),
           method = method, control = control
         )
-        c("Log-lik" = logLik(mod), get_mse(mod))
+        c("Log-lik" = logLik(mod), get_rmse(mod))
       }
     )
-    if (!isTRUE(control$silent)) close(pb)
     parallel::stopCluster(cl)
   }
-  close(pb)
+  if (!isTRUE(original.silent)) close(pb)
 
-  structure(list(mse = res, folds = folds, n = n), class = "iprior_xv")
+  structure(list(res = res, folds = folds, n = n), class = "iprior_xv")
 }
 
 #' @rdname iprior_cv
@@ -175,16 +179,19 @@ iprior_cv.formula <- function(formula, data, folds = 2, one.lam = FALSE,
 }
 
 #' @export
-print.iprior_xv <- function(x, result = c("MSE", "RMSE"), ...) {
+print.iprior_xv <- function(x, result = c("RMSE", "MSE"), ...) {
   cv.method <- ifelse(x$folds == x$n, "Leave-one-out Cross Validation",
                       paste0(x$folds, "-fold Cross Validation"))
-  result <- match.arg(tolower(result), c("mse", "rmse"))
-  res <- x$mse
-  if (result == "rmse") res[, -1] <- sqrt(res[, -1])
+  result <- match.arg(toupper(result), c("RMSE", "MSE"))
+  res <- x$res
+  if (result == "MSE") res[, -1] <- res[, -1] ^ 2
   res <- apply(res, 2, mean)
 
   cat("Results from", cv.method, "\n")
-  cat(paste0("Training ", toupper(result), ":"), res[2], "\n")
-  cat(paste0("Test ", toupper(result), "    :"), res[3], "\n")
-
+  cat(paste0("Training ", result, ":"), res[2], "\n")
+  cat(paste0("Test ", result, "    :"), res[3], "\n")
 }
+
+
+
+

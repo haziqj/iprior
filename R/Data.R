@@ -253,5 +253,3 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #'
 #'
 "tecator.cv"
-
-

@@ -45,7 +45,7 @@ test_that("BlockB creation conditions", {
 })
 
 
-context("Kernel loader names")
+# context("Kernel loader names")
 #
 # test_that("Names OK using non-formula (no interactions)",{
 #

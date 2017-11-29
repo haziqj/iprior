@@ -74,22 +74,33 @@ summary.ipriorMod <- function(object, ...) {
     niter <- object$niter
   }
 
+  train.rmse <- sqrt(object$train.error)
+  test.rmse <- NULL
+  if (is.ipriorKernel_cv(object)) test.rmse <- sqrt(object$test$test.error)
+
   res <- list(resid.summ = resid.summ, tab = tab, loglik = logLik(object),
-              error = object$train.error, call = object$call, x.kern = x.kern,
+              train.rmse = train.rmse, call = object$call, x.kern = x.kern,
               est.method = object$est.method, est.conv = object$est.conv,
-              niter = niter, maxit = maxit, time = object$time)
+              niter = niter, maxit = maxit, time = object$time,
+              test.rmse = test.rmse)
   class(res) <- "ipriorMod_summary"
   res
 }
 
 kernel_summary_translator <- function(x) {
-  # Notes: Not vectorised.
+  # Helper function to translate information from ipriorKernel to a string of
+  # kernels used for summary print. Not vectorised.
+  #
+  # Args: kernel information in the form of c("linear", "fbm,0.5"), etc.
+  #
+  # Returns: Proper information of kernels used, e.g. "linear" -> "Linear",
+  # "fbm,0.5" -> "Fractional Brownian motion with Hurst 0.5", etc.
   if (is.kern_linear(x)) res <- "Linear"
   if (is.kern_pearson(x)) res <- "Pearson"
   else {
     hyperparam <-  signif(get_hyperparam(x), 3)
     if (is.kern_fbm(x)) {
-      res <- paste0("Fractional Brownian motion with Hurst ", hyperparam)
+      res <- paste0("", hyperparam)
     }
     if (is.kern_se(x)) {
       res <- paste0("Squared exponential with lengthscale ", hyperparam)
@@ -132,8 +143,11 @@ print.ipriorMod_summary <- function(x, wrap = FALSE, ...) {
   print(x$time)
   cat("\n")
   cat("Log-likelihood value:", x$loglik, "\n")
-  cat("Training mean squared error:", x$error, "\n")
-  # cat("Standard deviation of errors: xxx with S.E.: xxx\n")
+  cat("RMSE of prediction:", x$train.rmse, "(Training)")
+  if (!is.null(x$test.rmse))
+    cat(",", x$test.rmse, "(Test)")
+  # cat("Standard deviation of errors: xxx with S.E.: xxx")
+  cat("\n")
 }
 
 if (getRversion() < "3.3.0") {
