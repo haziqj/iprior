@@ -315,6 +315,9 @@ get_y_and_levels <- function(y) {
 #' @export
 .checkLevels <- get_y_and_levels
 
+#' @export
+.get_y_and_levels <- get_y_and_levels
+
 fix_call_default <- function(cl = match.call(), new.name = "iprior") {
   # Replace the default call name with a new name. When using the default call,
   # it is possible that some of the X names are blank. This fixes that too.
@@ -329,6 +332,9 @@ fix_call_default <- function(cl = match.call(), new.name = "iprior") {
   cl
 }
 
+#' @export
+.fix_call_default <- fix_call_default
+
 fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   # Replace the formula call name with a new name.
   #
@@ -338,6 +344,9 @@ fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   cl[[1L]] <- as.name(new.name)
   cl
 }
+
+#' @export
+.fix_call_formula <- fix_call_formula
 
 formula_to_xy <- function(formula, data, one.lam) {
   # Convert formula entry to y, X entry.
@@ -392,6 +401,9 @@ formula_to_xy <- function(formula, data, one.lam) {
   list(y = y, Xl = x, interactions = interactions, xname = xname, yname = yname,
        tt = tt)
 }
+
+#' @export
+.formula_to_xy <- formula_to_xy
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
