@@ -66,6 +66,9 @@ iprior_method_checker <- function(object, method) {
   res
 }
 
+#' @export
+.iprior_method_checker <- iprior_method_checker
+
 update_control <- function(arg.list, default.list) {
   # In most of the iprior_x functions, a list of control options is required.
   # This helper function checks whether the list supplied contains the allowed
