@@ -167,6 +167,9 @@ expand_theta <- function(theta.reduced, theta.drop, theta.omitted) {
   theta.full
 }
 
+#' @export
+.expand_theta <- expand_theta
+
 collapse_param <- function(param) {
   # Args: A param table.
   #

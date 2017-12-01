@@ -170,6 +170,9 @@ is.ipriorKernel_cv <- function(x) {
   }
 }
 
+#' @export
+.is.ipriorKernel_cv <- is.ipriorKernel_cv
+
 #' @rdname is.iprior_x
 #' @export
 is.nystrom <- is.ipriorKernel_nys

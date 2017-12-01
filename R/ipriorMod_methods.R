@@ -53,18 +53,7 @@ summary.ipriorMod <- function(object, ...) {
                z          = round(zval, 3),
                `P[|Z>z|]` = round(2 * pnorm(-abs(zval)), 3))
 
-  param.tab <- theta_to_param(object$theta, object$ipriorKernel)
-  kernels.used <- rep(NA, nrow(param.tab))
-  for (i in seq_along(param.tab$kernels)) {
-    kernels.used[i] <- kernel_summary_translator(param.tab$kernels[i])
-  }
-  x.kern <- unique.kernels <- unique(kernels.used)
-  for (i in seq_along(unique.kernels)) {
-    ind <- kernels.used %in% unique.kernels[i]
-    xs <- paste0(object$ipriorKernel$xname[ind], collapse = ", ")
-    x.kern[i] <- paste0(unique.kernels[i], " (", xs, ")\n")
-  }
-  x.kern <- paste0(x.kern, collapse = "")
+  x.kern <- kernels_for_summary(object)
 
   if (object$method == "mixed") {
     maxit <- object$control$maxit + object$control$em.maxit
@@ -85,6 +74,28 @@ summary.ipriorMod <- function(object, ...) {
               test.rmse = test.rmse)
   class(res) <- "ipriorMod_summary"
   res
+}
+
+kernels_for_summary <- function(object, theta) {
+  # Helper function to obtain the character vector of RKHSs used (for summary).
+  #
+  # Args: An ipriorMod object and optional theta.
+  #
+  # Returns: Character vector of kernels for print/cat.
+  if (missing(theta)) theta <- object$theta
+  param.tab <- theta_to_param(theta, object$ipriorKernel)
+  kernels.used <- rep(NA, nrow(param.tab))
+  for (i in seq_along(param.tab$kernels)) {
+    kernels.used[i] <- kernel_summary_translator(param.tab$kernels[i])
+  }
+  x.kern <- unique.kernels <- unique(kernels.used)
+  for (i in seq_along(unique.kernels)) {
+    ind <- kernels.used %in% unique.kernels[i]
+    xs <- paste0(object$ipriorKernel$xname[ind], collapse = ", ")
+    x.kern[i] <- paste0(unique.kernels[i], " (", xs, ")\n")
+  }
+  x.kern <- paste0(x.kern, collapse = "")
+  x.kern
 }
 
 kernel_summary_translator <- function(x) {
