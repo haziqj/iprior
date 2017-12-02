@@ -99,12 +99,12 @@ check_and_get_ipriorKernel <- function(object, assign.to.env = FALSE) {
   #
   # Returns: Replacement of object with ipriorKernel object if necessary, or
   # assignment of ipriorKernel object to environment.
-  if (is.ipriorMod(object)) {
+  if (is.ipriorMod(object) | is.ipriorKernel(object$ipriorKernel)) {
     if (isTRUE(assign.to.env)) {
       list2env(object$ipriorKernel, parent.frame())
     } else {
       assign(deparse(substitute(object)), object$ipriorKernel,
-           envir = parent.frame())
+             envir = parent.frame())
     }
   } else if (is.ipriorKernel(object)) {
     if (isTRUE(assign.to.env)) {
@@ -177,11 +177,16 @@ is.ipriorKernel_cv <- function(x) {
 #' @export
 is.nystrom <- is.ipriorKernel_nys
 
-#' @rdname is.iprior_x
-#' @export
-is.iprobit <- function(x) {
+is.categorical <- function(x) {
+  # Checks whether iprobit fitting is possible. This just checks whether the
+  # response variables were factor type.
+  #
+  # Args: An ipriorMod, ipriorKernel or even an iprobitMod_x object (see iprobit
+  # package for details.)
+  #
+  # Returns: Logical.
   check_and_get_ipriorKernel(x)
-  isTRUE(x$probit)
+  !is.null(x$y.levels)
 }
 
 #' Test kernel attributes

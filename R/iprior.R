@@ -149,7 +149,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
                   psi = psi, nystrom = nystrom, nys.seed = nys.seed,
                   model = model, train.samp = train.samp)
   }
-  if (is.iprobit(mod)) {
+  if (is.categorical(mod)) {
     warning("Categorical responses loaded. Consider using iprobit package.",
             call. = FALSE)
   }

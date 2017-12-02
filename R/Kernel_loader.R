@@ -137,12 +137,10 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   yname <- attr(y, "yname")
   # Check for probit model
   if (is.factor(y)) {
-    probit <- TRUE
     tmp <- get_y_and_levels(y)
     y <- tmp$y
     y.levels <- tmp$levels
   } else {
-    probit <- FALSE
     y.levels <- NULL
   }
 
@@ -294,7 +292,7 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     # Data
     y = y, Xl = Xl, Hl = Hl, intercept = intercept,
     # Model
-    kernels = kernels, which.pearson = which.pearson, probit = probit,
+    kernels = kernels, which.pearson = which.pearson,
     poly.deg = poly.deg, thetal = thetal, estl = estl,
     intr = intr, intr.3plus = intr.3plus, nystroml = nystroml,
     BlockBStuff = BlockBStuff,
@@ -386,7 +384,7 @@ print.ipriorKernel <- function(x, units = "auto", standard = "SI", ...) {
   if (is.nystrom(x)) {
     poss.method <- paste(poss.method, "(Nystrom)")
   }
-  if (is.iprobit(x)) {
+  if (is.categorical(x)) {
     poss.method <- c(poss.method, "iprobit (recommended)")
   }
   poss.method <- paste0(unique(poss.method), collapse = ", ")

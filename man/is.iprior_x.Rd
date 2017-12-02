@@ -5,7 +5,6 @@
 \alias{is.ipriorMod}
 \alias{is.ipriorKernel}
 \alias{is.nystrom}
-\alias{is.iprobit}
 \title{Test \code{iprior} objects}
 \usage{
 is.ipriorMod(x)
@@ -13,8 +12,6 @@ is.ipriorMod(x)
 is.ipriorKernel(x)
 
 is.nystrom(x)
-
-is.iprobit(x)
 }
 \arguments{
 \item{x}{An \code{ipriorMod} or \code{ipriorKernel} object.}
