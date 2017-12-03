@@ -189,6 +189,9 @@ is.categorical <- function(x) {
   !is.null(x$y.levels)
 }
 
+#' @export
+.is.categorical <- is.categorical
+
 #' Test kernel attributes
 #'
 #' Test whether an object uses a specific type of kernel.
