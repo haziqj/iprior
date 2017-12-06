@@ -298,7 +298,17 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
 #' @export
 iprior.ipriorKernel <- function(object, method = "direct",
                                  control = list(), ...) {
-  iprior.default(y = object, method = method, control = control)
+  res <- iprior.default(y = object, method = method, control = control)
+
+  # Fix call -------------------------------------------------------------------
+  res$object$call <- ipriorKernel.call <- object$call
+  if (is.null(object$formula)) {
+    res$call <- fix_call_default(ipriorKernel.call, "iprior")
+  } else {
+    res$call <- fix_call_formula(ipriorKernel.call, "iprior")
+  }
+
+  res
 }
 
 #' @describeIn iprior Re-run or continue running the EM algorithm from last
