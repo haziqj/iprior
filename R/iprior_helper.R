@@ -52,7 +52,8 @@ iprior_method_checker <- function(object, method) {
     if (is.null(object$BlockBStuff)) {
       res["em.reg"] <- TRUE
     } else {
-      if (!isTRUE(object$estl$est.lambda) | !isTRUE(object$estl$est.psi))
+      if (!is.null(object$y.levels)) res["em.closed"] <- TRUE
+      else if (!isTRUE(object$estl$est.lambda) | !isTRUE(object$estl$est.psi))
         res["direct"] <- TRUE
       else
         res["em.closed"] <- TRUE

@@ -371,9 +371,8 @@ formula_to_xy <- function(formula, data, one.lam) {
   Terms <- delete.response(tt)
   x <- model.frame(Terms, mf)
   y <- model.response(mf)
-  yname <- names(attr(tt, "dataClasses"))[1]
   xname <- names(x)
-  xnl <- length(xname)
+  yname <- names(attr(tt, "dataClasses"))[1]
   x <- as.list(x)
   attr(x, "terms") <- NULL
   # attr(y, "yname") <- yname
@@ -393,20 +392,8 @@ formula_to_xy <- function(formula, data, one.lam) {
 
   # Deal with one.lam option ---------------------------------------------------
   if (isTRUE(one.lam)) {
-    if (!all(sapply(interactions, is.null))) {
-      stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
-    }
-    if (length(x) == 1) {
-      message("Option one.lam = TRUE used with a single covariate anyway.")
-    }
-    attributes(x)$terms <- attributes(x)$names <- NULL
-    if (xnl <= 3) {
-      xname <- paste(xname, collapse = " + ")
-    } else {
-      xname <- paste(xname[1], "+ ... +", xname[xnl])
-    }
-    x <- list(matrix(unlist(x), ncol = length(x)))
-    names(x) <- xname
+    # Writes x and xname to env.
+    list2env(deal_with_one.lam(x, interactions), envir = environment())
   }
 
   list(y = y, Xl = x, interactions = interactions, xname = xname, yname = yname,
@@ -415,6 +402,58 @@ formula_to_xy <- function(formula, data, one.lam) {
 
 #' @export
 .formula_to_xy <- formula_to_xy
+
+deal_with_one.lam <- function(x, interactions) {
+  # Helper function to convert list of X according to one.lam option.
+  #
+  # Args: List of covariates and interactions information from ipriorKernel.
+  #
+  # Returns: Update Xl.
+  xname <- names(x)
+  xnl <- length(xname)
+  if (!all(sapply(interactions, is.null))) {
+    stop("Cannot use option one.lam = TRUE with interactions.", call. = FALSE)
+  }
+  if (length(x) == 1) {
+    message("Option one.lam = TRUE used with a single covariate anyway.")
+  }
+  attributes(x)$terms <- attributes(x)$names <- NULL
+  if (xnl <= 3) {
+    xname <- paste(xname, collapse = " + ")
+  } else {
+    xname <- paste(xname[1], "+ ... +", xname[xnl])
+  }
+  x <- list(matrix(unlist(x), ncol = length(x)))
+  names(x) <- xname
+
+  list(x = x, xname = xname)
+}
+
+#' @export
+.deal_with_one.lam <- deal_with_one.lam
+
+terms_to_xy <- function(object, newdata) {
+  # Args: An ipriorKernel object.
+  tt <- object$terms
+  Terms <- delete.response(tt)
+  x <- model.frame(Terms, newdata)
+  y <- NULL
+  if (any(colnames(newdata) == object$yname))
+    y <- model.extract(model.frame(tt, newdata), "response")
+
+  # Deal with one.lam option ---------------------------------------------------
+  no.of.x <- length(attr(object$terms, "term.labels"))
+  one.lam <- no.of.x != object$p  # check for one.lam = TRUE
+  if (isTRUE(one.lam)) {
+    # Writes x and xname to env.
+    list2env(deal_with_one.lam(x, object$interactions), envir = environment())
+  }
+
+  list(Xl = x, y = y)
+}
+
+#' @export
+.terms_to_xy <- terms_to_xy
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after

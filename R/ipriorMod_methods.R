@@ -98,6 +98,9 @@ kernels_for_summary <- function(object, theta) {
   x.kern
 }
 
+#' @export
+.kernels_for_summary <- kernels_for_summary
+
 kernel_summary_translator <- function(x) {
   # Helper function to translate information from ipriorKernel to a string of
   # kernels used for summary print. Not vectorised.
@@ -111,7 +114,7 @@ kernel_summary_translator <- function(x) {
   else {
     hyperparam <-  signif(get_hyperparam(x), 3)
     if (is.kern_fbm(x)) {
-      res <- paste0("", hyperparam)
+      res <- paste0("Fractional Brownian motion with Hurst ", hyperparam)
     }
     if (is.kern_se(x)) {
       res <- paste0("Squared exponential with lengthscale ", hyperparam)
@@ -123,6 +126,10 @@ kernel_summary_translator <- function(x) {
   }
   res
 }
+
+#' @export
+.kernel_summary_translator <- kernel_summary_translator
+
 
 #' @export
 print.ipriorMod_summary <- function(x, wrap = FALSE, ...) {

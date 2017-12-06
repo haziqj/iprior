@@ -42,3 +42,16 @@ test_that("Predict (formula)", {
   expect_that(print(tmp), prints_text("Test RMSE:"))
 
 })
+
+test_that("one.lam = TRUE", {
+
+  set.seed(123)
+  mod <- iprior(stack.loss ~ ., stackloss, one.lam = TRUE,
+                control = list(silent = TRUE))
+  tmp1 <- predict(mod, stackloss[1:3, ])
+  tmp2 <- predict(mod, stackloss[1:3, -4])
+  expect_equal(tmp1$y, c("1" = 38.45414, "2" = 38.59653, "3" = 32.50568),
+               tolerance = 1e-5)
+  expect_equal(tmp2$test.error, NA)
+
+})

@@ -74,12 +74,10 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
     return(cat("No new data supplied. Use fitted() instead."))
   }
   if (!is.null(object$ipriorKernel$formula)) {
-    tt <- object$ipriorKernel$terms
-    Terms <- delete.response(tt)
-    xstar <- model.frame(Terms, newdata)
-    if (any(colnames(newdata) == object$ipriorKernel$yname))
-      y.test <- model.extract(model.frame(tt, newdata), "response")
-    xrownames <- rownames(xstar)
+    tmp <- terms_to_xy(object$ipriorKernel, newdata)
+    y.test <- tmp$y
+    xstar <- tmp$Xl
+    xrownames <- rownames(newdata)
   } else {
     if (any(sapply(newdata, is.vector))) {
       newdata <- lapply(newdata, as.matrix)
@@ -120,8 +118,7 @@ print.ipriorPredict <- function(x, rows = 10, dp = 3, ...) {
     names(tab) <- c(lower, "Mean", upper)
     print(tab[seq_len(rows), ])
   }
-  if (length(x$y) > rows) cat("# ... with", length(x$y) - rows, "more values")
-  cat("\n")
+  if (length(x$y) > rows) cat("# ... with", length(x$y) - rows, "more values\n")
 }
 
 predict_iprior <- function(object, xstar, y.test, intervals = FALSE,
