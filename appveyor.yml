@@ -44,10 +44,10 @@ environment:
 
   - R_VERSION: oldrel
 
-  - R_VERSION: 3.2.5
-    RTOOLS_VERSION: 32
-    CRAN: http://cran.rstudio.com
-    PKGTYPE: source
+  # - R_VERSION: 3.2.5
+  #   RTOOLS_VERSION: 32
+  #   CRAN: http://cran.rstudio.com
+  #   PKGTYPE: source
 
 max_jobs: 2
 

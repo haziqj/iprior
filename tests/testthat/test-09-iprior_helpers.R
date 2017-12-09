@@ -21,7 +21,7 @@ test_that("logLik", {
   x3 <- factor(7:9)
   mod <- kernL(y, x1, x2, x3, kernel = "poly", est.offset = TRUE)
   res <- loglik_iprior(c(1, 1, 1, 0, 0, 0), object = mod)
-  expect_equal(res, -9.47678, tolerance = 1e-6)
+  expect_equal(res, -8.735662, tolerance = 1e-6)
 
 })
 

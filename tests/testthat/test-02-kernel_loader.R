@@ -109,7 +109,7 @@ test_that("get_Hlam()", {
   mod2 <- kernL(y, x1, x2, x3, kernel = c("se", "pearson", "fbm"),
                  est.hurst = TRUE, est.lengthscale = TRUE)
   theta2 <- mod2$thetal$theta
-  expect_equivalent(get_Hlam(mod1, c(1, 1, 1), theta.is.lambda = TRUE),
+  expect_equivalent(get_Hlam(mod1, theta1, theta.is.lambda = TRUE),
                     get_Hlam(mod2, theta2))
 
 })

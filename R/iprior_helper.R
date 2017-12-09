@@ -127,12 +127,13 @@ get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   #
   # Returns: The scaled kernel matrix. This has a "kernel" attribute indicating
   # which kernels were used to generate it.
-  tmp <- theta_to_param(theta, object)
-  kernels <- tmp$kernels
   if (isTRUE(theta.is.lambda)) {
+    kernels <- object$kernels
     lambda <- theta
     lambda.only <- TRUE
   } else {
+    tmp <- theta_to_param(theta, object)
+    kernels <- tmp$kernels
     lambda <- tmp$lambda
     lambda.only <- is.theta_lambda(object)
   }
@@ -159,11 +160,12 @@ get_Htildelam <- function(object, theta, xstar, theta.is.lambda = FALSE) {
   # of new data.
   #
   # Returns: Assuming m new data points, then an m x n matrix is returned.
-  tmp <- theta_to_param(theta, object)
-  kernels <- tmp$kernels
   if (isTRUE(theta.is.lambda)) {
+    kernels <- object$kernels
     lambda <- theta
   } else {
+    tmp <- theta_to_param(theta, object)
+    kernels <- tmp$kernels
     lambda <- tmp$lambda
   }
 
