@@ -147,10 +147,11 @@ get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
       Hl <- get_Hl(object$Xl, list(NULL), kernels = kernels, lambda = lambda)
     }
   }
+  lambda[is.kern_poly(kernels)] <- 1
   calc_Hlam(Hl, lambda[seq_along(Hl)], object)
 }
 
-get_Htildelam <- function(object, theta, xstar) {
+get_Htildelam <- function(object, theta, xstar, theta.is.lambda = FALSE) {
   # A helper function to calculate Hlam given a new set of data. This is similar
   # to get_Hlam().
   #
@@ -160,7 +161,11 @@ get_Htildelam <- function(object, theta, xstar) {
   # Returns: Assuming m new data points, then an m x n matrix is returned.
   tmp <- theta_to_param(theta, object)
   kernels <- tmp$kernels
-  lambda <- tmp$lambda
+  if (isTRUE(theta.is.lambda)) {
+    lambda <- theta
+  } else {
+    lambda <- tmp$lambda
+  }
 
   # if (is.nystrom(object)) {
   #   m <- object$nystroml$nys.size
@@ -171,6 +176,7 @@ get_Htildelam <- function(object, theta, xstar) {
   #   res <- Hlam.new %*% solve(A, Hlam)
   # } else {
     Hl <- get_Hl(object$Xl, xstar, kernels = kernels, lambda = lambda)
+    lambda[is.kern_poly(kernels)] <- 1
     res <- calc_Hlam(Hl, lambda, object)
   # }
 

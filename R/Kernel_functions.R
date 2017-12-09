@@ -228,11 +228,10 @@ kern_poly <- function(x, y = NULL, c = 0, d = 2, lam.poly = 1, centre = TRUE) {
     stop("Polynomial offset must be greater than 0.", call. = FALSE)
   }
 
-  x.ip <- kern_canonical(x, y, centre = FALSE)  # >>> NEEDS CHECKING <<<
+  x.ip <- kern_canonical(x, y, centre = centre)
   res <- (lam.poly * x.ip + c) ^ d
   attributes(res)$kernel <- paste0("poly", d, ",", c)
-  if (isTRUE(centre)) return(kern_centre(res))
-  else return(res)
+  res
 }
 
 kern_check_xy <- function(x, y, centre.xy) {
