@@ -127,12 +127,12 @@ get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   #
   # Returns: The scaled kernel matrix. This has a "kernel" attribute indicating
   # which kernels were used to generate it.
+  tmp <- theta_to_param(theta, object)
+  kernels <- tmp$kernels
   if (isTRUE(theta.is.lambda)) {
     lambda <- theta
     lambda.only <- TRUE
   } else {
-    tmp <- theta_to_param(theta, object)
-    kernels <- tmp$kernels
     lambda <- tmp$lambda
     lambda.only <- is.theta_lambda(object)
   }
