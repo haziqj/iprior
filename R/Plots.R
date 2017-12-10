@@ -94,7 +94,7 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp.var = 1, facet = c(2, 3),
   fit <- fitted(x, intervals = cred.bands)
   y.hat <- fit$y
   plot.df <- data.frame(y.hat = y.hat, x = X, grp = grp, y = get_y(x))
-
+  plot.df
   if (isTRUE(extrapolate)) {
     x.min <- min(X)
     x.max <- max(X)
@@ -104,7 +104,7 @@ plot_fitted_multilevel <- function(x, X.var = 1, grp.var = 1, facet = c(2, 3),
     if (!is.null(x$ipriorKernel$formula)) {
       x.pos <- c(cts.x[X.var], cat.x[grp.var])
       colnames(ext.df)[1:2] <- attr(x$ipriorKernel$terms, "term.labels")[x.pos]
-      fit.ext <- predict(x, ext.df, intervals = cred.bands)
+      fit.ext <- predict_iprior(x, ext.df, NULL, cred.bands, 0.05)
       y.hat.ext <- fit.ext$y
       plot.df.ext <- data.frame(y.hat = y.hat.ext, x = X.ext, grp = grp.ext,
                                 y = NA)

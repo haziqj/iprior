@@ -52,3 +52,17 @@ test_that("EM loop logical",{
 	expect_warning(em_loop_logical())  # decrease in log-likelihood creates warning
 
 })
+
+test_that("Polynomial scale parameters multiply correctly", {
+
+  x <- y <- rnorm(3)
+  lambda <- abs(rnorm(1))
+  res1 <- kern_poly(x, d = 3, lam.poly = lambda)
+
+  mod <- kernL(y, x, kernel = "poly3", lambda = lambda)
+  res2 <- get_Hlam(mod, c(log(lambda), log(1)))
+  res3 <- get_Htildelam(mod, c(log(lambda), log(1)), list(x))
+  expect_equal(res1, res2)
+  expect_equal(res2, res3)
+
+})
