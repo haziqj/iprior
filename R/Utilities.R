@@ -425,6 +425,7 @@ deal_with_one.lam <- function(x, interactions) {
   }
   x <- list(matrix(unlist(x), ncol = length(x)))
   names(x) <- xname
+  attr(x, "one.lam") <- TRUE
 
   list(x = x, xname = xname)
 }
@@ -442,8 +443,7 @@ terms_to_xy <- function(object, newdata) {
     y <- model.extract(model.frame(tt, newdata), "response")
 
   # Deal with one.lam option ---------------------------------------------------
-  no.of.x <- length(attr(object$terms, "term.labels"))
-  one.lam <- no.of.x != object$p  # check for one.lam = TRUE
+  one.lam <- attr(object$Xl, "one.lam")
   if (isTRUE(one.lam)) {
     # Writes x and xname to env.
     list2env(deal_with_one.lam(x, object$interactions), envir = environment())
