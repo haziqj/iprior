@@ -14,6 +14,11 @@ tecator.cv
 \description{
 Results of I-prior cross-validation experiment on Tecator data set
 }
+\details{
+For the fBm and SE kernels, it seems numerical issues arise when using a
+direct optimisation approach. Terminating the algorithm early (say using a
+relaxed stopping criterion) seems to help.
+}
 \examples{
 # Results from the six experiments
 print(tecator.cv[[1]], "RMSE")
@@ -36,12 +41,11 @@ absorp <- -t(diff(t(absorp)))  # this takes first differences using diff()
 fat <- endpoints$fat
 
 # Here is the code to replicate the results
-mod1.cv <- iprior_cv(fat, absorp, method = "em",
-                     control = list(stop.crit = 1e-2), folds = Inf)
-mod2.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly2",
-                     est.offset = TRUE, control = list(stop.crit = 1e-2))
-mod3.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly3",
-                     est.offset = TRUE, control = list(stop.crit = 1e-2))
+mod1.cv <- iprior_cv(fat, absorp, folds = Inf)
+mod2.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "poly2",
+                     est.offset = TRUE)
+mod3.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "poly3",
+                     est.offset = TRUE)
 mod4.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
                      control = list(stop.crit = 1e-2))
 mod5.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "fbm",
@@ -50,7 +54,7 @@ mod6.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "se",
                      est.lengthscale = TRUE, control = list(stop.crit = 1e-2))
 
 tecator_res_cv <- function(mod) {
-  res <- as.numeric(apply(sqrt(mod$mse[, -1]), 2, mean))  # Calculate RMSE
+  res <- as.numeric(apply(mod$res[, -1], 2, mean))  # Calculate RMSE
   c("Training RMSE" = res[1], "Test RMSE" = res[2])
 }
 

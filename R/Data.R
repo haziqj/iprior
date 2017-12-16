@@ -187,6 +187,12 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 
 #' Results of I-prior cross-validation experiment on Tecator data set
 #'
+#' Results of I-prior cross-validation experiment on Tecator data set
+#'
+#' For the fBm and SE kernels, it seems numerical issues arise when using a
+#' direct optimisation approach. Terminating the algorithm early (say using a
+#' relaxed stopping criterion) seems to help.
+#'
 #' @format Results from iprior_cv cross validation experiment. This is a list of
 #'   seven, with each component bearing the results for the linear, quadratic,
 #'   cubic, fBm-0.5, fBm-MLE and SE I-prior models. The seventh is a summarised
@@ -214,12 +220,11 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #' fat <- endpoints$fat
 #'
 #' # Here is the code to replicate the results
-#' mod1.cv <- iprior_cv(fat, absorp, method = "em",
-#'                      control = list(stop.crit = 1e-2), folds = Inf)
-#' mod2.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly2",
-#'                      est.offset = TRUE, control = list(stop.crit = 1e-2))
-#' mod3.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly3",
-#'                      est.offset = TRUE, control = list(stop.crit = 1e-2))
+#' mod1.cv <- iprior_cv(fat, absorp, folds = Inf)
+#' mod2.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "poly2",
+#'                      est.offset = TRUE)
+#' mod3.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "poly3",
+#'                      est.offset = TRUE)
 #' mod4.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
 #'                      control = list(stop.crit = 1e-2))
 #' mod5.cv <- iprior_cv(fat, absorp, folds = Inf, kernel = "fbm",
@@ -228,7 +233,7 @@ gen_multilevel <- function(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
 #'                      est.lengthscale = TRUE, control = list(stop.crit = 1e-2))
 #'
 #' tecator_res_cv <- function(mod) {
-#'   res <- as.numeric(apply(sqrt(mod$mse[, -1]), 2, mean))  # Calculate RMSE
+#'   res <- as.numeric(apply(mod$res[, -1], 2, mean))  # Calculate RMSE
 #'   c("Training RMSE" = res[1], "Test RMSE" = res[2])
 #' }
 #'
