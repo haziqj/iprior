@@ -648,6 +648,19 @@ tab_intr_3plus <- function(x) {
   })
 }
 
+
+where_int <- function(x) {
+  # Function to determine where interactions are. Used in formula_to_xy().
+  #
+  # Args: x is a table obtained from the terms of a formula fit.
+  #
+  # Returns: The same table x but with replaced values.
+  tmp <- x > 0
+  x[tmp] <- which(x > 0)
+  x[!tmp] <- 0
+  x
+}
+
 which_intr_3plus <- function(x) {
   # Function to determine the positions of the >2-way interactions.
   #

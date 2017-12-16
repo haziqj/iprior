@@ -386,7 +386,7 @@ formula_to_xy <- function(formula, data, one.lam) {
   if (any(tmpo == 2)) interactions <- int2
   intr.3plus <- NULL
   tmpf3 <- as.matrix(tmpf[-1, tmpo > 2])
-  int3 <- apply(tmpf3, 2, whereInt)
+  int3 <- apply(tmpf3, 2, where_int)
   if (any(tmpo > 2)) intr.3plus <- int3
   interactions <- list(intr = interactions, intr.3plus = intr.3plus)
 
@@ -454,6 +454,17 @@ terms_to_xy <- function(object, newdata) {
 
 #' @export
 .terms_to_xy <- terms_to_xy
+
+fastSquareRoot2 <- function(x) {
+  # Function to quickly find a square root of a matrix from its
+  # eigendecomposition.
+  #
+  # Args: x a square matrix.
+  #
+  # Returns: x ^ {1/2}.
+  tmp <- eigenCpp(x)
+  tmp$vec %*% tcrossprod(diag(sqrt(abs(tmp$val))), tmp$vec)
+}
 
 .onUnload <- function(libpath) {
   # Whenever you use C++ code in your package, you need to clean up after
