@@ -648,7 +648,6 @@ tab_intr_3plus <- function(x) {
   })
 }
 
-
 where_int <- function(x) {
   # Function to determine where interactions are. Used in formula_to_xy().
   #

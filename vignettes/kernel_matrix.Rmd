@@ -16,7 +16,6 @@ library(iprior)
 
 ## Introduction
 
-<!-- Adapted from Jamil \& Bergsma (2017).  -->
 The M-step involving the scale parameters $\boldsymbol\lambda$ in the EM algorithm for I-prior models can be found in closed-form in the following situations:
 
 1. A single scale parameter `lambda` being used.
@@ -146,14 +145,14 @@ findH2 <- function(z, ind1, ind2){
 Regression with 3 covariates and two-way interactions between all 3 covariates. Here, `p = 3`, `l = 3` and `h = q = 6`. In full, the index of the `H.mat` is `c(1, 2, 3, 1:2, 1:3, 2:3)`.
 
 ```{r}
-(mod <- .kernL(stack.loss ~ . ^ 2, data = stackloss))
+(mod <- kernL(stack.loss ~ . ^ 2, data = stackloss))
 p <- 3
 ```
 
 The index of all two-way interactions are obtained by the kernel loader function. It is contained in `model$intr`. The following shows the indices of the variables which have two-way interactions. For example, variable 1 interacts with variable 2, variable 1 with 3 and finally 2 with 3. This matrix will always have 2 rows, and columns equal to `m`.
 
 ```{r}
-intr <- mod$model$intr
+intr <- mod$intr
 colnames(intr) <- NULL
 intr
 ```
