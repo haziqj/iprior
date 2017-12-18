@@ -161,7 +161,7 @@ get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
     # til.cond <- (
     #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
     # )
-    res <- get_Hlam(object, object$theta, FALSE)
+    res <- get_Hlam(object, object$thetal$theta, FALSE)
     return(res)
   }
 }

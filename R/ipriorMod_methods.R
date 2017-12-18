@@ -112,16 +112,19 @@ kernel_summary_translator <- function(x) {
   if (is.kern_linear(x)) res <- "Linear"
   if (is.kern_pearson(x)) res <- "Pearson"
   else {
-    hyperparam <-  signif(get_hyperparam(x), 3)
+    # hyperparam <- signif(get_hyperparam(x), 3)
     if (is.kern_fbm(x)) {
-      res <- paste0("Fractional Brownian motion with Hurst ", hyperparam)
+      # res <- paste0("Fractional Brownian motion with Hurst ", hyperparam)
+      res <- "Fractional Brownian motion"
     }
     if (is.kern_se(x)) {
-      res <- paste0("Squared exponential with lengthscale ", hyperparam)
+      # res <- paste0("Squared exponential with lengthscale ", hyperparam)
+      res <- "Squared exponential"
     }
     if (is.kern_poly(x)) {
       degree <- get_polydegree(x)
-      res <- paste0("Polynomial degree ", degree, " with offset ", hyperparam)
+      # res <- paste0("Polynomial degree ", degree, " with offset ", hyperparam)
+      res <- paste0("Polynomial degree ", degree)
     }
   }
   res

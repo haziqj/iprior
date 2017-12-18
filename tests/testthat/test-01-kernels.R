@@ -52,6 +52,14 @@ test_that("fBm kernel", {
   expect_equivalent(res2, res3)
   expect_equivalent(res1, res3)
 
+  # fBm-1 equals canonical
+  res1 <- kern_canonical(y, y, centre = FALSE)
+  res2 <- kern_fbm(y, y, gamma = 1, centre = FALSE)
+  res3 <- kern_fbm(y, gamma = 1, centre = FALSE)
+  expect_equivalent(res1, res2)
+  expect_equivalent(res2, res3)
+  expect_equivalent(res1, res3)
+
 })
 
 test_that("SE kernel", {
@@ -81,5 +89,11 @@ test_that("Polynomial kernel", {
   res1 <- kern_poly(y, y, lam.poly = 3)
   res2 <- kern_poly(y, lam.poly = 3)
   expect_equivalent(res1, res2)
+
+})
+
+test_that("Non-integer value for polynomial degree", {
+
+  expect_error(kern_poly(1:3, d = pi))
 
 })

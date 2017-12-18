@@ -28,3 +28,13 @@ test_that("k-fold cross-validation", {
   expect_equal(capture.output(mod1)[1], capture.output(mod2)[1])
 
 })
+
+test_that("Folds > 0", {
+
+  expect_warning(
+    mod2 <- iprior_cv(stack.loss ~ ., stackloss, one.lam = TRUE, folds = 1,
+                      par.cv = FALSE, control = list(silent = TRUE,
+                                                     theta0 = c(1, 1)))
+  )
+
+})
