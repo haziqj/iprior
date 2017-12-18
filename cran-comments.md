@@ -1,3 +1,6 @@
+## Fixes
+This version addresses `These (still?) have files with vignette-like filenames with no identifiable vignette engine (as spotted by tools::pkgVignettes(check = TRUE)), see below: can you pls fix as necessary?` as instructed by K Hornik.
+
 ## Test environments
 * local macOS High Sierra 10.13, R 3.4.2
 * OS X El Capitan 10.11.6 on travis-ci, R 3.3.3 

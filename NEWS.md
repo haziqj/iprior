@@ -1,4 +1,4 @@
-# v0.7.0.9007
+# v0.7.1
 
 * Modification to centering of SE and polynomial kernels.
 * Added option `train.samp` and `test.samp` to `kernL()` and `iprior()` to easily split training and test samples for cross-validation.
@@ -6,6 +6,8 @@
 * Fixed minor bug in `iprior_em_closed()` which caused lambda to expand together with the number of iterations.
 * Fixed incorrect calculation of polynomial kernel.
 * Removed all legacy functions.
+* Updated vignette.
+* Added vignette for cross-validation function.
 
 # v0.7.0
 
