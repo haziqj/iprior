@@ -70,8 +70,10 @@
 #' @param one.lam Logical. When using formula input, this is a convenient way of
 #'   letting the function know to treat all variables as a single variable (i.e.
 #'   shared scale parameter). Defaults to \code{FALSE}.
-#' @param train.samp,test.samp (Optional) A vector indicating which of the data
-#'   points should be used for training/testing.
+#' @param train.samp (Optional) A vector indicating which of the data points
+#'   should be used for training, and the remaining used for testing.
+#' @param test.samp (Optional) Similar to \code{train.samp}, but on test samples
+#'   instead.
 #'
 #' @return An \code{ipriorKernel} object which contains the relevant material to
 #'   be passed to the \code{iprior} function for model fitting.
@@ -102,7 +104,7 @@ kernL <- function(
   y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
   est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
-  nys.seed = NULL, model = list()
+  nys.seed = NULL, model = list(), train.samp, test.samp
 ) UseMethod("kernL")
 
 #' @export

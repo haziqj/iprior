@@ -12,13 +12,14 @@
   control = list(), interactions = NULL, est.lambda = TRUE,
   est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
-  nystrom = FALSE, nys.seed = NULL, model = list(), train.samp)
+  nystrom = FALSE, nys.seed = NULL, model = list(), train.samp, test.samp)
 
 \method{iprior}{formula}(formula, data, kernel = "linear", one.lam = FALSE,
   method = "direct", control = list(), est.lambda = TRUE,
   est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
-  nystrom = FALSE, nys.seed = NULL, model = list(), train.samp, ...)
+  nystrom = FALSE, nys.seed = NULL, model = list(), train.samp, test.samp,
+  ...)
 
 \method{iprior}{ipriorKernel}(object, method = "direct", control = list(),
   ...)
@@ -115,7 +116,10 @@ approximation.}
 \item{model}{DEPRECATED.}
 
 \item{train.samp}{(Optional) A vector indicating which of the data points
-should be used for training, so the remaining would be used for testing.}
+should be used for training, and the remaining used for testing.}
+
+\item{test.samp}{(Optional) Similar to \code{train.samp}, but on test samples
+instead.}
 
 \item{formula}{The formula to fit when using formula interface.}
 
