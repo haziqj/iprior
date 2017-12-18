@@ -70,8 +70,8 @@
 #' @param one.lam Logical. When using formula input, this is a convenient way of
 #'   letting the function know to treat all variables as a single variable (i.e.
 #'   shared scale parameter). Defaults to \code{FALSE}.
-#' @param train.samp (Optional) A vector indicating which of the data points
-#'   should be used for training, so the remaining would be used for testing.
+#' @param train.samp,test.samp (Optional) A vector indicating which of the data
+#'   points should be used for training/testing.
 #'
 #' @return An \code{ipriorKernel} object which contains the relevant material to
 #'   be passed to the \code{iprior} function for model fitting.
@@ -111,7 +111,7 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp) {
+                           model = list(), train.samp, test.samp) {
   # Checks ---------------------------------------------------------------------
   if (is.list(model) & length(model) > 0) {
     stop("\'model\' option is deprecated. Use the arguments directly instead. See \'?kernL\' for details.", call. = FALSE)
@@ -143,10 +143,15 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   } else {
     y.levels <- NULL
   }
+  one.lam <- attr(Xl, "one.lam")
 
   # Were training samples specified? -------------------------------------------
   train.check <- FALSE
-  if (!missing(train.samp)) {
+  if (!missing(train.samp) | !missing(test.samp)) {
+    if (!missing(train.samp) & !missing(test.samp)) {
+      stop("Use either train.samp or test.samp only.", call. = FALSE)
+    }
+    if (missing(train.samp)) train.samp <- seq_along(y)[-test.samp]
     if (all(train.samp %in% seq_along(y))) {
       train.check <- TRUE
       test.samp <- seq_along(y)[-train.samp]
@@ -163,6 +168,8 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
     } else {
       warning("Training samples incorrectly specified.", call. = FALSE)
     }
+    if (!is.null(one.lam)) attr(Xl, "one.lam") <- attr(Xl.test, "one.lam") <-
+        one.lam
   }
 
   # Get intercept --------------------------------------------------------------
@@ -318,7 +325,7 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp, ...) {
+                           model = list(), train.samp, test.samp, ...) {
   list2env(formula_to_xy(formula = formula, data = data, one.lam = one.lam),
            envir = environment())
   res <- kernL.default(y = y, Xl.formula = Xl, interactions = interactions,
@@ -328,7 +335,7 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                        est.offset = est.offset, est.psi = est.psi,
                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
                        nystrom = nystrom, nys.seed = nys.seed, model = model,
-                       train.samp = train.samp, ...)
+                       train.samp = train.samp, test.samp = test.samp, ...)
   res$yname <- yname
   res$formula <- formula
   res$terms <- tt

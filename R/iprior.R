@@ -137,7 +137,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp) {
+                           model = list(), train.samp, test.samp) {
   # Load the I-prior model -----------------------------------------------------
   if (is.ipriorKernel(y)) {
     mod <- y
@@ -147,7 +147,7 @@ iprior.default <- function(y, ..., kernel = "linear", method = "direct",
                   est.lengthscale = est.lengthscale, est.offset = est.offset,
                   est.psi = est.psi, fixed.hyp = fixed.hyp, lambda = lambda,
                   psi = psi, nystrom = nystrom, nys.seed = nys.seed,
-                  model = model, train.samp = train.samp)
+                  model = model, train.samp = train.samp, test.samp = test.samp)
   }
   if (is.categorical(mod)) {
     warning("Categorical responses loaded. Consider using iprobit package.",
@@ -278,7 +278,7 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                            est.lengthscale = FALSE, est.offset = FALSE,
                            est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
                            psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp, ...) {
+                           model = list(), train.samp, test.samp, ...) {
   # Simply load the kernel and pass to iprior.default() ------------------------
   mod <- kernL.formula(formula, data, kernel = kernel, one.lam = one.lam,
                        est.lambda = est.lambda, est.hurst = est.hurst,
@@ -286,7 +286,7 @@ iprior.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                        est.offset = est.offset, est.psi = est.psi,
                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
                        nystrom = nystrom, nys.seed = nys.seed, model = model,
-                       train.samp = train.samp, ...)
+                       train.samp = train.samp, test.samp = test.samp, ...)
   res <- iprior.default(y = mod, method = method, control = control)
   res$call <- fix_call_formula(match.call(), "iprior")
   res$ipriorKernel$call <- fix_call_formula(match.call(), "kernL")

@@ -129,12 +129,33 @@ test_that("Training samples specified", {
 
 })
 
-test_that("Warn if training samples not correct", {
+test_that("Test samples specified", {
 
   # Non-formula
   y <- x <- 1:10
+  mod <- kernL(y, x, test.samp = 1:5)
+  expect_equal(mod$n, 5)
+  expect_equal(mod$y.test, mod$Xl.test[[1]])
+
+  # Formula
+  mod <- kernL(y ~ x, data.frame(y, x), test.samp = 1:5)
+  expect_equal(mod$n, 5)
+  expect_equivalent(mod$y.test, mod$Xl.test[[1]])
+
+})
+
+test_that("Warn if training samples not correct", {
+
+  y <- x <- 1:10
   expect_warning(kernL(y, x, train.samp = 1:200))
   expect_warning(kernL(y, x, train.samp = 250))
+
+})
+
+test_that("Stop if train.samp and test.samp both specified", {
+
+  y <- x <- 1:10
+  expect_error(kernL(y, x, train.samp = 1:5, test.samp = 1:5))
 
 })
 
