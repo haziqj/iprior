@@ -46,8 +46,7 @@ Then, run the following code to install and attach the `iprior` package.
 devtools::install_github("haziqj/iprior", build_vignettes = TRUE)
 library(iprior)
 ```
-
-[comment]: *Note: The option `build_vignettes = TRUE` builds the package vignettes for viewing, but takes slightly longer. Set `build_vignettes = FALSE`, or remove this option entirely, to skip building the vignettes.*
+[//]: # (*Note: The option `build_vignettes = TRUE` builds the package vignettes for viewing, but takes slightly longer. Set `build_vignettes = FALSE`, or remove this option entirely, to skip building the vignettes.*)
 
 ## Syntax
 
