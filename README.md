@@ -16,7 +16,7 @@ The package estimates these parameters using direct log-likelihood maximisation,
 While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
 For installation instructions and some examples of I-prior modelling, continue reading below. 
-The package is documented with help files, and the [vignette](https://cran.r-project.org/web/packages/iprior/vignettes/iprior_paper.pdf) provides an introduction to the concept of I-priors and also to using the package.
+The package is documented with help files, and the [vignette](http://phd.haziqj.ml/iprior_paper.pdf) provides an introduction to the concept of I-priors and also to using the package.
 
 ## Installation
 
@@ -63,5 +63,5 @@ Find the full list of options by typing `?iprior` in R.
 
 ## Resources
 
-View the package vignette by typing `browseVignettes("iprior")` in R or visiting this [link](https://cran.r-project.org/web/packages/iprior/vignettes/iprior_paper.pdf). 
+View the package vignette by typing `browseVignettes("iprior")` in R or visiting this [link](http://phd.haziqj.ml/iprior_paper.pdf). 
 This package is part of the PhD project entitled "Regression Modelling using Fisher Information Covariance Kernels (I-priors)" by Haziq Jamil [[link](http://phd.haziqj.ml)].
