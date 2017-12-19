@@ -14,7 +14,7 @@ vignette: >
 library(iprior)
 ```
 
-Continuing on Section 3.4 of the [vignette](https://cran.r-project.org/web/packages/iprior/vignettes/iprior_paper.pdf), we revisit the code used to obtain out-of-sample test error rates, and extend the analysis to a leave-one-out cross-validation (LOOCV) scheme.
+Continuing on Section 3.4 of the [vignette](http://phd.haziqj.ml/iprior_paper.pdf), we revisit the code used to obtain out-of-sample test error rates, and extend the analysis to a leave-one-out cross-validation (LOOCV) scheme.
 
 # Easy train/test split
 

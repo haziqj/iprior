@@ -2,9 +2,9 @@
 This version addresses `These (still?) have files with vignette-like filenames with no identifiable vignette engine (as spotted by tools::pkgVignettes(check = TRUE)), see below: can you pls fix as necessary?` as instructed by K Hornik.
 
 ## Test environments
-* local macOS High Sierra 10.13, R 3.4.2
-* OS X El Capitan 10.11.6 on travis-ci, R 3.3.3 
-* Ubuntu 14.04.5 on travis-ci, R devel, release and oldrel (with valgrind)
+* local macOS High Sierra 10.13, R 3.4.3
+* macOS Sierra 10.12.6 on travis-ci, R 3.3.3 
+* Ubuntu 14.04.5 LTS on travis-ci, R devel, release and oldrel (with valgrind)
 * Windows Server 2012 R2 x64 build 9600 on appveyor-ci, R devel, release and oldrel 
 * win-builder (devel)
 
@@ -14,7 +14,7 @@ There were no ERRORs or WARNINGs.
 There were 2 NOTEs:
 
 * checking installed package size ... NOTE
-  installed size is  9.1Mb
+  installed size is  10.3Mb
   sub-directories of 1Mb or more:
     libs   8.6Mb 
   
