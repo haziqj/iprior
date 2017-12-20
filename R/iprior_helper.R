@@ -117,6 +117,9 @@ convert_se <- function(se, theta, object) {
   res
 }
 
+#' @export
+.convert_se <- convert_se
+
 get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   # Obtain the scaled kernel matrix Hlam.
   #
