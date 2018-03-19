@@ -24,7 +24,11 @@ test_that("ipriorMod methods and accessors", {
   expect_equal(get_se(mod), c(lambda = NA, hurst = NA, psi = NA))
   expect_equal(get_kernels(mod), c(X = "fbm,0.5"))
   expect_equal(get_kern_matrix(mod), kern_fbm(dat$X))
+  expect_equal(get_kern_matrix(mod, newdata = dat[1:2, ]),
+               kern_fbm(dat$X, dat$X[1:2]))
   expect_equal(get_kern_matrix(mod$ipriorKernel), kern_fbm(dat$X))
+  expect_equal(get_kern_matrix(mod$ipriorKernel, newdata = dat[1:2, ]),
+               kern_fbm(dat$X, dat$X[1:2]))
   expect_equal(as.numeric(get_mse(mod)), 7.817885, tolerance = 1e-5)
   expect_equal(get_estl(mod), c(est.lambda = FALSE, est.hurst = FALSE,
                                 est.lengthscale = FALSE, est.offset = FALSE,
@@ -36,6 +40,21 @@ test_that("ipriorMod methods and accessors", {
   expect_equal(capture.output(get_niter(mod)), "Iterations: NA/100.")
   expect_silent(get_time(mod))
   expect_true(length(get_theta(mod)) == 0)
+
+})
+
+test_that("ipriorMod methods and accessors (non-formula)", {
+
+  dat <- gen_smooth(10, seed = 123)
+  mod <- iprior(dat$y, dat$X, kernel = "fbm", fixed.hyp = TRUE)
+
+  # Accessor functions
+  expect_equal(get_kern_matrix(mod), kern_fbm(dat$X))
+  expect_equal(get_kern_matrix(mod, newdata = list(dat$X[1:2])),
+               kern_fbm(dat$X, dat$X[1:2]))
+  expect_equal(get_kern_matrix(mod$ipriorKernel), kern_fbm(dat$X))
+  expect_equal(get_kern_matrix(mod$ipriorKernel, newdata = list(dat$X[1:2])),
+               kern_fbm(dat$X, dat$X[1:2]))
 
 })
 

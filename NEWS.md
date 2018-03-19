@@ -1,3 +1,6 @@
+# v0.7.1.9001
+* Updated `get_kern_matrix()` accessor function.
+
 # v0.7.1
 
 * Modification to centering of SE and polynomial kernels.

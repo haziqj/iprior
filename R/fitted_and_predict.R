@@ -73,24 +73,39 @@ predict.ipriorMod <- function(object, newdata = list(), y.test = NULL,
   if (length(newdata) == 0) {
     return(cat("No new data supplied. Use fitted() instead."))
   }
-  if (!is.null(object$ipriorKernel$formula)) {
-    tmp <- terms_to_xy(object$ipriorKernel, newdata)
-    y.test <- tmp$y
-    xstar <- tmp$Xl
-    xrownames <- rownames(newdata)
-  } else {
-    if (any(sapply(newdata, is.vector))) {
-      newdata <- lapply(newdata, as.matrix)
-    }
-    xstar <- newdata
-    xrownames <- rownames(do.call(cbind, newdata))
-  }
+  list2env(before_predict(object, newdata), envir = environment())
 
   res <- predict_iprior(object, xstar, y.test, intervals = intervals,
                         alpha = alpha)
   names(res$y) <- xrownames
   class(res) <- "ipriorPredict"
   res
+}
+
+before_predict <- function(object, newdata) {
+  # A helper function to 1) test whether mod is fitted using formula or not,
+  # then 2) return xstar, y.test (if data frame supplied) and xrownames. I
+  # separated this from the actual predict function because it is useful to say,
+  # calculate the kernel matrix at new input points in get_kern_matrix().
+  #
+  # Args: ipriorMod object, and newdata list or data frame.
+  #
+  # Returns: A list containing y.test (if data frame supplied), xstar and
+  # xrownames.
+  if (!is.null(object$ipriorKernel$formula)) {
+    tmp <- terms_to_xy(object$ipriorKernel, newdata)
+    y.test <- tmp$y
+    xstar <- tmp$Xl
+    xrownames <- rownames(newdata)
+    return(list(y.test = y.test, xstar = xstar, xrownames = xrownames))
+  } else {
+    if (any(sapply(newdata, is.vector))) {
+      newdata <- lapply(newdata, as.matrix)
+    }
+    xstar <- newdata
+    xrownames <- rownames(do.call(cbind, newdata))
+    return(list(xstar = xstar, xrownames = xrownames))
+  }
 }
 
 #' @rdname predict

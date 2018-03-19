@@ -32,6 +32,8 @@
 #' @param error.type (Optional) Report the mean squared error of prediction
 #'   (\code{"MSE"}), or the root mean squared error of prediction
 #'   (\code{"RMSE"})
+#' @param newdata (Optional) If supplied, then returns the kernel matrix
+#'   evaluated at new data points.
 #'
 #' @name Accessors
 NULL
@@ -148,20 +150,31 @@ get_kernels <- function(object) {
 
 #' @describeIn Accessors Obtain the kernel matrix of the I-prior model.
 #' @export
-get_kern_matrix <- function(object, theta = NULL, xstar = list(NULL)) {
+get_kern_matrix <- function(object, theta = NULL, newdata) {
   if (is.ipriorMod(object)) {
     # estl <- object$ipriorKernel$estl
     # til.cond <- (
     #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
     # )
-    res <- get_Hlam(object$ipriorKernel, object$theta, FALSE)
+    if (missing(newdata)) {
+      res <- get_Hlam(object$ipriorKernel, object$theta, FALSE)
+    } else {
+      list2env(before_predict(object, newdata), envir = environment())  # writes xstar to env
+      res <- get_Htildelam(object$ipriorKernel, object$theta, xstar)
+    }
     return(res)
   } else if (is.ipriorKernel(object)) {
     # estl <- object$estl
     # til.cond <- (
     #   !isTRUE(estl$est.hurst) & !isTRUE(estl$est.lengt) & !isTRUE(estl$est.offs)
     # )
-    res <- get_Hlam(object, object$thetal$theta, FALSE)
+    if (missing(newdata)) {
+      res <- get_Hlam(object, object$thetal$theta, FALSE)
+    } else {
+      list2env(before_predict(list(ipriorKernel = object), newdata),
+               envir = environment())  # writes xstar to env
+      res <- get_Htildelam(object, object$thetal$theta, xstar)
+    }
     return(res)
   }
 }
