@@ -74,17 +74,14 @@ get_theta(object)
 \item{theta}{(Optional) Value of hyperparameters to evaluate the kernel
 matrix.}
 
-\item{newdata}{(Optional) If supplied, then returns the kernel matrix
-evaluated at new data points.}
+\item{newdata}{(Optional) If not supplied, then a square, symmetric kernel
+matrix is returned using the data as input points. Otherwise, the kernel
+matrix is evaluated with respect to this set of data as well. It must be a
+list of vectors/matrices with similar dimensions to the original data.}
 
 \item{error.type}{(Optional) Report the mean squared error of prediction
 (\code{"MSE"}), or the root mean squared error of prediction
 (\code{"RMSE"})}
-
-\item{xstar}{(Optional) If not supplied, then a square, symmetric kernel
-matrix is returned using the data as input points. Otherwise, the kernel
-matrix is evaluated with respect to this set of data as well. It must be a
-list of vectors/matrices with similar dimensions to the original data.}
 }
 \description{
 Accessor functions for \code{ipriorMod} objects.

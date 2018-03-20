@@ -18,4 +18,4 @@ globalVariables(c("BlockBStuff", "estl", "ind1", "ind2", "interactions", "intr",
                   "niter", "no.int", "no.int.3plus", "p", "parsm", "Pl",
                   "probit", "psi", "Psql", "Sl","stop.crit", "tt", "u", "upper",
                   "V", "value", "Var1", "Var2", "variable", "Vy.inv.y", "X",
-                  "Xl", "y", "yname"))
+                  "Xl", "xrownames", "xstar", "y", "yname"))

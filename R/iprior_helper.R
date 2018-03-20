@@ -99,7 +99,7 @@ convert_se <- function(se, theta, object) {
   # Args: se for theta, the optimised theta value, and the ipriorKernel object.
   #
   # Returns: A vector similar to se, but with delta-transformed values.
-  theta.names <- names(object$theta)
+  theta.names <- names(object$thetal$theta)
   res <- se
 
   types <- c("lambda", "hurst", "offset", "lengthscale", "psi")

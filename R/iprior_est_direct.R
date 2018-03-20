@@ -33,7 +33,7 @@ iprior_direct <- function(mod, lik.fn, theta0, control = list(),
 
   # Default optim control list -------------------------------------------------
   control_ <- list(
-    fnscale = -2,
+    fnscale = -2,  # minimising log-likelihood on deviance scale
     trace   = 1,
     maxit   = 100,
     REPORT  = 10,
