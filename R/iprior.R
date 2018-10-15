@@ -119,7 +119,7 @@ iprior <- function(...) UseMethod("iprior")
 #' mod5 <- iprior(y ~ X, dat, method = "fixed", lambda = coef(mod1)[1],
 #'                psi = coef(mod1)[2])
 #' all.equal(logLik(mod1), logLik(mod2), logLik(mod3), logLik(mod4),
-#'           logLik(mod5), tol = 1e-6)
+#'           logLik(mod5), tol = 1e-6, scale = 1)
 #'
 #' \dontrun{
 #'
