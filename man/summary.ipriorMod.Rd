@@ -3,7 +3,6 @@
 \name{summary.ipriorMod}
 \alias{summary.ipriorMod}
 \alias{print.ipriorMod}
-\alias{summary.ipriorMod}
 \title{Print and summary method for I-prior models}
 \usage{
 \method{print}{ipriorMod}(x, digits = 5, ...)

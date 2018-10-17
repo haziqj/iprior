@@ -14,10 +14,11 @@
   nys.seed = NULL)
 
 \method{iprior_cv}{formula}(formula, data, folds = 2, one.lam = FALSE,
-  par.cv = TRUE, kernel = "linear", method = "direct", control = list(),
-  est.lambda = TRUE, est.hurst = FALSE, est.lengthscale = FALSE,
-  est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
-  psi = 1, nystrom = FALSE, nys.seed = NULL, ...)
+  par.cv = TRUE, kernel = "linear", method = "direct",
+  control = list(), est.lambda = TRUE, est.hurst = FALSE,
+  est.lengthscale = FALSE, est.offset = FALSE, est.psi = TRUE,
+  fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
+  nys.seed = NULL, ...)
 }
 \arguments{
 \item{y}{Vector of response variables}

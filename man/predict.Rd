@@ -7,7 +7,8 @@
 \alias{print.ipriorPredict}
 \title{Obtain predicted values from \code{ipriorMod} objects}
 \usage{
-\method{fitted}{ipriorMod}(object, intervals = FALSE, alpha = 0.05, ...)
+\method{fitted}{ipriorMod}(object, intervals = FALSE, alpha = 0.05,
+  ...)
 
 \method{predict}{ipriorMod}(object, newdata = list(), y.test = NULL,
   intervals = FALSE, alpha = 0.05, ...)
