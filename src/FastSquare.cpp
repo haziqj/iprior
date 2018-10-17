@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 //   iprior: Linear Regression using I-priors
-//   Copyright (C) 2017 Haziq Jamil
+//   Copyright (C) 2018 Haziq Jamil
 //
 //   This program is free software: you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
