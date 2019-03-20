@@ -20,5 +20,9 @@ There were 2 NOTEs:
   
   *This NOTE appears only with linux systems (i.e., it does not appear with macOS or win-builder). The size is due to a .so file resulting from the usage of RcppEigen.*
 
+* Uses the superseded package: 'doSNOW'		
+
+  *Use of the 'doSNOW' package as opposed to the 'doParallel' package is required due to the support of the printed txtProgressBar in the 'doSNOW' package.*
+
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
