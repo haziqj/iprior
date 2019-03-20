@@ -70,6 +70,7 @@ context("Various estimation methods")
 
 test_that("iprior_canonical", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   mod <- kernL(y ~ ., gen_smooth(n = 5, seed = 123))
   suppressWarnings({
     mod1 <- iprior(mod, method = "canonical",
@@ -153,6 +154,7 @@ test_that("iprior_em_mixed", {
 
 test_that("iprior_nystrom", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   mod <- kernL(y ~ ., gen_smooth(100, seed = 123), kernel = "fbm,0.7",
                 nystrom = 10)
   suppressWarnings({
