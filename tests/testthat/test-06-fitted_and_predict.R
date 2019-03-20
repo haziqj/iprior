@@ -2,6 +2,7 @@ context("Fitted and predict methods")
 
 test_that("Fitted", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   set.seed(123)
   y <- rnorm(3)
   x1 <- rnorm(3)
@@ -16,6 +17,7 @@ test_that("Fitted", {
 
 test_that("Predict (non-formula)", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   set.seed(123)
   y <- rnorm(3)
   x1 <- rnorm(3)
@@ -45,6 +47,7 @@ test_that("Predict (formula)", {
 
 test_that("one.lam = TRUE", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   set.seed(123)
   mod <- iprior(stack.loss ~ ., stackloss, one.lam = TRUE,
                 control = list(silent = TRUE))

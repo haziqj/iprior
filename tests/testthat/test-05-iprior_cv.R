@@ -2,6 +2,7 @@ context("Cross-validation")
 
 test_that("Training samples specified", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   set.seed(123)
   mod1 <- iprior(stack.loss, stack.x, train.samp = 1:10,
                  control = list(silent = TRUE))
@@ -18,6 +19,7 @@ test_that("Training samples specified", {
 
 test_that("k-fold cross-validation", {
 
+  suppressWarnings(RNGversion("3.5.0"))
   set.seed(123)
   mod1 <- iprior_cv(stack.loss, stack.x, par.cv = FALSE,
                     control = list(silent = TRUE, theta0 = c(1, 1)))
