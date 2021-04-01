@@ -191,7 +191,8 @@ se_yhat <- function(Hlam, Hlam.new, psi, nystrom = FALSE) {
   }
   z <- psi * u ^ 2 + 1 / psi
   Vy.inv.Hlam <- A_times_a(1 / z, V, t(Hlam.new))
-  sqrt(diag(Hlam.new %*% Vy.inv.Hlam) + 1 / psi)
+  sqrt(diag(Hlam.new %*% Vy.inv.Hlam))# + 1 / psi)
+  # for predicted y need to add 1 / psi
 }
 
 predict_iprior_quantiles <- function(object, Hlam.new = NULL, y.hat, alpha) {
