@@ -183,7 +183,7 @@ kern_fbm <- function(x, y = NULL, gamma = 0.5, centre = TRUE) {
 
 #' @rdname kernel
 #' @export
-kern_se <- function(x, y = NULL, l = 1, centre = TRUE) {
+kern_se <- function(x, y = NULL, l = 1, centre = FALSE) {
   list2env(kern_check_xy(x, y, centre), environment())
   xcrossprod <- tcrossprod(x)
 
