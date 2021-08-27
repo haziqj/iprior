@@ -4,9 +4,18 @@
 \alias{gen_multilevel}
 \title{Generate simulated data for multilevel models}
 \usage{
-gen_multilevel(n = 25, m = 6, sigma_e = 2, sigma_u0 = 2,
-  sigma_u1 = 2, sigma_u01 = -2, beta0 = 0, beta1 = 2,
-  x.jitter = 0.5, seed = NULL)
+gen_multilevel(
+  n = 25,
+  m = 6,
+  sigma_e = 2,
+  sigma_u0 = 2,
+  sigma_u1 = 2,
+  sigma_u01 = -2,
+  beta0 = 0,
+  beta1 = 2,
+  x.jitter = 0.5,
+  seed = NULL
+)
 }
 \arguments{
 \item{n}{Sample size. Input either a single number for a balanced data set,

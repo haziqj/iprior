@@ -4,10 +4,12 @@
 \name{hsbsmall}
 \alias{hsbsmall}
 \title{High school and beyond dataset}
-\format{A data frame of 661 observations on 3 variables. \describe{
+\format{
+A data frame of 661 observations on 3 variables. \describe{
   \item{\code{mathach}}{Math achievement.} \item{\code{ses}}{Socio-Economic
   status.} \item{\code{schoolid}}{Categorical variable indicating the school
-  the student went to. Treated as \code{factor}.} }}
+  the student went to. Treated as \code{factor}.} }
+}
 \usage{
 hsbsmall
 }

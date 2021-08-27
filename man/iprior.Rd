@@ -8,25 +8,56 @@
 \alias{iprior.ipriorMod}
 \title{Fit an I-prior regression model}
 \usage{
-\method{iprior}{default}(y, ..., kernel = "linear", method = "direct",
-  control = list(), interactions = NULL, est.lambda = TRUE,
-  est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
-  est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1,
-  nystrom = FALSE, nys.seed = NULL, model = list(), train.samp,
-  test.samp)
+\method{iprior}{default}(
+  y,
+  ...,
+  kernel = "linear",
+  method = "direct",
+  control = list(),
+  interactions = NULL,
+  est.lambda = TRUE,
+  est.hurst = FALSE,
+  est.lengthscale = FALSE,
+  est.offset = FALSE,
+  est.psi = TRUE,
+  fixed.hyp = NULL,
+  lambda = 1,
+  psi = 1,
+  nystrom = FALSE,
+  nys.seed = NULL,
+  model = list(),
+  train.samp,
+  test.samp,
+  intercept
+)
 
-\method{iprior}{formula}(formula, data, kernel = "linear",
-  one.lam = FALSE, method = "direct", control = list(),
-  est.lambda = TRUE, est.hurst = FALSE, est.lengthscale = FALSE,
-  est.offset = FALSE, est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
-  psi = 1, nystrom = FALSE, nys.seed = NULL, model = list(),
-  train.samp, test.samp, ...)
+\method{iprior}{formula}(
+  formula,
+  data,
+  kernel = "linear",
+  one.lam = FALSE,
+  method = "direct",
+  control = list(),
+  est.lambda = TRUE,
+  est.hurst = FALSE,
+  est.lengthscale = FALSE,
+  est.offset = FALSE,
+  est.psi = TRUE,
+  fixed.hyp = NULL,
+  lambda = 1,
+  psi = 1,
+  nystrom = FALSE,
+  nys.seed = NULL,
+  model = list(),
+  train.samp,
+  test.samp,
+  intercept,
+  ...
+)
 
-\method{iprior}{ipriorKernel}(object, method = "direct",
-  control = list(), ...)
+\method{iprior}{ipriorKernel}(object, method = "direct", control = list(), ...)
 
-\method{iprior}{ipriorMod}(object, method = NULL, control = list(),
-  iter.update = 100, ...)
+\method{iprior}{ipriorMod}(object, method = NULL, control = list(), iter.update = 100, ...)
 }
 \arguments{
 \item{y}{Vector of response variables}

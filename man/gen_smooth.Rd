@@ -4,8 +4,7 @@
 \alias{gen_smooth}
 \title{Generate simulated data for smoothing models}
 \usage{
-gen_smooth(n = 150, xlim = c(0.2, 4.6), x.jitter = 0.65,
-  seed = NULL)
+gen_smooth(n = 150, xlim = c(0.2, 4.6), x.jitter = 0.65, seed = NULL)
 }
 \arguments{
 \item{n}{Sample size.}

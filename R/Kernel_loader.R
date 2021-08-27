@@ -104,16 +104,17 @@ kernL <- function(
   y, ..., kernel = "linear", interactions = NULL, est.lambda = TRUE,
   est.hurst = FALSE, est.lengthscale = FALSE, est.offset = FALSE,
   est.psi = TRUE, fixed.hyp = NULL, lambda = 1, psi = 1, nystrom = FALSE,
-  nys.seed = NULL, model = list(), train.samp, test.samp
+  nys.seed = NULL, model = list(), train.samp, test.samp, intercept
 ) UseMethod("kernL")
 
 #' @export
 kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
-                           est.lambda = TRUE, est.hurst = FALSE,
-                           est.lengthscale = FALSE, est.offset = FALSE,
-                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
-                           psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp, test.samp) {
+                          est.lambda = TRUE, est.hurst = FALSE,
+                          est.lengthscale = FALSE, est.offset = FALSE,
+                          est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                          psi = 1, nystrom = FALSE, nys.seed = NULL,
+                          model = list(), train.samp, test.samp,
+                          intercept) {
   # Checks ---------------------------------------------------------------------
   if (is.list(model) & length(model) > 0) {
     stop("\'model\' option is deprecated. Use the arguments directly instead. See \'?kernL\' for details.", call. = FALSE)
@@ -175,8 +176,12 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   }
 
   # Get intercept --------------------------------------------------------------
-  y <- scale(y, scale = FALSE)  # centre variables
-  intercept <- attr(y, "scaled:center")
+  if (missing(intercept)) {
+    y <- scale(y, scale = FALSE)  # centre variables
+    intercept <- attr(y, "scaled:center")
+  } else {
+    y <- scale(y, scale = FALSE, center = intercept)
+  }
 
   # Meta -----------------------------------------------------------------------
   n <- length(y)
@@ -323,11 +328,12 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
 #' @rdname kernL
 #' @export
 kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
-                           est.lambda = TRUE, est.hurst = FALSE,
-                           est.lengthscale = FALSE, est.offset = FALSE,
-                           est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
-                           psi = 1, nystrom = FALSE, nys.seed = NULL,
-                           model = list(), train.samp, test.samp, ...) {
+                          est.lambda = TRUE, est.hurst = FALSE,
+                          est.lengthscale = FALSE, est.offset = FALSE,
+                          est.psi = TRUE, fixed.hyp = NULL, lambda = 1,
+                          psi = 1, nystrom = FALSE, nys.seed = NULL,
+                          model = list(), train.samp, test.samp, intercept,
+                          ...) {
   list2env(formula_to_xy(formula = formula, data = data, one.lam = one.lam),
            envir = environment())
   res <- kernL.default(y = y, Xl.formula = Xl, interactions = interactions,
@@ -337,7 +343,8 @@ kernL.formula <- function(formula, data, kernel = "linear", one.lam = FALSE,
                        est.offset = est.offset, est.psi = est.psi,
                        fixed.hyp = fixed.hyp, lambda = lambda, psi = psi,
                        nystrom = nystrom, nys.seed = nys.seed, model = model,
-                       train.samp = train.samp, test.samp = test.samp, ...)
+                       train.samp = train.samp, test.samp = test.samp,
+                       intercept = intercept, ...)
   res$yname <- yname
   res$formula <- formula
   res$terms <- tt

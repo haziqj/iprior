@@ -3,7 +3,6 @@
 \docType{package}
 \name{iprior_package}
 \alias{iprior_package}
-\alias{iprior_package-package}
 \title{\code{iprior}: Regression using priors with Fisher information covariance
 kernels.}
 \description{

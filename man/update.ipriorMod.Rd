@@ -4,8 +4,7 @@
 \alias{update.ipriorMod}
 \title{Update an I-prior model}
 \usage{
-\method{update}{ipriorMod}(object, method = NULL, control = list(),
-  iter.update = 100, ...)
+\method{update}{ipriorMod}(object, method = NULL, control = list(), iter.update = 100, ...)
 }
 \arguments{
 \item{object}{An \code{ipriorMod} object.}

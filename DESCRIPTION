@@ -1,6 +1,6 @@
 Package: iprior
 Title: Regression Modelling using I-Priors
-Version: 0.7.3
+Version: 0.7.3.9001
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
@@ -34,4 +34,4 @@ LazyData: yes
 VignetteBuilder: 
   knitr,
   R.rsp
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1

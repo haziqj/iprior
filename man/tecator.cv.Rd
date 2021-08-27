@@ -4,10 +4,12 @@
 \name{tecator.cv}
 \alias{tecator.cv}
 \title{Results of I-prior cross-validation experiment on Tecator data set}
-\format{Results from iprior_cv cross validation experiment. This is a list of
+\format{
+Results from iprior_cv cross validation experiment. This is a list of
   seven, with each component bearing the results for the linear, quadratic,
   cubic, fBm-0.5, fBm-MLE and SE I-prior models. The seventh is a summarised
-  table of the results.}
+  table of the results.
+}
 \usage{
 tecator.cv
 }

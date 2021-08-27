@@ -4,10 +4,12 @@
 \name{hsb}
 \alias{hsb}
 \title{High school and beyond dataset}
-\format{A data frame of 7185 observations on 3 variables. \describe{
+\format{
+A data frame of 7185 observations on 3 variables. \describe{
   \item{\code{mathach}}{Math achievement.} \item{\code{ses}}{Socio-Economic
   status.} \item{\code{schoolid}}{Categorical variable indicating the school
-  the student went to. Treated as \code{\link{factor}}.} }}
+  the student went to. Treated as \code{\link{factor}}.} }
+}
 \source{
 \href{http://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/7896}{High
   School and Beyond, 1980: A Longitudinal Survey of Students in the United

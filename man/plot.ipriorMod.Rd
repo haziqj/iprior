@@ -13,12 +13,21 @@
 
 plot_resid(x)
 
-plot_fitted_multilevel(x, X.var = 1, grp.var = 1, facet = c(2, 3),
-  cred.bands = TRUE, show.legend = TRUE, show.points = TRUE,
-  x.lab = NULL, y.lab = NULL, grp.lab = NULL, extrapolate = FALSE)
+plot_fitted_multilevel(
+  x,
+  X.var = 1,
+  grp.var = 1,
+  facet = c(2, 3),
+  cred.bands = TRUE,
+  show.legend = TRUE,
+  show.points = TRUE,
+  x.lab = NULL,
+  y.lab = NULL,
+  grp.lab = NULL,
+  extrapolate = FALSE
+)
 
-plot_fitted(x, X.var = 1, cred.bands = TRUE, size = 1,
-  linetype = "solid")
+plot_fitted(x, X.var = 1, cred.bands = TRUE, size = 1, linetype = "solid")
 
 plot_iter(x, niter.plot = NULL, lab.pos = c("up", "down"))
 

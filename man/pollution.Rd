@@ -4,7 +4,8 @@
 \name{pollution}
 \alias{pollution}
 \title{Air pollution and mortality}
-\format{A data frame of 16 observations on 16 variables.
+\format{
+A data frame of 16 observations on 16 variables.
 \describe{
   \item{\code{Mortality}}{Total age-adjusted mortality rate per 100,000.}
   \item{\code{Rain}}{Mean annual precipitation in inches.}
@@ -22,7 +23,8 @@
   \item{\code{HC}}{Mean annual precipitation in inches.}
   \item{\code{NOx}}{Mean annual precipitation in inches.}
   \item{\code{SO2}}{Mean annual precipitation in inches.}
-}}
+}
+}
 \usage{
 pollution
 }
