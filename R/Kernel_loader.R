@@ -198,8 +198,13 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   if (as.numeric(nystrom) > 0 & as.numeric(nystrom) != n) {
     if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
     if (!is.null(nys.seed)) set.seed(nys.seed)
-    nys.samp <- sample(seq_along(y))
+    # nys.samp <- sample(seq_along(y))
+    nys.samp <- floor(seq(1, length(y), length = nystrom))
+    # y.tmp <- y[nys.samp]
+    y.tmp <- sort(y)[nys.samp]
+    nys.samp <- which(y == y.tmp)
     y.tmp <- y[nys.samp]
+    
     mostattributes(y.tmp) <- attributes(y)
     y <- y.tmp
     tmp <- lapply(Xl, reorder_x, smp = nys.samp)
