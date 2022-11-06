@@ -198,14 +198,16 @@ kernL.default <- function(y, ..., kernel = "linear", interactions = NULL,
   if (as.numeric(nystrom) > 0 & as.numeric(nystrom) != n) {
     if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
     if (!is.null(nys.seed)) set.seed(nys.seed)
-    # nys.samp <- sample(seq_along(y))
-ui <- floor(seq(1, length(y), length = 10))  # uniform interval
-uii <- ui[1]
-for (i in seq_len(length(ui) - 2)) {
-  uii[i + 1] <- sample(order(y)[ui[i]:ui[i + 1]], size = 1)
-}
-uii[length(ui)] <- ui[length(ui)]
-nys.samp <- c(order(y)[uii], seq_along(y)[-order(y)[uii]])
+    nys.samp <- sample(seq_along(y))
+# y <- dat$y
+# ui <- floor(seq(1, length(y), length = 10))  # uniform interval
+# uii <- ui[1]
+# for (i in seq_len(length(ui) - 2)) {
+#   uii[i + 1] <- sample(order(y)[ui[i]:ui[i + 1]], size = 1)
+# }
+# uii[length(ui)] <- ui[length(ui)]
+#   
+# nys.samp <- c(order(y)[uii], seq_along(y)[-order(y)[uii]])
     y.tmp <- y[nys.samp]
     
     mostattributes(y.tmp) <- attributes(y)
