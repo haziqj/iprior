@@ -199,6 +199,7 @@ if (as.numeric(nystrom[1]) > 0 & as.numeric(nystrom[1]) != n) {
   if (length(nystrom) > 1) {
     # This is the samples to use
     nys.samp <- c(nystrom, seq_along(y)[-nystrom])
+    nystrom <- length(nystrom)
   } else {
     if (as.numeric(nystrom) == 1) nystrom <- floor(0.1 * n)
     if (!is.null(nys.seed)) set.seed(nys.seed)
