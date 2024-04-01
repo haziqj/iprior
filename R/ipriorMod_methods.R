@@ -98,9 +98,6 @@ kernels_for_summary <- function(object, theta) {
   x.kern
 }
 
-#' @export
-.kernels_for_summary <- kernels_for_summary
-
 kernel_summary_translator <- function(x) {
   # Helper function to translate information from ipriorKernel to a string of
   # kernels used for summary print. Not vectorised.
@@ -129,10 +126,6 @@ kernel_summary_translator <- function(x) {
   }
   res
 }
-
-#' @export
-.kernel_summary_translator <- kernel_summary_translator
-
 
 #' @export
 print.ipriorMod_summary <- function(x, wrap = FALSE, ...) {
