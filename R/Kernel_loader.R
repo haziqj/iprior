@@ -74,6 +74,7 @@
 #'   should be used for training, and the remaining used for testing.
 #' @param test.samp (Optional) Similar to \code{train.samp}, but on test samples
 #'   instead.
+#' @param intercept (Optional) Intercept for response variables.
 #'
 #' @return An \code{ipriorKernel} object which contains the relevant material to
 #'   be passed to the \code{iprior} function for model fitting.
@@ -205,7 +206,7 @@ if (as.numeric(nystrom[1]) > 0 & as.numeric(nystrom[1]) != n) {
     if (!is.null(nys.seed)) set.seed(nys.seed)
     nys.samp <- sample(seq_along(y))
   }
-  
+
   y.tmp <- y[nys.samp]
   mostattributes(y.tmp) <- attributes(y)
   y <- y.tmp

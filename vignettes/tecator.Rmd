@@ -4,7 +4,7 @@ author: "Haziq Jamil"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Cross-validation analysis of the Tecator data set}
+  %\VignetteIndexEntry{Regression with a functional covariate: Cross-validation analysis of the Tecator data set}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{iprior,caret}

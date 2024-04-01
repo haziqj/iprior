@@ -115,6 +115,8 @@ should be used for training, and the remaining used for testing.}
 \item{test.samp}{(Optional) Similar to \code{train.samp}, but on test samples
 instead.}
 
+\item{intercept}{(Optional) Intercept for response variables.}
+
 \item{formula}{The formula to fit when using formula interface.}
 
 \item{data}{Data frame containing variables when using formula interface.}

@@ -1,6 +1,6 @@
 Package: iprior
 Title: Regression Modelling using I-Priors
-Version: 0.7.3.9001
+Version: 0.7.4
 Authors@R: person("Haziq", "Jamil", email = "haziq.jamil@gmail.com",
                   role = c("aut", "cre"))
 Encoding: UTF-8
