@@ -68,5 +68,5 @@ Find the full list of options by typing `?iprior` in R.
 
 ## Resources
 
-View the package vignette by typing `browseVignettes("iprior")` in R or visiting this [link](http://phd.haziqj.ml/iprior_paper.pdf). 
-This package is part of the PhD project entitled "Regression Modelling using priors depending on Fisher information covariance kernels (I-priors)" by Haziq Jamil [[link](http://phd.haziqj.ml)].
+View the package vignette by typing `browseVignettes("iprior")` in R or visiting this [link](https://phd.haziqj.ml/iprior_paper.pdf). 
+This package is part of the PhD project entitled "Regression Modelling using priors depending on Fisher information covariance kernels (I-priors)" by Haziq Jamil [[link](https://phd.haziqj.ml)].
