@@ -15,3 +15,5 @@ vignettes/cache
 *.synctex.gz
 *.tex
 *.texpadtmp
+/doc/
+/Meta/

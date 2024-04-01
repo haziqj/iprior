@@ -1,0 +1,90 @@
+---
+title: "Regression with a functional covariate: Cross-validation analysis of the Tecator data set"
+author: "Haziq Jamil"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Cross-validation analysis of the Tecator data set}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{iprior,caret}
+---
+
+```{r, include = FALSE}
+library(iprior)
+```
+
+Continuing on Section 3.4 of the [vignette](http://phd.haziqj.ml/iprior_paper.pdf), we revisit the code used to obtain out-of-sample test error rates, and extend the analysis to a leave-one-out cross-validation (LOOCV) scheme.
+
+# Easy train/test split
+
+The `iprior()` function includes an argument to conveniently instruct which data samples should be used for training, and any remaining data used for testing. 
+The out-of-sample test error rates would then be reported together.
+The examples in the vignette can then be conducted as follows:
+
+```{r}
+data(tecator, package = "caret")
+fat <- endpoints[, 2]
+absorp <- -t(diff(t(absorp)))  # take first differences
+mod1 <- iprior(fat, absorp, train.samp = 1:172, method = "mixed")
+```
+
+The prediction error (training and test) can then be obtained easily:
+
+```{r}
+get_prederror(mod1)
+```
+
+# LOOCV experiment
+
+With the above conveniences, it is easy to wrap this in loop to perform $k$-fold cross-validation; this is done in the `iprior_cv()` function.
+We now analyse the predictive performance of I-prior models using a LOOCV scheme. 
+For all `n=215` samples, one observation pair is left out and the model trained; the prediction error is obtained for the observation that was left out.
+This is repeated for all `n=215` samples, and the average of the prediction errors calculated.
+
+For the linear RKHS, the code to peform the LOOCV in the `iprior` package is as follows:
+```{r, eval = FALSE}
+(mod1.cv <- iprior_cv(fat, absorp, method = "em",
+                      control = list(stop.crit = 1e-2), folds = Inf))
+```
+```{r, echo = FALSE}
+data(tecator.cv, package = "iprior")
+print(tecator.cv[[1]], "RMSE")
+```
+Notice the argument `folds = Inf`---since the `iprior_cv()` function basically performs a $k$-fold cross validation experiment, setting `folds` to be equal to sample size or higher tells the function to perform LOOCV.
+Also note that the EM algorithm was used to fit the model, and the stopping criterion relaxed to `1e-2`---this offered faster convergence without affecting predictive abilities.
+The resulting fit gives training and test mean squared error (MSE) for the cross-validation experiment.
+
+The rest of the code for the remaining models are given below.
+As this takes quite a long time to run, this has been run locally and the results saved into the data `tecator.cv` within the `iprior` package. 
+
+```{r, eval = FALSE}
+mod2.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly2",
+                     est.offset = TRUE, control = list(stop.crit = 1e-2))
+mod3.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "poly3",
+                     est.offset = TRUE, control = list(stop.crit = 1e-2))
+mod4.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
+                     control = list(stop.crit = 1e-2))
+mod5.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "fbm",
+                     est.hurst = TRUE, control = list(stop.crit = 1e-2))
+mod6.cv <- iprior_cv(fat, absorp, method = "em", folds = Inf, kernel = "se",
+                     est.lengthscale = TRUE, control = list(stop.crit = 1e-2))
+
+# Function to tabulate the results
+tecator_tab_cv <- function() {
+  tab <- t(sapply(list(mod1.cv, mod2.cv, mod3.cv, mod4.cv, mod5.cv, mod6.cv),
+                  function(mod) {
+                    res <- as.numeric(apply(sqrt(mod$mse[, -1]), 2, mean))
+                    c("Training MSE" = res[1], "Test MSE" = res[2])
+                    }))
+  rownames(tab) <- c("Linear", "Quadratic", "Cubic", "fBm-0.5", "fBm-MLE",
+                     "SE-MLE")
+  tab
+}
+```
+
+The results are tabulated below.
+
+```{r, echo = FALSE}
+knitr::kable(iprior::dec_plac(tecator.cv[[7]], 2), align = "r", caption = "Results for the LOOCV experiment for various I-prior models.")
+```

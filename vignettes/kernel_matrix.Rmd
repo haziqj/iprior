@@ -1,0 +1,394 @@
+---
+title: "Closed-form EM algorithm matrix manipulations"
+author: "Haziq Jamil"
+date: "2017-11-02"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Closed-form EM algorithm matrix manipulations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(iprior)
+```
+
+## Introduction
+
+The M-step involving the scale parameters $\boldsymbol\lambda$ in the EM algorithm for I-prior models can be found in closed-form in the following situations:
+
+1. A single scale parameter `lambda` being used.
+2. Non-parsimonious methods for higher-order terms and interactions.
+3. Parsimonious methods, but no covariates involving square, cubic or any other higher order terms, and the highest interaction order is two.
+
+For any other models such as ones involving squared terms and three-way interactions, the M-step can still be solved using numerical methods such as a downhill simplex method (in R, we use `optim(method = "Nelder-Mead")`. Examples:
+
+| Model                 | `parsm` | `length(lambda)` | Closed form? |
+|-----------------------|---------|------------------|--------------|
+| `y ~ x1 + x2 + x3`    | `TRUE`  | 3                | Yes          |
+| `y ~ (x1 + x2 + x3)`  | `TRUE`  | 1                | Yes          |
+| `y ~ x1 + x2 + x1:x2` | `TRUE`  | 2                | Yes          |
+| `y ~ x1 + x2 + x1:x2` | `FALSE` | 3                | Yes          |
+| `y ~ (x1 * x2 * x3)`  | `TRUE`  | 1                | Yes          |
+| `y ~ x1 * x2 * x3`    | `FALSE` | 7                | Yes          |
+| `y ~ x1 + I(x1 ^ 2)`  | `FALSE` | 2                | Yes          |
+| `y ~ x1 * x2 * x3`    | `TRUE`  | 3                | No           |
+| `y ~ x1 + I(x1 ^ 2)`  | `TRUE`  | 1                | No           |
+
+In short, the most complex model for which closed-form for `lambda` exists is the parsimonious two-way interaction model. We describe this below.
+
+Assume there are $p$ covariates, and each of the $p$ kernel matrices $\mathbf H_1, \dots, \mathbf H_p$ are calculated using the appropriate kernels, depending on whether the data is continuous or nominal and what effect is desired. Let the number of unique scale parameters be $l \leq p$. $l$ could be less than $p$, which implies that some of the covariates share a scale parameter. For a group of such covariates, the kernel matrix is simply the sum of each kernel matrix, and thus the kernel matrices can be indexed from $1, \dots, l$ as well. Otherwise $l = p$.
+
+If two-way interactions are present between any $k,j \in \{1,\dots,l\}$, then these are also calculated as $\mathbf H_{kj} = \mathbf H_k \circ \mathbf H_j$ (the Hadamard product). In general, the scaled kernel matrix looks like
+$$
+	\mathbf H_{\lambda} = \sum_{k=1}^l \lambda_k \mathbf H_k + \sum_{k,j\in M} \lambda_k\lambda_j \mathbf H_{kj}
+$$
+where the set $M$ is the index of all two way interaction terms between the $p$ covariates, i.e. $M$ $=$ $\{(k,j):$ $k \text{ interacts with } j,$ $\text{ and }$ $k < j,$ $\\$ $\forall k,j=1,\dots,l \}$. Let the number of two-way interactions be $m=|M|$. The total number of scale parameters is equal to $q=l+m$ when there are non-parsimonious interactions present, otherwise it is $q=l$. The non-parsimonious method of interactions assigns a new scale parameter for each of the Hadamard products of interacting kernel matrices. In comparison, the parsimonious method simply multiplies the corresponding scale parameters together.
+
+For a particular $\lambda_k$, $k \in \{1,\dots,q\}$, we partition the sum of the kernel matrix into parts which involve $\lambda_k$ and parts which do not:
+$$
+\begin{aligned}
+	\mathbf H_\lambda &=
+	\overbrace{\lambda_k \left( \mathbf H_k +  \sum_{j\in M}\lambda_j\mathbf H_{kj} \right) \vphantom{\mathop{\sum_{j=1}^p}_{j\neq k}}}^{\lambda_k\text{ is here}}
+	+
+	\overbrace{{\mathop{\sum_{j=1}^l}_{j\neq k}\lambda_j \mathbf H_j} + {\mathop{\sum_{k',j \in M}}_{k'\neq k}\lambda_{k'}\lambda_j \mathbf H_{k'j}}}^{\text{no $\lambda_k$ here}} \\
+	&= \lambda_k\mathbf {P_k} + {\mathbf R_k} + {\mathbf U_k}.
+\end{aligned}
+$$
+
+$\mathbf P_k$ is the kernel matrix $\mathbf H_k$ plus the sum-product of the interaction kernel matrices with the scale parameters relating to covariate $k$, i.e. $\sum_j \lambda_j\mathbf H_{kj}$. $\mathbf R_k$ is the sum-product of the kernel matrices and scale parameters excluding $\lambda_k\mathbf H_k$. $\mathbf U_k$ is the sum of the interaction cross-product terms excluding those relating to covariate $k$. Thus, the squared kernel matrix is
+$$
+\begin{align}
+		\mathbf H_{\lambda}^2 =& \ \lambda_k^2\mathbf P_k^2  + \lambda_k(\mathbf P_k\mathbf R_k + (\mathbf P_k\mathbf R_k)^\top + \mathbf P_k\mathbf U_k + (\mathbf P_k\mathbf U_k)^\top) \nonumber \\
+		& + \mathbf R_k^2 + \mathbf U_k^2 + \mathbf R_k\mathbf U_k + \mathbf U_k\mathbf R_k.
+\end{align}
+$$
+
+The closed-form solution for the scale parameters in the M-step at iteration $t$ is
+$$
+	\lambda_k^{(t+1)} = \frac{(\mathbf y - \hat{\boldsymbol\alpha})^\top \mathbf P_k \tilde{\mathbf w}^{(t)} - \frac{1}{2} \text{tr} \left[ \mathbf S_k \tilde{\mathbf W}^{(t)} \right]}{\text{tr} \left[ \mathbf P_k^2 \tilde{\mathbf W}^{(t)} \right]}
+$$
+where we have defined $\mathbf S_k = \mathbf P_k\mathbf R_k + \mathbf R_k\mathbf P_k + \mathbf P_k\mathbf U_k + \mathbf U_k\mathbf P_k$, for each $k = 1,\dots,l$.
+
+For most cases, $\mathbf P_k$ and $\mathbf S_k$ only depend on the kernel matrices and not on the scale parameters, so can be calculated once and stored for efficiency. Further, $\mathbf U_k$ equals zero for most cases except in the parsimonious multiple scale parameter case thus simplifying calculations. In fact, we can avoid the expensive matrix multiplications involved in evaluating $\mathbf P_k$, its square, and $\mathbf S_k$, by storing all possible square and two-way multiplications of the kernel matrices $\mathbf H_1, \dots, \mathbf H_l$ as the relevant calculation of the M-step simply involves a sum-product of these kernel matrices.
+
+## The code
+
+`intr` is always a `2 x m` matrix indexing all the `m` two-way interactions in the model.
+
+`h` is the length of the kernel matrix. If there are `p` variables, and `m` two-way interactions, then `h` contains the `p` kernel matrices, and `m` Hadamard products between the kernel matrices according to the `intr` indices. Thus `h = p + m`, regardless of parsimonious or non-parsimonious interactions.
+
+`ind1` and `ind2` together give the index of all possible two-way interactions. In a `h x h` matrix, these are the row (`ind1`) and column (`ind2`) indices of the upper triangular matrix excluding the diagonal entries.
+
+The goal is to efficiently compute a list of length `h` which contains the `H.mat_i ^ 2` for `i = 1,...,h`. Incidentally, we have used `q` to denote the expanded `lambda` length which includes interactions and higher order terms, so `q=l+m`.
+
+```{r}
+indxFn <- function(k) {
+  # Indexer helper function used to create indices for H2l. Note: intr, ind1 and
+  # ind2 are created in kernL().
+  ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k  # locating var/kernel matrix
+  ind.int <- which(ind.int1 | ind.int2)                   # of interactions (out of 1:no.int)
+  k.int <- ind.int + p  # which kernel matrix has interactions involving k
+  k.int.lam <- c(intr[1, ][ind.int2], intr[2, ][ind.int1])  # which has 
+                                                            # interaction with k?
+  nok <- (1:p)[-k]  # all variables excluding k
+  k.noint <- which(!(ind.int1 | ind.int2)) + p  # the opposite of k.int
+
+  # P.mat %*% R.mat + R.mat %*% P.mat indices ----------------------------------
+  za <- which((ind1 %in% k & ind2 %in% nok) | (ind2 %in% k & ind1 %in% nok))
+  grid.PR <- expand.grid(k.int, nok)
+  zb <- which((ind1 %in% grid.PR[,1] & ind2 %in% grid.PR[,2]) |
+              (ind2 %in% grid.PR[,1] & ind1 %in% grid.PR[,2]))
+  grid.PR.lam <- expand.grid(k.int.lam, nok)
+
+  # P.mat %*% U.mat + U.mat %*% P.mat indices ----------------------------------
+  grid.PU1 <- expand.grid(k, k.noint)
+  zc <- which((ind1 %in% grid.PU1[,1] & ind2 %in% grid.PU1[,2]) |
+              (ind2 %in% grid.PU1[,1] & ind1 %in% grid.PU1[,2]))
+  grid.PU2 <- expand.grid(k.int, k.noint)
+  zd <- apply(grid.PU2, 1, findH2, ind1 = ind1, ind2 = ind2)
+  grid.PU.lam <- expand.grid(k.int.lam, k.noint)
+
+  # P.mat %*% P.mat indices ----------------------------------------------------
+  grid.Psq <- t(combn(c(k, k.int), 2))
+  ze <- apply(grid.Psq, 1, findH2, ind1 = ind1, ind2 = ind2 )
+  grid.Psq.lam <- NULL
+  if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
+
+  list(
+    k.int     = k.int,
+    k.int.lam = k.int.lam,
+    PRU       = c(za,zc,zb,zd),
+    PRU.lam1  = c(rep(0, length(nok) + length(k.noint)),
+                  grid.PR.lam[,1], grid.PU.lam[,1]),
+    PRU.lam2  = c(nok, k.noint, grid.PR.lam[,2], grid.PU.lam[,2]),
+    Psq       = c(k, k.int),
+    Psq.lam   = k.int.lam,
+    P2        = ze,
+    P2.lam1   = grid.Psq.lam[,1],
+    P2.lam2   = grid.Psq.lam[,2]
+	)
+}
+
+findH2 <- function(z, ind1, ind2){
+  # This function finds position of H2 (cross-product terms of H). Used in
+  # indxFn()
+  x <- z[1]; y <- z[2]
+  which((ind1 == x & ind2 == y) | (ind2 == x & ind1 == y))
+}
+
+```
+
+## Example
+
+Regression with 3 covariates and two-way interactions between all 3 covariates. Here, `p = 3`, `l = 3` and `h = q = 6`. In full, the index of the `H.mat` is `c(1, 2, 3, 1:2, 1:3, 2:3)`.
+
+```{r}
+(mod <- kernL(stack.loss ~ . ^ 2, data = stackloss))
+p <- 3
+```
+
+The index of all two-way interactions are obtained by the kernel loader function. It is contained in `model$intr`. The following shows the indices of the variables which have two-way interactions. For example, variable 1 interacts with variable 2, variable 1 with 3 and finally 2 with 3. This matrix will always have 2 rows, and columns equal to `m`.
+
+```{r}
+intr <- mod$intr
+colnames(intr) <- NULL
+intr
+```
+
+Next, we list out the indices of all possible two-way terms. This is used to compute the cross-product when multilpying out the square of a sum of matrices. 
+
+```{r}
+h <- length(mod$Hl)
+z <- 1:h
+(ind1 <- rep(z, times = (length(z) - 1):0))
+(ind2 <- unlist(lapply(2:length(z), function(x) c(NA, z)[-(0:x)])))
+```
+
+### Indexing the kernel matrrix list `Hl`
+
+All of the above would be performed in `kernL()` so `ind1` and `ind2` would be available in environment. We now enter the `indxFn()` function. Set `k = 1`. First find the index for which variable `k` has interactions (in relation to the positioning in `intr`). Variable 1 appears in columns 1 and 2 of `intr`.
+
+```{r}
+k <- 1
+ind.int1 <- intr[1, ] == k; ind.int2 <- intr[2, ] == k
+(ind.int <- which(ind.int1 | ind.int2))
+```
+
+Which of the Hadamard products (i.e. `intr`) involve variable `k`, and where are the relevant Hadamard products in relation to the full index? The reason for the formula below is that the Hadamard products are calculated in the same order that appears in `intr`, and we add `p` because the first `p` elements are the `p` kernel matrices.
+
+```{r}
+(k.int <- ind.int + p)
+```
+
+Which variables have interaction with variable `k`? When I wrote this, I was thinking which of the $\lambda_j$ need to be multipled by $\lambda_k$, $j \neq k$? In other words, what are the other half of the pair of variable `k` in the matrix `intr`?
+
+```{r}
+(k.int.lam <- c(intr[1, ][ind.int2], intr[2, ][ind.int1]))
+```
+
+Next I simply call `nok` the indices of all variables excluding `k`. *sidenote: I am beginning to think that `k.int.lam == nok`*.
+
+```{r}
+(nok <- (1:p)[-k])
+```
+
+Finally, these are the indices of the Hadamard products which do not involve variable `k`.
+
+```{r}
+(k.noint <- which(!(ind.int1 | ind.int2)) + p)
+```
+
+### Indices for $\mathbf P_k \mathbf R_k + (\mathbf P_k \mathbf R_k)^\top$
+
+We have a list called `H2l` which contains all possible two-way terms `Hi %*% Hj + Hj %*% Hi`, `i,j = 1,...,h` which arises as a result of squaring `H = H1 + ... + Hh`. It is efficient to calculate these two-way terms once at the beginning and then recall them as needed. For our example, the entries of this list consist of
+
+```{r}
+ind <- paste(ind1, ind2, sep = "x")
+names(ind) <- as.character(1:length(ind))
+ind
+```
+
+For clarity, in this example we rename the entries of `ind` to reflect the three unique scale parameters, as follows:
+
+```{r, echo = 9}
+ind.tmp <- c(ind1, ind2)
+ind.tmp[ind.tmp == 4] <- "1:2"
+ind.tmp[ind.tmp == 5] <- "1:3"
+ind.tmp[ind.tmp == 6] <- "2:3"
+ind1.tmp <- ind.tmp[1:length(ind1)]
+ind2.tmp <- ind.tmp[(length(ind1) + 1):length(ind.tmp)]
+ind.tmp <- paste(ind1.tmp, ind2.tmp, sep = "x")
+names(ind.tmp) <- as.character(1:length(ind))
+ind.tmp
+``` 
+
+To remind ourselves, the matrices $\mathbf P_k$, $\mathbf R_k$ and the product $\mathbf P_k \mathbf R_k$ are defined as
+
+$$
+\begin{align}
+	\mathbf P_k &= \mathbf H_k +  \sum_{j\in M}\lambda_j\mathbf H_{kj} \\
+	\mathbf R_k &= \sum_{j\neq k} \lambda_j \mathbf H_j \\
+	\mathbf P_k \mathbf R_k &= \sum_{j\neq k} \lambda_j \mathbf H_k\mathbf H_j + \sum_{j\in M} \sum_{j'\neq k} \lambda_j\lambda_{j'} \mathbf H_{kj} \mathbf H_{j'}
+\end{align}
+$$
+
+For now, ignore the scale parameters in the formulae above, and just concentrate on the kernel matrices. For the first part of $\mathbf P_k \mathbf R_k$, we require the matrix product indices where variables $k$ is multiplied with all other variables except itself. We call this `za`.
+
+```{r}
+(za <- which((ind1 %in% k & ind2 %in% nok) | (ind2 %in% k & ind1 %in% nok)))
+
+# Check
+ind[za]
+```
+
+For the second part, it is a double sum of the products of the Hadamard matrices involving variable `k`, and all the kernel matrices except `k`. We have already coded the indices as `k.int` and `nok` respectively. Note that these indices are in relation to the full index `1, 2, ..., 6`. In `R`, we can use the `expand.grid()` function to create a data frame from all possible combinations of `k.int` and `nok`, which would give us the index of the double sum. We then find the positions of these coordinates in `ind1` and `ind2`.
+
+```{r}
+(grid.PR <- expand.grid(k.int, nok))
+(zb <- which((ind1 %in% grid.PR[,1] & ind2 %in% grid.PR[,2]) |
+            (ind2 %in% grid.PR[,1] & ind1 %in% grid.PR[,2])
+))
+```
+
+Finally, what's left is to take care of the scale parameters. Our scale parameters are contained in the vector of length `q=6` called `lambda`. For the first part, that is simply the index `nok`. For the second part, we need to find the indices using `expand.grid()` again, but this time using the indices `k.int.lam` and `nok`. `k.int.lam` would give us the indices of the scale parameters which have interactions with `k`.
+
+```{r}
+(nok)
+(grid.PR.lam <- expand.grid(k.int.lam, nok))
+```
+
+The required product $\mathbf P_k \mathbf R_k$ is then, in a manner of speaking, 
+
+```{r, eval = FALSE}
+sum(lambda[PR.lam index] * H2l[PR index])
+```
+
+### Indices for $\mathbf P_k \mathbf U_k +(\mathbf P_k \mathbf U_k)^\top$
+
+The formulae of interest are
+
+$$
+\begin{align}
+	\mathbf P_k &= \mathbf H_k +  \sum_{j\in M}\lambda_j\mathbf H_{kj} \\
+	\mathbf U_k &= \mathop{\sum\sum}_{k',j \in M \ \& \ k'\neq k} \lambda_{k'} \lambda_j \mathbf H_{k'j} \\
+	\mathbf P_k \mathbf U_k &= \mathop{\sum\sum}_{k',j \in M \ \& \ k'\neq k} \lambda_j \lambda_{k'} \mathbf H_k \mathbf H_{k'j} + \mathop{\sum\sum}_{j,k',j' \in M \ \& \ k'\neq k} \lambda_j \lambda_{k'} \lambda_{j'} \mathbf H_{kj} \mathbf H_{k'j'} 
+\end{align}
+$$
+
+The idea is similar to the above, albeit the indices can be a bit confusing. For the first part of the sum, we need the indices of the double sum involving `k.noint` paired with `k`. Recall that `k.noint` are the indices of the Hadamard products which do not involve variable `k` (mathematically, it is the set $\{(k',j) \in M : k' \neq k\}$). We then find the corresponding index from `ind1` and `ind2`.
+
+```{r}
+(grid.PU1 <- expand.grid(k, k.noint))
+(zc <- which((ind1 %in% grid.PU1[,1] & ind2 %in% grid.PU1[,2]) |
+             (ind2 %in% grid.PU1[,1] & ind1 %in% grid.PU1[,2])))
+
+# Check
+ind[zc]
+ind.tmp[zc]
+```
+
+For the second part, we use `expand.grid()` to find the indices for the double sum involving `k.int` (the Hadamard products involving `k`) and `k.noint`.
+
+```{r}
+(grid.PU2 <- expand.grid(k.int, k.noint))
+(zd <- which((ind1 %in% grid.PU2[,1] & ind2 %in% grid.PU2[,2]) |
+             (ind2 %in% grid.PU2[,1] & ind1 %in% grid.PU2[,2])))
+
+# Check
+ind[zd]
+ind.tmp[zd]
+```
+
+Finally, we need to take care of the scale parameters. For the first part, we only require the index from `k.noint`, while for the second part we need the combinations of `k.int.lam` (indices of the scale parameters which have interactions with k) and `k.noint`.
+
+```{r}
+(k.noint)
+(grid.PU.lam <- expand.grid(k.int.lam, k.noint))
+```
+
+### Calculation of $\mathbf S_k$
+
+The matrix $\mathbf S_k$ is given by the formula
+
+$$
+  \mathbf S_k = \mathbf P_k\mathbf R_k + (\mathbf P_k\mathbf R_k)^\top + \mathbf P_k\mathbf U_k + (\mathbf P_k\mathbf U_k)^\top.
+$$
+
+As $\mathbf P_k\mathbf R_k$ and $\mathbf P_k\mathbf U_k$ are made up linearly of two-way matrix products of the kernel matrices which are stored in `H2l`, all we need is to add the right entries of `H2l` together (and not forgetting the respective scale parameters). The indices are given by the function `indxFn()`.
+
+```{r}
+indB <- indxFn(1)
+indB$PRU  # = c(za, zc, zb, zd) i.e. index of Hl to sum together
+rbind(indB$PRU.lam1, indB$PRU.lam2)  # index of the lambdas to cross-product with Hl
+```
+
+For `k=1`, we calculate $\mathbf S_1$ as
+
+```{r, eval = FALSE}
+lambda.PRU <- c(rep(1, sum(indB$PRU.lam1 == 0)), lambda[indB$PRU.lam1])
+lambda.PRU <- lambda.PRU * lambda[indB$PRU.lam2]
+S <- Reduce("+", mapply("*", H2l[indB$PRU], lambda.PRU, SIMPLIFY = FALSE))
+```
+
+This is an efficient way to calculate $\mathbf S_k$ by simply recalling the already multiplied matrices. In the EM algorithm, we would need to repeat this calculation for each `k=1,...,l` and also for each EM step `t=1,2,...`.
+
+Note that $\mathbf S_k$ is calculated this way only if there are parsimonious interactions. When only a single scale paramters is used (e.g. using `one.lam = TRUE`), then $\mathbf S_k = 0$. When no interactions are present, then $\mathbf U_k = 0$, and we only need $\mathbf P_k \mathbf R_k + (\mathbf P_k \mathbf R_k)^\top$. But this becomes easier because $\mathbf P_k = \mathbf H_k$ as there are no Hadamard interactions. 
+
+Also realise that we never calculate $\mathbf R_k$ and $\mathbf U_k$ explicitly, because only $\mathbf S_k$ is required in the closed form expression of $\lambda_k^{(t+1)}$.
+
+### Efficient calculation of $\mathbf P_k^2$
+
+When (parsimonious) interactions are present, $\mathbf P_k^2$ is given by
+
+<!-- $$ -->
+<!-- \begin{align} -->
+<!--   \mathbf P_k^2 &= (\mathbf H_k + \sum_{j\in M}\lambda_j\mathbf H_{kj})^2 \\ -->
+<!--   &= \mathbf H_k^2 + \sum_{j\in M} \lambda_j^2 \mathbf H_{kj}^2 +  -->
+<!--   \sum_{j\in M}\lambda_j (\mathbf H_k\mathbf H_{kj} + \mathbf H_{kj}\mathbf H_k) \\ -->
+<!-- \end{align} -->
+<!-- $$ -->
+
+This sum is made of two parts. The first is by adding up relevant squared kernel matrices and Hadamard products. We can collate these matrix products into a list of length `h = l + m` called `Hsql`. The second part comes from `H2l` as we have discussed above. Now it is a matter of summing up the right parts.
+
+For `k=1`, the first part is getting the indices of the squared terms correctly. This is easy as we have already obtained this previously.
+
+```{r}
+(Psq <- c(k, k.int))
+(Psq.lam <- k.int.lam)
+```
+
+For the second part, we use `combn()` to generate all possible two-way combinations of `c(k, k.int)`. This would give us the indices for the sums in the second part above. The corresponding scale paramters `lambda` are obtained the same way, but from all possible combinations of `c(0, k.int.lam)`. The two columns of `grid.Psq.lam` give the index for which `lambda` needs to be multiplied. An entry of `0` means that only the other non-zero column entry is used, e.g. for `grid.Psq.lam[1,]`, we multiply `1 * lambda[2]`; for `grid.Psq.lam[3,]`, we multiply `lambda[2] * lambda[3]`.
+
+```{r}
+(grid.Psq <- t(combn(c(k, k.int), 2)))
+(ze <- which((ind1 %in% grid.Psq[,1] & ind2 %in% grid.Psq[,2]) |
+             (ind2 %in% grid.Psq[,1] & ind1 %in% grid.Psq[,2])))
+
+# Check
+ind[ze]
+ind.tmp[ze]
+
+grid.Psq.lam <- NULL
+if (length(k.int.lam) > 0) grid.Psq.lam <- t(combn(c(0, k.int.lam), 2))
+grid.Psq.lam
+```
+
+The code, which is found in the function for `kernL()`, is given by
+
+```{r, eval = FALSE}
+# First part of sum
+Psql[[k]] <<- Reduce("+", mapply("*", Hsql[indB$Psq],
+                                 c(1, lambda[indB$Psq.lam] ^ 2),
+                                 SIMPLIFY = FALSE))
+
+# Second part of sum
+lambda.P2 <- c(rep(1, sum(indB$P2.lam1 == 0)), lambda[indB$P2.lam1])
+lambda.P2 <- lambda.P2 * lambda[indB$P2.lam2]
+Psql[[k]] <<- Psql[[k]] + Reduce("+", mapply("*", H2l[indB$P2],
+                                             lambda.P2,
+                                             SIMPLIFY = FALSE))
+```
+
+Note that in cases where there are no interactions (or with non-parsimonious interactions), then $\mathbf P_k^2 = \mathbf H_k^2$ and does not depend on $\lambda_k$, thus can be calculated once and stored.
