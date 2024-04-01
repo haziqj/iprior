@@ -78,5 +78,5 @@ kern_fbm(1:5, 1:3, gamma = 0.7)
 
 }
 \references{
-\url{http://phd.haziqj.ml/intro/}
+\url{https://phd.haziqj.ml/intro/}
 }

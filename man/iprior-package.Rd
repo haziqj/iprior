@@ -3,6 +3,7 @@
 \docType{package}
 \name{iprior-package}
 \alias{iprior-package}
+\alias{_PACKAGE}
 \title{\code{iprior}: Regression using priors with Fisher information covariance
 kernels.}
 \description{
@@ -19,7 +20,7 @@ log-likelihood or an EM algorithm.
 }
 
 \seealso{
-\url{http://phd.haziqj.ml/}
+\url{https://phd.haziqj.ml/}
 }
 \author{
 \strong{Maintainer}: Haziq Jamil \email{haziq.jamil@gmail.com}

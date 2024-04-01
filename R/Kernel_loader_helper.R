@@ -41,9 +41,6 @@ param_to_kernel <- function(param) {
   as.character(param$kernels)
 }
 
-#' @export
-.param_to_kernel <- param_to_kernel
-
 theta_to_kernel <- function(theta, object) {
   # Convert theta to vector of kernels.
   #
@@ -53,9 +50,6 @@ theta_to_kernel <- function(theta, object) {
   param <- theta_to_param(mod$theta, mod$kernL)
   param_to_kernel(param)
 }
-
-#' @export
-.theta_to_kernel <- theta_to_kernel
 
 param_to_theta <- function(param, est.list, logpsi = 0) {
   # Convert param table to the theta vector. Note that theta is designed so that
@@ -86,9 +80,6 @@ param_to_theta <- function(param, est.list, logpsi = 0) {
        theta.omitted = theta.omitted)
 }
 
-#' @export
-.param_to_theta <- param_to_theta
-
 kernel_to_param <- function(kernels, lambda) {
   # Convert vector of kernels to a param table.
   #
@@ -114,9 +105,6 @@ kernel_to_param <- function(kernels, lambda) {
   res$kernels <- as.character(res$kernels)
   res
 }
-
-#' @export
-.kernel_to_param <- kernel_to_param
 
 reduce_theta <- function(theta.full, est.list) {
   # The user may specify for some of the hyperparameters to not be estimated,
@@ -163,9 +151,6 @@ reduce_theta <- function(theta.full, est.list) {
        theta.drop = theta.drop)
 }
 
-#' @export
-.reduce_theta <- reduce_theta
-
 expand_theta <- function(theta.reduced, theta.drop, theta.omitted) {
   # This convertes the reduced theta vector back to the full theta vector.
   # Useful in other functions such as theta_to_param().
@@ -181,9 +166,6 @@ expand_theta <- function(theta.reduced, theta.drop, theta.omitted) {
   theta.full[theta.drop] <- theta.omitted
   theta.full
 }
-
-#' @export
-.expand_theta <- expand_theta
 
 collapse_param <- function(param) {
   # Args: A param table.
@@ -207,9 +189,6 @@ collapse_param <- function(param) {
 
   list(param = res, na = na)
 }
-
-#' @export
-.collapse_param <- collapse_param
 
 theta_to_param <- function(theta, object) {
   # Args: A vector of parameters to be optimised, including logpsi. object must
@@ -249,9 +228,6 @@ theta_to_param <- function(theta, object) {
   param
 }
 
-#' @export
-.theta_to_param <- theta_to_param
-
 param_translator <- function(x) {
   # Helper function in theta_to_param().
   #
@@ -268,9 +244,6 @@ param_translator <- function(x) {
   "linear"
 }
 
-#' @export
-.param_translator <- param_translator
-
 correct_pearson_kernel <- function(x, which.pearson) {
   # When using theta_to_param(), unable to identify which data x uses the
   # Pearson kernel. This helper function corrects it by reading from the logical
@@ -283,9 +256,6 @@ correct_pearson_kernel <- function(x, which.pearson) {
   x[which.pearson] <- "pearson"
   x
 }
-
-#' @export
-.correct_pearson_kernel <- correct_pearson_kernel
 
 kernel_translator <- function(x, y = NULL, kernel, lam.poly = 1) {
   # Used as a helper function in get_Hl() to output list of kernel
@@ -329,9 +299,6 @@ kernel_translator <- function(x, y = NULL, kernel, lam.poly = 1) {
        call. = FALSE)
 }
 
-#' @export
-.kernel_translator <- kernel_translator
-
 theta_to_collapsed_param <- function(theta, object) {
   # This is a wrapper function for theta_to_param(). It is useful to get
   # the vector of parameters directly from theta.
@@ -342,9 +309,6 @@ theta_to_collapsed_param <- function(theta, object) {
   param <- theta_to_param(theta, object)
   c(collapse_param(param)$param, theta_to_psi(theta, object))
 }
-
-#' @export
-.theta_to_collapsed_param <- theta_to_collapsed_param
 
 theta_to_psi <- function(theta, object) {
   # Obtains psi from the theta vector, or if not estimated, from the
@@ -373,9 +337,6 @@ get_hyperparam <- function(x) {
   as.numeric(unlist(strsplit(x, ","))[2])
 }
 
-#' @export
-.get_hyperparam <- get_hyperparam
-
 get_polydegree <- function(x) {
   # Obtain the degree of the polynomial kernel. Note: the exported version is
   # get_degree().
@@ -392,9 +353,6 @@ get_polydegree <- function(x) {
   degree
 }
 
-#' @export
-.get_polydegree <- get_polydegree
-
 get_kernels_from_Hl <- function(x) {
   # Obtain the kernels used to generate the list of kernel matrices.
   #
@@ -403,9 +361,6 @@ get_kernels_from_Hl <- function(x) {
   # Returns: A character vector of kernels.
   sapply(x, function(x) attributes(x)$kernel)
 }
-
-#' @export
-.get_kernels_from_Hl <- get_kernels_from_Hl
 
 get_Xl.nys <- function(object) {
   # When using the Nystrom method, we calculate the kernel matrix using
@@ -427,9 +382,6 @@ get_Xl.nys <- function(object) {
   }
 }
 
-#' @export
-.get_Xl.nys <- get_Xl.nys
-
 get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
   # Obtain the list of kernel matrices. Except for polynomial kernels, these are
   # not scaled, i.e. not Hlam matrices.
@@ -441,9 +393,6 @@ get_Hl <- function(Xl, yl = list(NULL), kernels, lambda) {
   # Returns: List of kernel matrices.
   mapply(kernel_translator, Xl, yl, kernels, lambda, SIMPLIFY = FALSE)
 }
-
-#' @export
-.get_Hl <- get_Hl
 
 expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
   # Helper function to expand Hl (list of kernel matrices) and lambda (scale
@@ -484,9 +433,6 @@ expand_Hl_and_lambda <- function(Hl, lambda, intr, intr.3plus, env = NULL) {
     assign("lambda", lambda, envir = env)
   }
 }
-
-#' @export
-.expand_Hl_and_lambda <- expand_Hl_and_lambda
 
 BlockB_fn <- function(Hl, intr, n, p) {
   # This is the function which returns the BlockBStuff required for closed-form

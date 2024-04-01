@@ -31,7 +31,11 @@
 #'
 #'   Contributors: \itemize{\item{Wicher Bergsma}}
 #'
-#' @seealso \url{http://phd.haziqj.ml/}
-#'
+#' @seealso \url{https://phd.haziqj.ml/}
 #' @keywords internal
+#' @aliases iprior-package
 "_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
+NULL

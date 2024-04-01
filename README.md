@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml)
-[![codecov](https://codecov.io/gh/haziqj/iprior/graph/badge.svg?token=W4xTtuyt6r)](https://codecov.io/gh/haziqj/iprior)
+[![codecov](https://codecov.io/gh/haziqj/iprior/graph/badge.svg?token=W4xTtuyt6r)](https://app.codecov.io/gh/haziqj/iprior)
 [![CRAN_Status_Badge_version_ago](http://www.r-pkg.org/badges/version-ago/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 <!-- badges: end -->
@@ -21,7 +21,7 @@ The package estimates these parameters using direct log-likelihood maximisation,
 While the main interest of I-prior modelling is prediction, inference is also possible, e.g. via log-likelihood ratio tests.
 
 For installation instructions and some examples of I-prior modelling, continue reading below. 
-The package is documented with help files, and the [vignette](http://phd.haziqj.ml/iprior_paper.pdf) provides an introduction to the concept of I-priors and also to using the package.
+The package is documented with help files, and the [vignette](https://phd.haziqj.ml/iprior_paper.pdf) provides an introduction to the concept of I-priors and also to using the package.
 
 ## Installation
 
@@ -38,7 +38,7 @@ or the developmental version from this GitHub repository. R/iprior makes use of 
 -   On Mac, install Xcode from the app store.
 -   On Linux, `sudo apt-get install r-base-dev` or similar.
 
-The easiest way to then install from this repo is by using the [devtools](https://github.com/hadley/devtools) package. 
+The easiest way to then install from this repo is by using the [devtools](https://github.com/r-lib/devtools) package. 
 Install this first.
 
 ``` r

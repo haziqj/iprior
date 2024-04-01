@@ -170,9 +170,6 @@ is.ipriorKernel_cv <- function(x) {
   }
 }
 
-#' @export
-.is.ipriorKernel_cv <- is.ipriorKernel_cv
-
 #' @rdname is.iprior_x
 #' @export
 is.nystrom <- is.ipriorKernel_nys
@@ -188,9 +185,6 @@ is.categorical <- function(x) {
   check_and_get_ipriorKernel(x)
   !is.null(x$y.levels)
 }
-
-#' @export
-.is.categorical <- is.categorical
 
 #' Test kernel attributes
 #'
@@ -323,12 +317,6 @@ get_y_and_levels <- function(y) {
   list(y = as.numeric(y), levels = levels(y))
 }
 
-#' @export
-.checkLevels <- get_y_and_levels
-
-#' @export
-.get_y_and_levels <- get_y_and_levels
-
 fix_call_default <- function(cl = match.call(), new.name = "iprior") {
   # Replace the default call name with a new name. When using the default call,
   # it is possible that some of the X names are blank. This fixes that too.
@@ -343,9 +331,6 @@ fix_call_default <- function(cl = match.call(), new.name = "iprior") {
   cl
 }
 
-#' @export
-.fix_call_default <- fix_call_default
-
 fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   # Replace the formula call name with a new name.
   #
@@ -355,9 +340,6 @@ fix_call_formula <- function(cl = match.call(), new.name = "iprior") {
   cl[[1L]] <- as.name(new.name)
   cl
 }
-
-#' @export
-.fix_call_formula <- fix_call_formula
 
 formula_to_xy <- function(formula, data, one.lam) {
   # Convert formula entry to y, X entry.
@@ -400,9 +382,6 @@ formula_to_xy <- function(formula, data, one.lam) {
        tt = tt)
 }
 
-#' @export
-.formula_to_xy <- formula_to_xy
-
 deal_with_one.lam <- function(x, interactions) {
   # Helper function to convert list of X according to one.lam option.
   #
@@ -430,9 +409,6 @@ deal_with_one.lam <- function(x, interactions) {
   list(x = x, xname = xname)
 }
 
-#' @export
-.deal_with_one.lam <- deal_with_one.lam
-
 terms_to_xy <- function(object, newdata) {
   # Args: An ipriorKernel object.
   tt <- object$terms
@@ -451,9 +427,6 @@ terms_to_xy <- function(object, newdata) {
 
   list(Xl = x, y = y)
 }
-
-#' @export
-.terms_to_xy <- terms_to_xy
 
 fastSquareRoot2 <- function(x) {
   # Function to quickly find a square root of a matrix from its

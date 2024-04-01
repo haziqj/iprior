@@ -67,9 +67,6 @@ iprior_method_checker <- function(object, method) {
   res
 }
 
-#' @export
-.iprior_method_checker <- iprior_method_checker
-
 update_control <- function(arg.list, default.list) {
   # In most of the iprior_x functions, a list of control options is required.
   # This helper function checks whether the list supplied contains the allowed
@@ -87,9 +84,6 @@ update_control <- function(arg.list, default.list) {
   }
   default.list
 }
-
-#' @export
-.update_control <- update_control
 
 convert_se <- function(se, theta, object) {
   # Converts the standard errors for theta into the standard errors for param
@@ -116,9 +110,6 @@ convert_se <- function(se, theta, object) {
 
   res
 }
-
-#' @export
-.convert_se <- convert_se
 
 get_Hlam <- function(object, theta, theta.is.lambda = FALSE) {
   # Obtain the scaled kernel matrix Hlam.
@@ -204,15 +195,6 @@ calc_Hlam <- function(Hl, lambda, object) {
   res
 }
 
-#' @export
-.get_Hlam <- get_Hlam
-
-#' @export
-.get_Htildelam <- get_Htildelam
-
-#' @export
-.calc_Hlam <- calc_Hlam
-
 eigen_Hlam <- function(Hlam, env = NULL) {
   # The routine for the eigendecomposition of the scaled kernel matrix.
   #
@@ -226,9 +208,6 @@ eigen_Hlam <- function(Hlam, env = NULL) {
   if (is.null(env)) return(res)
   else list2env(res, env)
 }
-
-#' @export
-.eigen_Hlam <- eigen_Hlam
 
 eigen_Hlam_nys <- function(Hlam, env = NULL) {
   # The routine for the eigendecomposition of the scaled kernel matrix using
@@ -261,9 +240,6 @@ eigen_Hlam_nys <- function(Hlam, env = NULL) {
   else list2env(res, env)
 }
 
-#' @export
-.eigen_Hlam_nys <- eigen_Hlam_nys
-
 A_times_a <- function(u, V, a) {
   # Calculate A %*% a from the eigendecomposition of A. Mostly used to calculate
   # Vy^{-1} %*% a without having to invert Vy, because the eigendecompostion of
@@ -274,9 +250,6 @@ A_times_a <- function(u, V, a) {
   # Returns: A vector A %*% a.
   (V * rep(u, each = nrow(V))) %*% crossprod(V, a)
 }
-
-#' @export
-.A_times_a <- A_times_a
 
 em_loop_logical <- function() {
   # Helper function to determine when to stop the while loop for the EM
@@ -303,9 +276,6 @@ em_loop_logical <- function() {
     return(crit1 & crit2)
   }
 }
-
-#' @export
-.em_loop_logical <- em_loop_logical
 
 get_w <- function(u, V, Vy.inv.y, psi) {
   # Helper function to obtain posterior mean of I-prior random effects. It is

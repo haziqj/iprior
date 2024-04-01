@@ -17,3 +17,4 @@ vignettes/cache
 *.texpadtmp
 /doc/
 /Meta/
+.DS_Store
