@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml)
-[![test-coverage](https://github.com/haziqj/iprior/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/haziqj/iprior/actions/workflows/test-coverage.yaml)
+[![codecov](https://codecov.io/gh/haziqj/iprior/graph/badge.svg?token=W4xTtuyt6r)](https://codecov.io/gh/haziqj/iprior)
 [![CRAN_Status_Badge_version_ago](http://www.r-pkg.org/badges/version-ago/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
 <!-- badges: end -->
