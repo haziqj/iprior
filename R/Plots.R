@@ -206,7 +206,7 @@ plot_fitted <- function(x, X.var = 1, cred.bands = TRUE, size = 1,
     p <- p + geom_point(aes(x, y))
   }
 
-  p + geom_line(aes(x, y.hat), col = "red3", size = size, linetype = linetype) +
+  p + geom_line(aes(x, y.hat), col = "red3", linewidth = size, linetype = linetype) +
     labs(x = x.lab, y = y.lab) +
     theme_bw()
 }
@@ -269,8 +269,8 @@ plot_ppc <- function(x, draws = 100) {
     scale_x_continuous(breaks = NULL, name = expression(italic(y))) +
     scale_y_continuous(breaks = NULL) +
     geom_line(data = melted.ppc, stat = "density", alpha = 0.5,
-              aes(x = value, group = variable, col = "yrep", size = "yrep")) +
-    geom_line(aes(x = get_y(x), col = "y", size = "y"), stat = "density") +
+              aes(x = value, group = variable, col = "yrep", linewidth = "yrep")) +
+    geom_line(aes(x = get_y(x), col = "y", linewidth = "y"), stat = "density") +
     theme(legend.position = "bottom") +
     scale_colour_manual(
       name = NULL, labels = c("Observed", "Replications"),
@@ -282,7 +282,7 @@ plot_ppc <- function(x, draws = 100) {
     ) +
     labs(y = "Density", title = "Posterior predictive density check") +
     theme_bw() +
-    theme(legend.position = c(0.9, 0.5))
+    theme(legend.position.inside = c(0.9, 0.5))
 
   p
 }

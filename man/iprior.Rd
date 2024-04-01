@@ -153,6 +153,8 @@ should be used for training, and the remaining used for testing.}
 \item{test.samp}{(Optional) Similar to \code{train.samp}, but on test samples
 instead.}
 
+\item{intercept}{Optional intercept term.}
+
 \item{formula}{The formula to fit when using formula interface.}
 
 \item{data}{Data frame containing variables when using formula interface.}
@@ -190,13 +192,13 @@ to perform the estimation.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ipriorKernel}: Takes in object of type \code{ipriorKernel}, a loaded and
+\item \code{iprior(ipriorKernel)}: Takes in object of type \code{ipriorKernel}, a loaded and
 prepared I-prior model, and proceeds to estimate it.
 
-\item \code{ipriorMod}: Re-run or continue running the EM algorithm from last
+\item \code{iprior(ipriorMod)}: Re-run or continue running the EM algorithm from last
 attained parameter values in object \code{ipriorMod}.
-}}
 
+}}
 \examples{
 
 # Formula based input

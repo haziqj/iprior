@@ -74,6 +74,7 @@ iprior <- function(...) UseMethod("iprior")
 #'   value between 0 and 1.}}
 #' @param iter.update The number of iterations to perform when calling the
 #'   function on an \code{ipriorMod} object. Defaults to \code{100}.
+#' @param intercept Optional intercept term.
 #'
 #' @return An \code{ipriorMod} object. Several accessor functions have been
 #'   written to obtain pertinent things from the \code{ipriorMod} object. The

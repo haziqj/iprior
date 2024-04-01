@@ -88,47 +88,47 @@ Accessor functions for \code{ipriorMod} objects.
 }
 \section{Functions}{
 \itemize{
-\item \code{get_intercept}: Obtain the intercept.
+\item \code{get_intercept()}: Obtain the intercept.
 
-\item \code{get_y}: Obtain the response variables.
+\item \code{get_y()}: Obtain the response variables.
 
-\item \code{get_size}: Obtain the object size of the I-prior model.
+\item \code{get_size()}: Obtain the object size of the I-prior model.
 
-\item \code{get_hyp}: Obtain the hyerparameters of the model (both estimated and fixed ones).
+\item \code{get_hyp()}: Obtain the hyerparameters of the model (both estimated and fixed ones).
 
-\item \code{get_lambda}: Obtain the scale parameters used.
+\item \code{get_lambda()}: Obtain the scale parameters used.
 
-\item \code{get_psi}: Obtain the error precision.
+\item \code{get_psi()}: Obtain the error precision.
 
-\item \code{get_lengthscale}: Obtain the lengthscale for the SE kernels used.
+\item \code{get_lengthscale()}: Obtain the lengthscale for the SE kernels used.
 
-\item \code{get_hurst}: Obtain the Hurst coefficient of the fBm kernels used.
+\item \code{get_hurst()}: Obtain the Hurst coefficient of the fBm kernels used.
 
-\item \code{get_offset}: Obtain the offset parameters for the polynomial kernels used.
+\item \code{get_offset()}: Obtain the offset parameters for the polynomial kernels used.
 
-\item \code{get_degree}: Obtain the degree of the polynomial kernels used.
+\item \code{get_degree()}: Obtain the degree of the polynomial kernels used.
 
-\item \code{get_se}: Obtain the standard errors of the estimated hyperparameters.
+\item \code{get_se()}: Obtain the standard errors of the estimated hyperparameters.
 
-\item \code{get_kernels}: Obtain the kernels used.
+\item \code{get_kernels()}: Obtain the kernels used.
 
-\item \code{get_kern_matrix}: Obtain the kernel matrix of the I-prior model.
+\item \code{get_kern_matrix()}: Obtain the kernel matrix of the I-prior model.
 
-\item \code{get_prederror}: Obtain the training mean squared error.
+\item \code{get_prederror()}: Obtain the training mean squared error.
 
-\item \code{get_estl}: Obtain information on which hyperparameters were
+\item \code{get_estl()}: Obtain information on which hyperparameters were
 estimated and which were fixed.
 
-\item \code{get_method}: Obtain the estimation method used.
+\item \code{get_method()}: Obtain the estimation method used.
 
-\item \code{get_convergence}: Obtain the convergence information.
+\item \code{get_convergence()}: Obtain the convergence information.
 
-\item \code{get_niter}: Obtain the number of iterations performed.
+\item \code{get_niter()}: Obtain the number of iterations performed.
 
-\item \code{get_time}: Obtain the time taken to complete the estimation
+\item \code{get_time()}: Obtain the time taken to complete the estimation
 procedure.
 
-\item \code{get_theta}: Extract the theta value at convergence. Note that this
+\item \code{get_theta()}: Extract the theta value at convergence. Note that this
 is on an unrestricted scale (see the vignette for details).
-}}
 
+}}

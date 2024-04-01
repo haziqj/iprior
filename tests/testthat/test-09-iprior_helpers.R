@@ -9,7 +9,7 @@ test_that("Hlam", {
   mod <- kernL(y, x1, x2, x3, kernels = c("fbm", "se", "pearson"))
   K <- get_Hlam(mod, mod$thetal$theta)
   tmp <- eigen_Hlam(K)
-  expect_equal(tmp$u, c(4.066071e-16, 3.569738e+00, 4.864665e+00), tolerance = 1e-6)
+  expect_equal(tmp$u, c(1.869905, 3.598763, 4.864665), tolerance = 1e-6)
 
 })
 

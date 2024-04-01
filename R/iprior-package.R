@@ -33,6 +33,5 @@
 #'
 #' @seealso \url{http://phd.haziqj.ml/}
 #'
-#' @docType package
-#' @name iprior_package
-NULL
+#' @keywords internal
+"_PACKAGE"

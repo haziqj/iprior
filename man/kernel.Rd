@@ -19,7 +19,7 @@ kern_pearson(x, y = NULL)
 
 kern_fbm(x, y = NULL, gamma = 0.5, centre = TRUE)
 
-kern_se(x, y = NULL, l = 1, centre = TRUE)
+kern_se(x, y = NULL, l = 1, centre = FALSE)
 
 kern_poly(x, y = NULL, c = 0, d = 2, lam.poly = 1, centre = TRUE)
 }
