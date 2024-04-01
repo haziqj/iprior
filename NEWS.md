@@ -1,4 +1,9 @@
+# v0.7.4
+
+* Small update to fix CRAN issues.
+
 # v0.7.2
+
 * Updated `get_kern_matrix()` accessor function.
 * Fixed bug in delta method conversion of standard errors in direct optimisation.
 * Updated references and README.

@@ -10,6 +10,7 @@ Description: Provides methods to perform and analyse I-prior regression models.
 URL: https://github.com/haziqj/iprior
 BugReports: https://github.com/haziqj/iprior/issues
 License: GPL (>= 3.0)
+Language: en-GB
 Depends: 
   R (>= 3.2.5)
 Imports:
