@@ -1,10 +1,15 @@
 # R/iprior: An R package for I-prior regression
 
-[![Build Status](https://travis-ci.org/haziqj/iprior.svg?branch=master)](https://travis-ci.org/haziqj/iprior)
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/haziqj/iprior/actions/workflows/R-CMD-check.yaml)
+<!-- [![Build Status](https://travis-ci.org/haziqj/iprior.svg?branch=master)](https://travis-ci.org/haziqj/iprior)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/haziqj/iprior?branch=master&svg=true)](https://ci.appveyor.com/project/haziqj/iprior)
-[![Coverage Status](https://img.shields.io/codecov/c/github/haziqj/iprior/master.svg)](https://codecov.io/gh/haziqj/iprior)
+[![Coverage Status](https://img.shields.io/codecov/c/github/haziqj/iprior/master.svg)](https://codecov.io/gh/haziqj/iprior) -->
 [![CRAN_Status_Badge_version_ago](http://www.r-pkg.org/badges/version-ago/iprior)](https://cran.r-project.org/package=iprior)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/iprior)](https://cran.r-project.org/package=iprior)
+<!-- badges: end -->
+
+
 
 Based on the manuscript entitled "Regression and Classification with I-priors" by Wicher Bergsma (2018, [arXiv:1707.00274](https://arxiv.org/abs/1707.00274)). 
 In a general regression setting, priors can be assigned to the regression function in a vector space framework, and the posterior estimate of the regression function obtained. 
